@@ -20,17 +20,19 @@ public class ChargeDetail {
 	
 	public ChargeDetail(String[] data){
 		
+		int offset=1;
+		
 		int n=0;
 		if(data!=null) n=data.length;
-		if(n>=9)n=9;
+		if(n>=8)n=8;
 		
 		switch(n){
-		case 9:Amount=data[8];
-		case 8:ChargeItemName=data[7];
-		case 7:ChargeItemSequence=data[6];
-		case 6:CategoryAmountSummary=data[5];
-		case 5:CategoryName=data[4];
-		case 4:CategorySequence=data[3];
+		case 8:Amount=data[8-offset];
+		case 7:ChargeItemName=data[7-offset];
+		case 6:ChargeItemSequence=data[6-offset];
+		case 5:CategoryAmountSummary=data[5-offset];
+		case 4:CategoryName=data[4-offset];
+		//case 4:CategorySequence=data[3];
 		case 3:ServiceCode=data[2];
 		case 2:AccountNum=data[1];
 		case 1:RecordFlag=data[0];

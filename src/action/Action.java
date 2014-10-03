@@ -14,8 +14,8 @@ public class Action {
 	{  
 		setBillData(billc.process(fileName));
 		
-		if(billData!=null)
-		System.out.println(billData.getI().getData());
+		/*if(billData!=null)
+		System.out.println(billData.getI().getData());*/
 	   return "bill";        
 	}
 	

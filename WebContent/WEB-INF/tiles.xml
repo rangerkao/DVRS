@@ -3,19 +3,19 @@
 "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
 
 <tiles-definitions>
-    <definition name="web_base" template="/tiles/base.jsp">
-	    <put-attribute name="top" value="/tiles/top.jsp" />
-	    <put-attribute name="menu" value="/tiles/menu.jsp" />
-	    <put-attribute name="main" value="" />
+	<definition name="web_base" template="/tiles/base.jsp">
+		<put-attribute name="top" value="/tiles/top.jsp" />
+		<put-attribute name="menu" value="/tiles/menu.jsp" />
+		<put-attribute name="main" value="" />
 	</definition>
-	    
-	    <!-- 以繼承方式更換 leather_main page -->
+
+	<!-- 以繼承方式更換 leather_main page -->
 	<definition name="welcome" extends="web_base">
-	    <put-attribute name="main" value="/web/welcome.jsp" />
+		<put-attribute name="main" value="/web/welcome.jsp" />
 	</definition>
-	
+
 	<definition name="bill" extends="web_base">
-	    <put-attribute name="main" value="/web/bill.jsp" />
+		<put-attribute name="main" value="/web/bill.jsp" />
 	</definition>
-	
+
 </tiles-definitions>
