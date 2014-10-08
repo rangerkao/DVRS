@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isTitleNewPage="true" uuid="07bfbe66-bfa3-4f16-9e59-80cd39e231a5">
+	<property name="ireport.zoom" value="1.4641000000000006"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="48"/>
+	<parameter name="address for" class="java.lang.String"/>
+	<parameter name="Statement for" class="java.lang.String"/>
+	<parameter name="Account Number" class="java.lang.String"/>
+	<parameter name="Billing Period" class="java.lang.String"/>
+	<parameter name="Currency" class="java.lang.String"/>
+	<parameter name="Previous Balance" class="java.lang.Float">
+		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Payment Received" class="java.lang.Float">
+		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Usage Charges" class="java.lang.Float">
+		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Monthly Service Charges" class="java.lang.Float">
+		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="applied date" class="java.lang.String"/>
+	<variable name="Balance" class="java.lang.Float" resetType="None">
+		<variableExpression><![CDATA[$P{Previous Balance}-$P{Payment Received}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="Total Current Charges" class="java.lang.Float" resetType="None">
+		<variableExpression><![CDATA[$P{Monthly Service Charges}+$P{Usage Charges}]]></variableExpression>
+	</variable>
+	<variable name="Total Amount Due" class="java.lang.Float" resetType="None">
+		<variableExpression><![CDATA[$V{Balance}+$V{Total Current Charges}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="PageCount" class="java.lang.Integer" resetType="None">
+		<variableExpression><![CDATA[$V{PAGE_COUNT}+1]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="802" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="189" height="64" uuid="dcd3de95-d7a1-4c7d-8734-a3510839188f"/>
+				<imageExpression><![CDATA["C:\\Users\\ranger.kao\\Desktop\\BillReport\\sim2travel.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="461" y="-4" width="94" height="83" uuid="4601d761-25fd-418b-8e53-f2ef07acdde6"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[How to contact us:
+Call +886-960-840-112
+
+Or write:
+P.O. Box 81-875 Taipei
+Taipei City 10599
+Taiwan R.O.C.
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="618" width="555" height="184" uuid="de3e5e8e-aca9-4dac-9893-d7ccfee42c13"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Important Notice:
+Dear Value Subscribers, Sim2Travel’s local-number advantage continues to provide you with enhanced voice quality at competitive local rates. We are alwaysstriving to provide you the best in worldwide communication. As your business grows, we know you demand the strongest tools to help you get localized wherever the opportunities take you. Currently, we have CMCC(China), CMCC HK(Hong Kong), FET(Taiwan) and CTM (Macau) in our Blue Ocean Alliance. In the coming months, Sim2Travel will be rolling-out many new and exciting partner networks, including more countries with local numbers and mobile features!
+21 Selected Networks around the World!
+Besides our partner networks, Sim2Travel selected 21 networks in other 21 different countries to provide very competitive roaming price for you. These selected networks include: AT&T in US, Globe Telecom in Philippines, Vodafone in Australia, Vodafone D2 in Germany, T-Mobile in UK, Bouygues Telecom in France, Vodafone Omnitel in Italy, Telefonica Moviles in Spain, DoCoMo 3G in Japan, Starhub in Singapore, Vodafone in Netherlands, MTS in Russia, GPC Vinaphone in Vietnam, TRUE Move in Thailand, Hutchison in Indonesia, DiGi Telecom in Malaysia, Mobily in Saudi Arabia, SKT 3G in South Korea, MTN in South Africa, T-Mobile in Czech, and Tele2 in Sweden. Sim2Travel suggests you to select these networks when you travel to these countries listed above, to enjoy the best voice quality and low roaming rate at the same time!
+For derail rate plan please visit:
+http://www.sim2travel.com/tariff/rateplan.asp	]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="339" y="154" width="15" height="15" uuid="eec7bf65-0d30-46f4-a386-9a939dd40790"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[of]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="293" y="169" width="55" height="15" uuid="2a9639d5-ca01-4de0-8228-918bac62c89a"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Statement for:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="358" y="184" width="100" height="15" uuid="7a7aa35e-8006-4dd7-bf73-cef989f0dd6c"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Account Number}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="293" y="199" width="55" height="15" uuid="3a5ee25b-4f6a-4627-b199-95c3d885435d"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Billing Period: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="293" y="184" width="65" height="15" uuid="19669341-21a7-4661-9f8b-e227ea0eac1f"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Account Number: ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="348" y="199" width="100" height="15" uuid="ae2349dd-7aa6-4aa0-83be-a43c79ca73ae"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="321" y="154" width="18" height="15" uuid="835d0a57-5b1f-4c5a-8113-1a2800e32450"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="293" y="154" width="28" height="15" uuid="e1fd63ca-80e8-4cc2-88ae-9269742628f2"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Page]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="331" y="214" width="100" height="15" uuid="6a8decdb-bb02-4714-bba2-a855f5e08850"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="293" y="214" width="38" height="15" uuid="2c55ee17-0834-4bfe-9a34-af46af6ef1e9"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Currency: ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="348" y="169" width="100" height="15" uuid="f427637f-fec3-48a9-9511-2b1c32abffb7"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="290" y="423" width="265" height="15" backcolor="#999999" uuid="d132c1e6-8445-4987-aff8-3e229c54674c"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total Current Charges (B)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="454" y="315" width="100" height="15" uuid="4f47984f-ab4e-4d85-9d46-4f8008b2d784"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Payment Received}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="291" y="438" width="265" height="1" uuid="fdcc8c8a-35e4-454b-9a4d-bf6180114e9f"/>
+			</line>
+			<staticText>
+				<reportElement x="291" y="300" width="100" height="15" uuid="d7abd465-0191-4ac5-a1eb-d167c5670b1a"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Previous Balance]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="315" width="146" height="15" uuid="43c8c626-c239-4dda-8ae4-aabbcce3d0f1"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Payment Received - Thank You]]></text>
+			</staticText>
+			<line>
+				<reportElement x="290" y="454" width="265" height="1" uuid="628d67f5-e81f-48e6-96fd-0e39a8a56aec"/>
+			</line>
+			<line>
+				<reportElement x="290" y="470" width="266" height="1" uuid="720d8435-30a8-4288-b7ef-0ba11eb03188"/>
+			</line>
+			<staticText>
+				<reportElement mode="Opaque" x="290" y="455" width="265" height="15" backcolor="#999999" uuid="4c92e5d2-63bc-4a83-aa10-612eff864cf2"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Total Amount Due=(A)+(B)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="290" y="279" width="265" height="1" uuid="2d260498-1d25-48d4-86df-21d311c9b968"/>
+			</line>
+			<staticText>
+				<reportElement x="290" y="512" width="265" height="54" uuid="5368c2ff-2de8-4b87-afac-958530922f2e"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA["Sim2Travel (Blue Ocean Alliance & rMVNO) currently accepts payment by VISA or MasterCard only.
+By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credit card.  I can change my credit card on file simply by dialing +886277381256 and notifying Sim2Travel of my request."
+
+
+
+
+
+]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="454" y="362" width="100" height="15" uuid="da9693c2-f1c2-4b0d-87b5-c9266f54757b"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Usage Charges}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="347" width="128" height="15" uuid="0fa87a09-5f56-4599-abdf-1e0b1be62593"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Monthly Service Charges]]></text>
+			</staticText>
+			<line>
+				<reportElement x="291" y="330" width="265" height="1" uuid="e0a1f33b-005f-455e-a6a8-41b451b9ccc3"/>
+			</line>
+			<staticText>
+				<reportElement x="291" y="471" width="186" height="15" uuid="2e0bdb48-4148-4767-ab48-2b9dde88ef52"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[To be applied to your credit card on/after ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="454" y="300" width="100" height="15" uuid="5b06254e-c98a-4a3d-9841-572b7bc1277a"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Previous Balance}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="291" y="331" width="265" height="15" backcolor="#999999" uuid="81fb683a-0964-41d7-ab94-2f41f241eff5"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Balance (A)]]></text>
+			</staticText>
+			<line>
+				<reportElement x="290" y="300" width="265" height="1" uuid="1251d97f-80e0-4b78-ba22-1c2c72c20407"/>
+			</line>
+			<staticText>
+				<reportElement mode="Opaque" x="290" y="280" width="265" height="20" forecolor="#000000" backcolor="#999999" uuid="2d2b6778-9377-4d54-924d-bbcafa7c9019"/>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Summary of Charges]]></text>
+			</staticText>
+			<line>
+				<reportElement x="291" y="422" width="265" height="1" uuid="6096413e-7807-45b1-befb-1527bd1e8466"/>
+			</line>
+			<staticText>
+				<reportElement x="290" y="362" width="100" height="15" uuid="8d0b77f3-32d3-4658-ba75-2098e8a801d9"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Usage Charges]]></text>
+			</staticText>
+			<line>
+				<reportElement x="290" y="279" width="1" height="192" uuid="dc33ab00-a43a-4231-adf1-6060e033c080"/>
+			</line>
+			<line>
+				<reportElement x="555" y="280" width="1" height="191" uuid="a9bd9b0e-b766-4cff-9c1a-f821bcdaac8a"/>
+			</line>
+			<textField>
+				<reportElement x="454" y="347" width="100" height="15" uuid="6a293526-9664-4f76-9ba3-0d39953555f4"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Monthly Service Charges}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="454" y="471" width="100" height="15" uuid="4f756181-2209-4f46-b07a-d329efaa472f"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{applied date}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="290" y="346" width="265" height="1" uuid="bb6ed4f9-9404-4dea-9b38-94e9f6f8b364"/>
+			</line>
+			<textField>
+				<reportElement x="0" y="79" width="189" height="75" uuid="7003925e-b88c-47df-b95f-55d4f0308bd3"/>
+				<textElement>
+					<font fontName="SansSerif" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{address for}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="453" y="455" width="100" height="15" uuid="4af59821-fdd7-4f2a-aac4-156c40625596"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Total Amount Due}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="453" y="331" width="100" height="15" uuid="7a462e0b-d640-4909-a7df-cde30b87be7c"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Balance}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="453" y="424" width="100" height="15" uuid="2c1d934b-6817-400d-9460-ab66c2e7da58"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Total Current Charges}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="354" y="154" width="18" height="15" uuid="0611cbf1-cedd-4211-b4d9-2bf5d9f782a4"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PageCount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="61" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,26 +1,28 @@
 package bean;
 
+import java.util.List;
+
 public class UsageDetail {
-	private String RecordFlag;//資料類別(識別資料格式)
-	private String AccountNum;//帳戶編號(帳單鍵值)
-	private String ServiceCode;//電話號碼
-	private String TypeSequence;//詳單類型顯示順序
-	private String UsageType;//詳單類型
-	private String ChargeItemName;//費用項名稱
-	private String SubTotalDuration;//詳單類型時間小計
-	private String SubTotalCharges;//詳單類型金額小計
-	private String SubTotalMessages;//詳單類型次數小計
-	private String Caller;//主叫號碼
-	private String Callee;//被叫號碼
-	private String CallerDestination;//主叫所在地
-	private String CalleeDestination;//被叫所在地
-	private String StartDate;//通話起始日期
-	private String StartTime;//通話起始時間
-	private String CallType;//呼叫方向
-	private String Duration;//通話時長
-	private String Charge;//費用
-	private String EventCount;//次數
-	private String ChargeItemAbbName;//費用項簡碼
+	private String recordFlag;//資料類別(識別資料格式)
+	private String accountNum;//帳戶編號(帳單鍵值)
+	private String serviceCode;//電話號碼
+	private String typeSequence;//詳單類型顯示順序
+	private String usageType;//詳單類型
+	private String chargeItemName;//費用項名稱
+	private String subTotalDuration;//詳單類型時間小計
+	private String subTotalCharges;//詳單類型金額小計
+	private String subTotalMessages;//詳單類型次數小計
+	private String caller;//主叫號碼
+	private String callee;//被叫號碼
+	private String callerDestination;//主叫所在地
+	private String calleeDestination;//被叫所在地
+	private String startDate;//通話起始日期
+	private String startTime;//通話起始時間
+	private String callType;//呼叫方向
+	private String duration;//通話時長
+	private String charge;//費用
+	private String eventCount;//次數
+	private String chargeItemAbbName;//費用項簡碼
 	
 	private String Data; //Bean 內容資料
 
@@ -28,32 +30,32 @@ public class UsageDetail {
 		
 	}
 	
-	public UsageDetail(String[] data){
+	public UsageDetail(List<String> list){
 		int n=0;
-		if(data!=null) n=data.length;
+		if(list!=null) n=list.size();
 		if(n>=20)n=20;
 		
 		switch(n){
-		case 20:ChargeItemAbbName=data[19];
-		case 19:EventCount=data[18];
-		case 18:Charge=data[17];
-		case 17:Duration=data[16];
-		case 16:CallType=data[15];
-		case 15:StartTime=data[14];
-		case 14:StartDate=data[13];
-		case 13:CalleeDestination=data[12];
-		case 12:CallerDestination=data[11];
-		case 11:Callee=data[10];
-		case 10:Caller=data[9];
-		case 9:SubTotalMessages=data[8];
-		case 8:SubTotalCharges=data[7];
-		case 7:SubTotalDuration=data[6];
-		case 6:ChargeItemName=data[5];
-		case 5:UsageType=data[4];
-		case 4:TypeSequence=data[3];
-		case 3:ServiceCode=data[2];
-		case 2:AccountNum=data[1];
-		case 1:RecordFlag=data[0];
+		case 20:chargeItemAbbName=list.get(19);
+		case 19:eventCount=list.get(18);
+		case 18:charge=list.get(17);
+		case 17:duration=list.get(16);
+		case 16:callType=list.get(15);
+		case 15:startTime=list.get(14);
+		case 14:startDate=list.get(13);
+		case 13:calleeDestination=list.get(12);
+		case 12:callerDestination=list.get(11);
+		case 11:callee=list.get(10);
+		case 10:caller=list.get(9);
+		case 9:subTotalMessages=list.get(8);
+		case 8:subTotalCharges=list.get(7);
+		case 7:subTotalDuration=list.get(6);
+		case 6:chargeItemName=list.get(5);
+		case 5:usageType=list.get(4);
+		case 4:typeSequence=list.get(3);
+		case 3:serviceCode=list.get(2);
+		case 2:accountNum=list.get(1);
+		case 1:recordFlag=list.get(0);
 		default:
 		}
 		
@@ -69,186 +71,186 @@ public class UsageDetail {
 			String duration, String charge, String eventCount,
 			String chargeItemAbbName) {
 		super();
-		RecordFlag = recordFlag;
-		AccountNum = accountNum;
-		ServiceCode = serviceCode;
-		TypeSequence = typeSequence;
-		UsageType = usageType;
-		ChargeItemName = chargeItemName;
-		SubTotalDuration = subTotalDuration;
-		SubTotalCharges = subTotalCharges;
-		SubTotalMessages = subTotalMessages;
-		Caller = caller;
-		Callee = callee;
-		CallerDestination = callerDestination;
-		CalleeDestination = calleeDestination;
-		StartDate = startDate;
-		StartTime = startTime;
-		CallType = callType;
-		Duration = duration;
-		Charge = charge;
-		EventCount = eventCount;
-		ChargeItemAbbName = chargeItemAbbName;
+		this.recordFlag = recordFlag;
+		this.accountNum = accountNum;
+		this.serviceCode = serviceCode;
+		this.typeSequence = typeSequence;
+		this.usageType = usageType;
+		this.chargeItemName = chargeItemName;
+		this.subTotalDuration = subTotalDuration;
+		this.subTotalCharges = subTotalCharges;
+		this.subTotalMessages = subTotalMessages;
+		this.caller = caller;
+		this.callee = callee;
+		this.callerDestination = callerDestination;
+		this.calleeDestination = calleeDestination;
+		this.startDate = startDate;
+		this.startTime = startTime;
+		this.callType = callType;
+		this.duration = duration;
+		this.charge = charge;
+		this.eventCount = eventCount;
+		this.chargeItemAbbName = chargeItemAbbName;
 	}
 
 	public String getRecordFlag() {
-		return RecordFlag;
+		return recordFlag;
 	}
 
 	public void setRecordFlag(String recordFlag) {
-		RecordFlag = recordFlag;
+		this.recordFlag = recordFlag;
 	}
 
 	public String getAccountNum() {
-		return AccountNum;
+		return accountNum;
 	}
 
 	public void setAccountNum(String accountNum) {
-		AccountNum = accountNum;
+		this.accountNum = accountNum;
 	}
 
 	public String getServiceCode() {
-		return ServiceCode;
+		return serviceCode;
 	}
 
 	public void setServiceCode(String serviceCode) {
-		ServiceCode = serviceCode;
+		this.serviceCode = serviceCode;
 	}
 
 	public String getTypeSequence() {
-		return TypeSequence;
+		return typeSequence;
 	}
 
 	public void setTypeSequence(String typeSequence) {
-		TypeSequence = typeSequence;
+		this.typeSequence = typeSequence;
 	}
 
 	public String getUsageType() {
-		return UsageType;
+		return usageType;
 	}
 
 	public void setUsageType(String usageType) {
-		UsageType = usageType;
+		this.usageType = usageType;
 	}
 
 	public String getChargeItemName() {
-		return ChargeItemName;
+		return chargeItemName;
 	}
 
 	public void setChargeItemName(String chargeItemName) {
-		ChargeItemName = chargeItemName;
+		this.chargeItemName = chargeItemName;
 	}
 
 	public String getSubTotalDuration() {
-		return SubTotalDuration;
+		return subTotalDuration;
 	}
 
 	public void setSubTotalDuration(String subTotalDuration) {
-		SubTotalDuration = subTotalDuration;
+		this.subTotalDuration = subTotalDuration;
 	}
 
 	public String getSubTotalCharges() {
-		return SubTotalCharges;
+		return subTotalCharges;
 	}
 
 	public void setSubTotalCharges(String subTotalCharges) {
-		SubTotalCharges = subTotalCharges;
+		this.subTotalCharges = subTotalCharges;
 	}
 
 	public String getSubTotalMessages() {
-		return SubTotalMessages;
+		return subTotalMessages;
 	}
 
 	public void setSubTotalMessages(String subTotalMessages) {
-		SubTotalMessages = subTotalMessages;
+		this.subTotalMessages = subTotalMessages;
 	}
 
 	public String getCaller() {
-		return Caller;
+		return caller;
 	}
 
 	public void setCaller(String caller) {
-		Caller = caller;
+		this.caller = caller;
 	}
 
 	public String getCallee() {
-		return Callee;
+		return callee;
 	}
 
 	public void setCallee(String callee) {
-		Callee = callee;
+		this.callee = callee;
 	}
 
 	public String getCallerDestination() {
-		return CallerDestination;
+		return callerDestination;
 	}
 
 	public void setCallerDestination(String callerDestination) {
-		CallerDestination = callerDestination;
+		this.callerDestination = callerDestination;
 	}
 
 	public String getCalleeDestination() {
-		return CalleeDestination;
+		return calleeDestination;
 	}
 
 	public void setCalleeDestination(String calleeDestination) {
-		CalleeDestination = calleeDestination;
+		this.calleeDestination = calleeDestination;
 	}
 
 	public String getStartDate() {
-		return StartDate;
+		return startDate;
 	}
 
 	public void setStartDate(String startDate) {
-		StartDate = startDate;
+		this.startDate = startDate;
 	}
 
 	public String getStartTime() {
-		return StartTime;
+		return startTime;
 	}
 
 	public void setStartTime(String startTime) {
-		StartTime = startTime;
+		this.startTime = startTime;
 	}
 
 	public String getCallType() {
-		return CallType;
+		return callType;
 	}
 
 	public void setCallType(String callType) {
-		CallType = callType;
+		this.callType = callType;
 	}
 
 	public String getDuration() {
-		return Duration;
+		return duration;
 	}
 
 	public void setDuration(String duration) {
-		Duration = duration;
+		this.duration = duration;
 	}
 
 	public String getCharge() {
-		return Charge;
+		return charge;
 	}
 
 	public void setCharge(String charge) {
-		Charge = charge;
+		this.charge = charge;
 	}
 
 	public String getEventCount() {
-		return EventCount;
+		return eventCount;
 	}
 
 	public void setEventCount(String eventCount) {
-		EventCount = eventCount;
+		this.eventCount = eventCount;
 	}
 
 	public String getChargeItemAbbName() {
-		return ChargeItemAbbName;
+		return chargeItemAbbName;
 	}
 
 	public void setChargeItemAbbName(String chargeItemAbbName) {
-		ChargeItemAbbName = chargeItemAbbName;
+		this.chargeItemAbbName = chargeItemAbbName;
 	}
 
 	public String getData() {
@@ -259,26 +261,26 @@ public class UsageDetail {
 		
 		String lineEnd="<br>\n";
 		Data = 
-				"Record Flag : " + RecordFlag + lineEnd +
-				"AccountNum : " + AccountNum + lineEnd +
-				"ServiceCode : " + ServiceCode + lineEnd +
-				"TypeSequence : " + TypeSequence + lineEnd +
-				"UsageType : " + UsageType + lineEnd +
-				"ChargeItemName : " + ChargeItemName + lineEnd +
-				"SubTotalDuration : " + SubTotalDuration + lineEnd +
-				"SubTotalCharges : " + SubTotalCharges + lineEnd +
-				"SubTotalMessages : " + SubTotalMessages + lineEnd +
-				"Caller : " + Caller + lineEnd +
-				"Callee : " + Callee + lineEnd +
-				"CallerDestination : " + CallerDestination + lineEnd +
-				"CalleeDestination : " + CalleeDestination + lineEnd +
-				"StartDate : " + StartDate + lineEnd +
-				"StartTime : " + StartTime + lineEnd +
-				"CallType : " + CallType + lineEnd +
-				"Duration : " + Duration + lineEnd +
-				"Charge : " + Charge + lineEnd +
-				"EventCount : " + EventCount + lineEnd +
-				"ChargeItemAbbName : " + ChargeItemAbbName + lineEnd ;
+				"Record Flag : " + recordFlag + lineEnd +
+				"AccountNum : " + accountNum + lineEnd +
+				"ServiceCode : " + serviceCode + lineEnd +
+				"TypeSequence : " + typeSequence + lineEnd +
+				"UsageType : " + usageType + lineEnd +
+				"ChargeItemName : " + chargeItemName + lineEnd +
+				"SubTotalDuration : " + subTotalDuration + lineEnd +
+				"SubTotalCharges : " + subTotalCharges + lineEnd +
+				"SubTotalMessages : " + subTotalMessages + lineEnd +
+				"Caller : " + caller + lineEnd +
+				"Callee : " + callee + lineEnd +
+				"CallerDestination : " + callerDestination + lineEnd +
+				"CalleeDestination : " + calleeDestination + lineEnd +
+				"StartDate : " + startDate + lineEnd +
+				"StartTime : " + startTime + lineEnd +
+				"CallType : " + callType + lineEnd +
+				"Duration : " + duration + lineEnd +
+				"Charge : " + charge + lineEnd +
+				"EventCount : " + eventCount + lineEnd +
+				"ChargeItemAbbName : " + chargeItemAbbName + lineEnd ;
 
 	}
 	

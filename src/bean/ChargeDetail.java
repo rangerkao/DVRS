@@ -1,16 +1,18 @@
 package bean;
 
+import java.util.List;
+
 public class ChargeDetail {
 
-	private String RecordFlag;//資料類別(識別資料格式)
-	private String AccountNum;//帳戶編號(帳單鍵值)
-	private String ServiceCode;//電話號碼
-	private String CategorySequence;//分類顯示順序
-	private String CategoryName;//分類名
-	private String CategoryAmountSummary;//分類項費用小計
-	private String ChargeItemSequence;//費用項顯示順序
-	private String ChargeItemName;//費用項名
-	private String Amount;//費用額度
+	private String recordFlag;//資料類別(識別資料格式)
+	private String accountNum;//帳戶編號(帳單鍵值)
+	private String serviceCode;//電話號碼
+	private String categorySequence;//分類顯示順序
+	private String categoryName;//分類名
+	private String categoryAmountSummary;//分類項費用小計
+	private String chargeItemSequence;//費用項顯示順序
+	private String chargeItemName;//費用項名
+	private Double amount;//費用額度
 	
 	private String Data; //Bean 內容資料
 
@@ -18,24 +20,29 @@ public class ChargeDetail {
 		
 	}
 	
-	public ChargeDetail(String[] data){
-		
-		int offset=1;
-		
+	public ChargeDetail(List<String> list){
 		int n=0;
-		if(data!=null) n=data.length;
-		if(n>=8)n=8;
+		if(list!=null) n=list.size();
+		if(n>=9)n=9;
 		
 		switch(n){
-		case 8:Amount=data[8-offset];
-		case 7:ChargeItemName=data[7-offset];
-		case 6:ChargeItemSequence=data[6-offset];
-		case 5:CategoryAmountSummary=data[5-offset];
-		case 4:CategoryName=data[4-offset];
-		//case 4:CategorySequence=data[3];
-		case 3:ServiceCode=data[2];
-		case 2:AccountNum=data[1];
-		case 1:RecordFlag=data[0];
+		case 9:
+			
+			try {
+				amount=Double.parseDouble(list.get(8));
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("ChargeDetail amount data is not NumberFormat!");
+			}
+		case 8:chargeItemName=list.get(7);
+		case 7:chargeItemSequence=list.get(6);
+		case 6:categoryAmountSummary=list.get(5);
+		case 5:categoryName=list.get(4);
+		case 4:categorySequence=list.get(3);
+		case 3:serviceCode=list.get(2);
+		case 2:accountNum=list.get(1);
+		case 1:recordFlag=list.get(0);
 		default:
 		}
 		
@@ -45,89 +52,89 @@ public class ChargeDetail {
 	public ChargeDetail(String recordFlag, String accountNum,
 			String serviceCode, String categorySequence, String categoryName,
 			String categoryAmountSummary, String chargeItemSequence,
-			String chargeItemName, String amount) {
+			String chargeItemName, Double amount) {
 		super();
-		RecordFlag = recordFlag;
-		AccountNum = accountNum;
-		ServiceCode = serviceCode;
-		CategorySequence = categorySequence;
-		CategoryName = categoryName;
-		CategoryAmountSummary = categoryAmountSummary;
-		ChargeItemSequence = chargeItemSequence;
-		ChargeItemName = chargeItemName;
-		Amount = amount;
+		this.recordFlag = recordFlag;
+		this.accountNum = accountNum;
+		this.serviceCode = serviceCode;
+		this.categorySequence = categorySequence;
+		this.categoryName = categoryName;
+		this.categoryAmountSummary = categoryAmountSummary;
+		this.chargeItemSequence = chargeItemSequence;
+		this.chargeItemName = chargeItemName;
+		this.amount = amount;
 	}
 	
 	public String getRecordFlag() {
-		return RecordFlag;
+		return recordFlag;
 	}
 
 	public void setRecordFlag(String recordFlag) {
-		RecordFlag = recordFlag;
+		this.recordFlag = recordFlag;
 	}
 
 	public String getAccountNum() {
-		return AccountNum;
+		return accountNum;
 	}
 
 	public void setAccountNum(String accountNum) {
-		AccountNum = accountNum;
+		this.accountNum = accountNum;
 	}
 
 	public String getServiceCode() {
-		return ServiceCode;
+		return serviceCode;
 	}
 
 	public void setServiceCode(String serviceCode) {
-		ServiceCode = serviceCode;
+		this.serviceCode = serviceCode;
 	}
 
 	public String getCategorySequence() {
-		return CategorySequence;
+		return categorySequence;
 	}
 
 	public void setCategorySequence(String categorySequence) {
-		CategorySequence = categorySequence;
+		this.categorySequence = categorySequence;
 	}
 
 	public String getCategoryName() {
-		return CategoryName;
+		return categoryName;
 	}
 
 	public void setCategoryName(String categoryName) {
-		CategoryName = categoryName;
+		this.categoryName = categoryName;
 	}
 
 	public String getCategoryAmountSummary() {
-		return CategoryAmountSummary;
+		return categoryAmountSummary;
 	}
 
 	public void setCategoryAmountSummary(String categoryAmountSummary) {
-		CategoryAmountSummary = categoryAmountSummary;
+		this.categoryAmountSummary = categoryAmountSummary;
 	}
 
 	public String getChargeItemSequence() {
-		return ChargeItemSequence;
+		return chargeItemSequence;
 	}
 
 	public void setChargeItemSequence(String chargeItemSequence) {
-		ChargeItemSequence = chargeItemSequence;
+		this.chargeItemSequence = chargeItemSequence;
 	}
 
 	public String getChargeItemName() {
-		return ChargeItemName;
+		return chargeItemName;
 	}
 
 	public void setChargeItemName(String chargeItemName) {
-		ChargeItemName = chargeItemName;
+		this.chargeItemName = chargeItemName;
 	}
 
-	public String getAmount() {
-		return Amount;
+	public Double getAmount() {
+		return amount;
 	}
 
-	public void setAmount(String amount) {
-		Amount = amount;
+	public void setAmount(Double amount) {
+		this.amount = amount;
 	}
 
 	public String getData() {
@@ -137,15 +144,15 @@ public class ChargeDetail {
 	public void setData() {
 		String lineEnd="<br>\n";
 		Data = 
-				"Record Flag : " + RecordFlag + lineEnd +
-				"AccountNum : " + AccountNum + lineEnd +
-				"ServiceCode : " + ServiceCode + lineEnd +
-				"CategorySequence : " + CategorySequence + lineEnd +
-				"CategoryName : " + CategoryName + lineEnd +
-				"CategoryAmountSummary : " + CategoryAmountSummary + lineEnd +
-				"ChargeItemSequence : " + ChargeItemSequence + lineEnd +
-				"ChargeItemName : " + ChargeItemName + lineEnd +
-				"Amount : " + Amount + lineEnd ;
+				"Record Flag : " + recordFlag + lineEnd +
+				"AccountNum : " + accountNum + lineEnd +
+				"ServiceCode : " + serviceCode + lineEnd +
+				"CategorySequence : " + categorySequence + lineEnd +
+				"CategoryName : " + categoryName + lineEnd +
+				"CategoryAmountSummary : " + categoryAmountSummary + lineEnd +
+				"ChargeItemSequence : " + chargeItemSequence + lineEnd +
+				"ChargeItemName : " + chargeItemName + lineEnd +
+				"Amount : " + amount + lineEnd ;
 	}
 	
 }

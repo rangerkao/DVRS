@@ -1,13 +1,15 @@
 package bean;
 
+import java.util.List;
+
 public class InvoiceDetail {
 	
-	private String RecordFlag; //資料類別(識別資料格式)
-	private String AccountNum; //帳戶編號(帳單鍵值)
-	private String ServiceCode; //電話號碼
-	private String OrderSequence; //顯示排列順序
-	private String ChargeItemName; //費用項名
-	private String Amount; //費用項金額
+	private String recordFlag; //資料類別(識別資料格式)
+	private String accountNum; //帳戶編號(帳單鍵值)
+	private String serviceCode; //電話號碼
+	private String orderSequence; //顯示排列順序
+	private String chargeItemName; //費用項名
+	private String amount; //費用項金額
 	
 	private String Data; //Bean 內容資料
 	
@@ -15,18 +17,18 @@ public class InvoiceDetail {
 		
 	}
 	
-	public InvoiceDetail(String[] data){
+	public InvoiceDetail(List<String> list){
 		int n=0;
-		if(data!=null) n=data.length;
+		if(list!=null) n=list.size();
 		if(n>=6)n=6;
 		
 		switch(n){
-			case 6:Amount = data[5];
-			case 5:ChargeItemName = data[4];
-			case 4:OrderSequence = data[3];
-			case 3:ServiceCode = data[2];
-			case 2:AccountNum = data[1];
-			case 1:RecordFlag = data[0];
+			case 6:amount = list.get(5);
+			case 5:chargeItemName = list.get(4);
+			case 4:orderSequence = list.get(3);
+			case 3:serviceCode = list.get(2);
+			case 2:accountNum = list.get(1);
+			case 1:recordFlag = list.get(0);
 			default:	
 		}	
 		
@@ -37,49 +39,49 @@ public class InvoiceDetail {
 			String serviceCode, String orderSequence, String chargeItemName,
 			String amount) {
 		super();
-		RecordFlag = recordFlag;
-		AccountNum = accountNum;
-		ServiceCode = serviceCode;
-		OrderSequence = orderSequence;
-		ChargeItemName = chargeItemName;
-		Amount = amount;
+		this.recordFlag = recordFlag;
+		this.accountNum = accountNum;
+		this.serviceCode = serviceCode;
+		this.orderSequence = orderSequence;
+		this.chargeItemName = chargeItemName;
+		this.amount = amount;
 	}
 	
 	public String getRecordFlag() {
-		return RecordFlag;
+		return recordFlag;
 	}
 	public void setRecordFlag(String recordFlag) {
-		RecordFlag = recordFlag;
+		this.recordFlag = recordFlag;
 	}
 	public String getAccountNum() {
-		return AccountNum;
+		return accountNum;
 	}
 	public void setAccountNum(String accountNum) {
-		AccountNum = accountNum;
+		this.accountNum = accountNum;
 	}
 	public String getServiceCode() {
-		return ServiceCode;
+		return serviceCode;
 	}
 	public void setServiceCode(String serviceCode) {
-		ServiceCode = serviceCode;
+		this.serviceCode = serviceCode;
 	}
 	public String getOrderSequence() {
-		return OrderSequence;
+		return orderSequence;
 	}
 	public void setOrderSequence(String orderSequence) {
-		OrderSequence = orderSequence;
+		this.orderSequence = orderSequence;
 	}
 	public String getChargeItemName() {
-		return ChargeItemName;
+		return chargeItemName;
 	}
 	public void setChargeItemName(String chargeItemName) {
-		ChargeItemName = chargeItemName;
+		this.chargeItemName = chargeItemName;
 	}
 	public String getAmount() {
-		return Amount;
+		return amount;
 	}
 	public void setAmount(String amount) {
-		Amount = amount;
+		amount = amount;
 	}
 
 	public String getData() {
@@ -89,12 +91,12 @@ public class InvoiceDetail {
 	public void setData() {
 		String lineEnd="<br>\n";
 		Data = 
-				"RecordFlag : " + RecordFlag + lineEnd +
-				"AccountNum : " + AccountNum + lineEnd +
-				"ServiceCode : " + ServiceCode + lineEnd +
-				"OrderSequence : " + OrderSequence + lineEnd +
-				"ChargeItemName : " + ChargeItemName + lineEnd +
-				"Amount : " + Amount + lineEnd ;
+				"RecordFlag : " + recordFlag + lineEnd +
+				"AccountNum : " + accountNum + lineEnd +
+				"ServiceCode : " + serviceCode + lineEnd +
+				"OrderSequence : " + orderSequence + lineEnd +
+				"ChargeItemName : " + chargeItemName + lineEnd +
+				"Amount : " + amount + lineEnd ;
 	}
 
 }

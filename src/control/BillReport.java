@@ -16,6 +16,7 @@ import java.util.Map;
 
 
 
+
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -60,18 +61,25 @@ public class BillReport{
 				data=str.split("\t");
 				String s= data[0];
 				
+				List<String> list=new ArrayList<String>();
+				for (int i = 0; i < data.length; i++) {
+					list.add(data[i]);
+				}
+
 				if("I".equalsIgnoreCase(s)){
 					result.setI(new Invoice(data));
 				}else if("J".equalsIgnoreCase(s)){
-					result.getJ().add(new InvoiceDetail(data));
+					list.add(3, null);//OrderSequence null
+					result.getJ().add(new InvoiceDetail(list));
 				}else if("C".equalsIgnoreCase(s)){
 					result.setC(new Charge(data));
 				}else if("D".equalsIgnoreCase(s)){
-					result.getD().add(new ChargeDetail(data));
+					list.add(3,null);//CategorySequence null
+					result.getD().add(new ChargeDetail(list));
 				}else if("U".equalsIgnoreCase(s)){
 					result.setU(new Usage(data));
 				}else if("R".equalsIgnoreCase(s)){
-					result.getR().add(new UsageDetail(data));
+					result.getR().add(new UsageDetail(list));
 				}
 
 			//System.out.println(str);
@@ -133,15 +141,19 @@ public class BillReport{
 			map.put("Usage Charges", new Float("76.72"));
 			
 			map.put("applied date", "May 15, 2014");
+			
+			map.put("D", data.getD());
+			map.put("R", data.getR());
 
 			float a=new java.lang.Float(0.00);
 			
 			List list=new ArrayList();
-			list=data.getD();
+			
 			
 			System.out.println("jasperFile convert to jrprintFile!");
-			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(list));
+			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JREmptyDataSource());
 			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,null,new JREmptyDataSource());
+			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(data.getD()));
 			System.out.println("convert to jrprintFile finished!");
 			System.out.println("");
 			
