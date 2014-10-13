@@ -22,6 +22,13 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.axis2.AxisFault;
 import org.apache.log4j.Logger;
 
+//190
+/*import com.infotech.smpp.SMPPServicesStub;
+import com.infotech.smpp.SMPPServicesStub.SendSMPP;
+import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
+
+//199
 import com.iglomo.SMPPServicesStub;
 import com.iglomo.SMPPServicesStub.SendSMPP;
 import com.iglomo.SMPPServicesStub.SendSMPPResponse;
