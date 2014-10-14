@@ -3,13 +3,12 @@ package program;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,7 +51,7 @@ public class RFPmain {
 	private  int dataThreshold=1000;
 	private  int lastfileID=0;
 	private final int exchangeRate=4; //港幣對台幣匯率，暫訂為4
-	private final int kByte=1/1024;//RATE單位KB，USAGE單位B
+	private final double kByte=1/1024D;//RATE單位KB，USAGE單位B
 	
 	private Date monthFirstDate=null;
 	private Date monthLastDate=null;
@@ -60,6 +59,8 @@ public class RFPmain {
 	Map<String,Map<String,Object>> currentMap = new HashMap<String,Map<String,Object>>();
 	Map<String,Map<String,Object>> currentMapU = new HashMap<String,Map<String,Object>>();
 	Map<String,Map<String,Object>> dataRate = new HashMap<String,Map<String,Object>>();
+	Map<String,String> msisdnMap = new HashMap<String,String>();
+	
 	List<String> updatList = new ArrayList<String>();
 	List<String> updatListU = new ArrayList<String>();
 	List<String> insertList = new ArrayList<String>();
@@ -87,12 +88,12 @@ public class RFPmain {
 			PropertyConfigurator.configure(props);
 			logger =Logger.getLogger(RFPmain.class);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			System.out.println("File Not Found : "+e.getMessage());
 			System.out.println("File Path : "+RFPmain.class.getResource("").toString().replace("file:/", "")+"/log4j.properties");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			System.out.println("IOException : "+e.getMessage());
 		}
@@ -108,7 +109,7 @@ public class RFPmain {
 			try {
 				conn.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 				logger.debug("close ResultSet Error : "+e.getMessage());
 			}
@@ -121,16 +122,19 @@ public class RFPmain {
 	 * 取特定日期那個月的，前面加上calendar.setTime(date);設定date日期
 	 */
 	private void setMonthDate(){
+		logger.info("setMonthDate...");
 		Calendar calendar = Calendar.getInstance();
 		//設定每個月第一天
 		calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DATE));
 		monthFirstDate=calendar.getTime();
-		calendar.clear();
+		//calendar.clear();
+		logger.debug("set monthFirstDate:"+monthFirstDate);
 		
 		//設定每個月最後一天
 		calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
 		monthLastDate= calendar.getTime();
 		calendar.clear();
+		logger.debug("set monthLastDate:"+monthLastDate);
 	}
 	
 	/**
@@ -154,7 +158,7 @@ public class RFPmain {
 			st.close();
 			rs.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
@@ -173,20 +177,19 @@ public class RFPmain {
 			Statement st = conn.createStatement();
 			logger.debug("Execute SQL : "+queryCurrent);
 			ResultSet rs = st.executeQuery(queryCurrent);
-			
-			Map<String,Object> map=new HashMap<String,Object>();
-			
 			logger.debug("Set current map...");
 			while(rs.next()){
+				Map<String,Object> map=new HashMap<String,Object>();
 				String imsi =rs.getString("IMSI");
 				//System.out.println("imsi : "+imsi);
 				
 				map.put("LAST_FILEID", rs.getInt("LAST_FILEID"));
 				map.put("SMS_TIMES", rs.getInt("SMS_TIMES"));
-				map.put("LAST_DATA_TIME", rs.getDate("LAST_DATA_TIME"));
-				
+				map.put("LAST_DATA_TIME", (rs.getDate("LAST_DATA_TIME")!=null?rs.getDate("LAST_DATA_TIME"):new Date()));
+				//logger.debug("map.get('LAST_DATA_TIME'):"+map.get("LAST_DATA_TIME"));
+	
 				//如果計費週期已過，歸零
-				if(monthFirstDate.after((Date) map.get("LAST_DATA_TIME")) && monthLastDate.before((Date) map.get("LAST_DATA_TIME"))){
+				if(monthFirstDate.before((Date) map.get("LAST_DATA_TIME")) && monthLastDate.after((Date) map.get("LAST_DATA_TIME"))){
 					map.put("CHARGE", rs.getDouble("CHARGE"));
 				}else{
 					map.put("CHARGE", 0D);
@@ -197,7 +200,6 @@ public class RFPmain {
 						updatListU.add(imsi);
 					}
 				}
-
 				//將資料分為有MCCMNC與無MCCMNC兩種
 				if("0".equals(rs.getString("IS_UNKNOWN"))){
 					currentMap.put(imsi,map);
@@ -207,8 +209,9 @@ public class RFPmain {
 			}
 			st.close();
 			rs.close();
+			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
@@ -227,10 +230,11 @@ public class RFPmain {
 			logger.debug("Execute SQL : "+queryDataRate);
 			ResultSet rs = st.executeQuery(queryDataRate);
 			
-			Map<String,Object> map=new HashMap<String,Object>();
+			
 			
 			logger.debug("Set dataRate map...");
 			while(rs.next()){
+				Map<String,Object> map=new HashMap<String,Object>();
 				String mccmnc =rs.getString("MCCMNC");
 				//System.out.println("mccmnc : "+mccmnc);
 				map.put("RATE", rs.getDouble("RATE"));
@@ -242,7 +246,7 @@ public class RFPmain {
 			st.close();
 			rs.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
@@ -274,7 +278,7 @@ public class RFPmain {
 			rs.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 		}
@@ -307,7 +311,7 @@ public class RFPmain {
 			rs.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 		}
@@ -325,7 +329,7 @@ public class RFPmain {
 				+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
 				+ "			FROM HUR_DATA_USAGE A WHERE A.FILEID>=? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID) "
 				+ "MINUS "
-				+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID "
+				+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
 				+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
 				+ "			FROM HUR_DATA_USAGE A WHERE A.FILEID>=? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID)";
 
@@ -360,8 +364,9 @@ public class RFPmain {
 					
 					if(mccmnc==null||"".equals(mccmnc)){
 						//mccmnc 為空，Charge作為Volume使用
-						logger.info("setting IMSI="+imsi+" MCCMNC is NULL ...");
+						//logger.info("setting IMSI="+imsi+" MCCMNC is NULL ...");
 						if(currentMapU.containsKey(imsi)){
+							
 							currentMapU.get(imsi).put("CHARGE", (Double)currentMapU.get(imsi).get("CHARGE")+volume);
 							currentMapU.get(imsi).put("LAST_FILEID",fileID);
 							currentMapU.get(imsi).put("LAST_DATA_TIME",callTime);
@@ -376,7 +381,7 @@ public class RFPmain {
 							if(!insertListU.contains(imsi)) insertListU.add(imsi);
 						}
 						//20141013 決定對於空白MCCMNC處理方式與有但無法對應相同
-						logger.info("setting IMSI="+imsi+" MCCMNC CANNOT COMPARE ...");
+						//logger.info("setting IMSI="+imsi+" MCCMNC CANNOT COMPARE ...");
 						Double charge=volume*kByte*maxRate;
 						
 						if(currentMap.containsKey(imsi)){
@@ -396,11 +401,12 @@ public class RFPmain {
 
 					}else if(!dataRate.containsKey(mccmnc)){
 						//mccmnc無法配對，使用最高的價位(maxRate)計算
-						logger.info("setting IMSI="+imsi+" MCCMNC CANNOT COMPARE ...");
+						//logger.info("setting IMSI="+imsi+" MCCMNC CANNOT COMPARE ...");
 						Double charge=volume*kByte*maxRate;
 						
 						if(currentMap.containsKey(imsi)){
 							currentMap.get(imsi).put("CHARGE", (Double)currentMap.get(imsi).get("CHARGE")+charge);
+							logger.info("get current charge:"+currentMap.get(imsi).get("CHARGE"));
 							currentMap.get(imsi).put("LAST_FILEID",fileID);
 							currentMap.get(imsi).put("LAST_DATA_TIME",callTime);
 							if(!updatList.contains(imsi))updatList.add(imsi);
@@ -415,7 +421,7 @@ public class RFPmain {
 						}
 					}else{
 						//mccmnc可以配對，
-						logger.info("setting IMSI="+imsi+"...");
+						//logger.info("setting IMSI="+imsi+"...");
 	
 						Double rate=(Double) dataRate.get(mccmnc).get("RATE");
 						Double chargeunit=(Double) dataRate.get(mccmnc).get("CHARGEUNIT");
@@ -427,6 +433,7 @@ public class RFPmain {
 						
 						if(currentMap.containsKey(imsi)){
 							currentMap.get(imsi).put("CHARGE", (Double)currentMap.get(imsi).get("CHARGE")+charge);
+							logger.info("get current charge:"+currentMap.get(imsi).get("CHARGE"));
 							currentMap.get(imsi).put("LAST_FILEID",fileID);
 							currentMap.get(imsi).put("LAST_DATA_TIME",callTime);
 							if(!updatList.contains(imsi))updatList.add(imsi);
@@ -445,12 +452,26 @@ public class RFPmain {
 				rs.close();
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 	}
+	/**
+	 * 取消connection的Auto commit
+	 */
+	private void cancelAutoCommit(){
+		logger.info("cancelAutoCommit...");
+		try {
+			logger.info("set AutoCommit false!");
+			conn.setAutoCommit(false);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error Occur at setAutoCommit !");
+			//send email
+		}
+	}
 	
-	
+	//TODO
 	private void process() {
 		// 程式開始時間
 		long startTime;
@@ -471,49 +492,47 @@ public class RFPmain {
 		
 		if (conn != null) {
 			logger.debug("connect success!");
-			
-			try {
-				logger.info("set AutoCommit false!");
-				conn.setAutoCommit(false);
-				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				logger.error("Error Occur at setAutoCommit !");
-				//send email
-			}
-			
-			
 			startTime = System.currentTimeMillis();
-
-			//開始批價 
+			
+			
+			//取消自動Commit
+			cancelAutoCommit();
+			//設定日期區間
+			setMonthDate();
+			//取得最後更新的FileID
 			subStartTime = System.currentTimeMillis();
 			setLastFileID();
 			logger.info("setLastFileID execute time :"+(System.currentTimeMillis()-subStartTime));
-			
+			//取出HUR_CURRENT
 			subStartTime = System.currentTimeMillis();
 			setCurrentMap();
 			logger.info("setCurrentMap execute time :"+(System.currentTimeMillis()-subStartTime));
-			
+			//取出HUR_DATARATE
 			subStartTime = System.currentTimeMillis();
 			setDataRate();
 			logger.info("setDataRate execute time :"+(System.currentTimeMillis()-subStartTime));
 			
+			//開始批價 
 			subStartTime = System.currentTimeMillis();
 			charge();
 			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
-			
 
-			for(String s : currentMap.keySet()){
+			/*for(String s : currentMap.keySet()){
 				System.out.println(
 						"IMSI:"+s+",\t\tCHARGE:"+currentMap.get(s).get("CHARGE")+",\t\tLAST_FILEID:"+currentMap.get(s).get("LAST_FILEID"));
 			}
 			for(String s : currentMapU.keySet()){
 				System.out.println(
 						"IMSI:"+s+",\t\tVOLUME:"+currentMapU.get(s).get("CHARGE")+",\t\tLAST_FILEID:"+currentMapU.get(s).get("LAST_FILEID"));
-			}
+			}*/
+			//取出msisdn資訊
+			setMsisdnMap();
+			//發送警示簡訊
+			sendAlertSMS();
 			
-			//tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
+			//回寫批價結果
+			insert();
+			update();
 
 			// 程式執行完成
 			endTime = System.currentTimeMillis();
@@ -552,10 +571,11 @@ public class RFPmain {
 			
 			for(String imsi : updatList){
 				if(count<=dataThreshold){
+					Date date=(Date) currentMap.get(imsi).get("LAST_DATA_TIME") ;
 					pst.setDouble(1,(Double) currentMap.get(imsi).get("CHARGE"));
-					pst.setString(2,(String) currentMap.get(imsi).get("LAST_FILEID"));
+					pst.setInt(2, (Integer) currentMap.get(imsi).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMap.get(imsi).get("SMS_TIMES"));
-					pst.setDate(4, (java.sql.Date) currentMap.get(imsi).get("LAST_DATA_TIME"));
+					pst.setDate(4, new java.sql.Date(date.getTime()));
 					pst.setString(5, imsi);
 					pst.setInt(6, 0);//具有mccmnc
 					pst.addBatch();
@@ -574,7 +594,7 @@ public class RFPmain {
 			conn.commit();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Error at updateCurrentMap : "+e.getMessage());
 			//send mail
@@ -591,7 +611,7 @@ public class RFPmain {
 			for(String imsi : updatListU){
 				if(count<=dataThreshold){
 					pst.setDouble(1,(Double) currentMapU.get(imsi).get("CHARGE"));
-					pst.setString(2,(String) currentMapU.get(imsi).get("LAST_FILEID"));
+					pst.setInt(2, (Integer) currentMapU.get(imsi).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMapU.get(imsi).get("SMS_TIMES"));
 					pst.setDate(4, (java.sql.Date) currentMapU.get(imsi).get("LAST_DATA_TIME"));
 					pst.setString(5, imsi);
@@ -612,7 +632,7 @@ public class RFPmain {
 			conn.commit();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Error at updateCurrentMapU : "+e.getMessage());
 			//send mail
@@ -645,7 +665,7 @@ public class RFPmain {
 				if(count<=dataThreshold){
 					pst.setString(1, imsi);		
 					pst.setDouble(2,(Double) currentMap.get(imsi).get("CHARGE"));
-					pst.setString(3,(String) currentMap.get(imsi).get("LAST_FILEID"));
+					pst.setInt(3,(Integer) currentMap.get(imsi).get("LAST_FILEID"));
 					pst.setInt(4, (Integer) currentMap.get(imsi).get("SMS_TIMES"));
 					pst.setDate(5, (java.sql.Date) currentMap.get(imsi).get("LAST_DATA_TIME"));
 					pst.setInt(6, 0);//具有mccmnc
@@ -665,7 +685,7 @@ public class RFPmain {
 			conn.commit();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Error at insertCurrentMap : "+e.getMessage());
 			//send mail
@@ -679,11 +699,11 @@ public class RFPmain {
 		try {
 			PreparedStatement pst = conn.prepareStatement(sql);
 			
-			for(String imsi : insertList){
+			for(String imsi : insertListU){
 				if(count<=dataThreshold){
 					pst.setString(1, imsi);		
 					pst.setDouble(2,(Double) currentMapU.get(imsi).get("CHARGE"));
-					pst.setString(3,(String) currentMapU.get(imsi).get("LAST_FILEID"));
+					pst.setInt(3, (Integer) currentMapU.get(imsi).get("LAST_FILEID"));
 					pst.setInt(4, (Integer) currentMapU.get(imsi).get("SMS_TIMES"));
 					pst.setDate(5, (java.sql.Date) currentMapU.get(imsi).get("LAST_DATA_TIME"));
 					pst.setInt(6, 1);//具有mccmnc
@@ -704,14 +724,12 @@ public class RFPmain {
 			pst.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			logger.error("Error at insertCurrentMapU : "+e.getMessage());
 			//send mail
 		}
 	}
-	
-	
 
 	public static void main(String[] args) {
 
@@ -737,7 +755,8 @@ public class RFPmain {
 		List<String> msg=new ArrayList<String>();
 		List<String> suspend=new ArrayList<String>();
 		
-		
+		int smsCount=0;
+		String phone=null;
 		try {
 			Statement st =conn.createStatement();
 			logger.debug("Execute SQL:"+querySMSSetting);
@@ -748,6 +767,7 @@ public class RFPmain {
 				bracket.add(rs.getDouble("BRACKET"));
 				msg.add(processMag(rs.getString("MEG"),rs.getDouble("BRACKET")));
 				suspend.add(rs.getString("SUSPEND"));
+				logger.info("times:"+times.get(times.size()-1)+",bracket:"+bracket.get(bracket.size()-1)+",msg:"+msg.get(msg.size()-1)+",suspend:"+suspend.get(suspend.size()-1));
 			}
 			
 			if(times.size()==0){
@@ -760,44 +780,53 @@ public class RFPmain {
 			
 			for(String imsi: currentMap.keySet()){
 				
-				String phone="";
+				phone=msisdnMap.get(imsi);
+				if(phone==null ||"".equals(phone)){
+					//send mail
+					continue;
+				}
+				
+				//logger.info("For imsi="+imsi+" get phone number="+phone);
 				String result="";
 				
 				Double charge=(Double) currentMap.get(imsi).get("CHARGE");
 				int smsTimes=(Integer) currentMap.get(imsi).get("SMS_TIMES");
 				
-				for(int i=0;i<=times.size();i++){
+				for(int i=0;i<times.size();i++){
 					if((smsTimes==times.get(i)-1)&&(charge>=bracket.get(i))){
 						smsTimes++;
-						
 						//寄送簡訊
-						logger.info("send "+smsTimes+"th message:"+msg.get(i));
-						result=tool.callWSDLServer(setParam(msg.get(i),phone));
+						logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
+						//result=tool.callWSDLServer(setParam(msg.get(i),phone));
 						logger.debug("send message result : "+result);						
 						currentMap.get(imsi).put("SMS_TIMES", smsTimes);
-						
+						smsCount++;
 						if("1".equals(suspend.get(i))){
-							//TODO
-							//中止GPRS功能
+							suspend(imsi,phone);
 						}
-						
-						
-						
+
 						//寫入資料庫
-						pst.setInt(1, Integer.valueOf(phone));
+						pst.setString(1, phone);
 						pst.setString(2, msg.get(i));
-						pst.setDate(3,(java.sql.Date) new Date());
+						pst.setDate(3,new java.sql.Date(new Date().getTime()) );
 						pst.setString(4, result);
 						pst.addBatch();
+						
+						//HUR_Current 需更新
+						//如果是新資料，insertList會已有資料，沒有表示為舊資料，之後確認是否已註記update
+						if(!insertList.contains(imsi)&&!updatList.contains(imsi))updatList.add(imsi);
 						break;
 					}
-				}
-				logger.debug("Log to table...executeBatch");
-				pst.executeBatch();
+				}	
 			}
-
+			logger.debug("Total send "+smsCount+" ...");
+			logger.debug("Log to table...executeBatch");
+			pst.executeBatch();
+			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("Error at sendAlertSMS : "+e.getMessage());
+		}catch(Exception e){
 			e.printStackTrace();
 			logger.error("Error at sendAlertSMS : "+e.getMessage());
 		}
@@ -838,9 +867,88 @@ public class RFPmain {
 		
 		return sb.toString();
 	}
-
-	private void suspend(){
-		
+	
+	private String getMsisdn(String imsi){
+		logger.info("getMsisdn");
+		String queryimsi=
+				"SELECT A.SERVICECODE "
+				+ "FROM SERVICE A,IMSI B "
+				+ "WHERE A.SERVICEID=B.SERVICEID AND B.IMSI=?";
+		String msisdn=null;
+		try {
+			PreparedStatement pst = conn.prepareStatement(queryimsi);
+			pst.setString(1, imsi);
+			ResultSet rs=pst.executeQuery();
+			
+			while(rs.next()){
+				msisdn=rs.getString("SERVICECODE");
+			}
+			rs.close();
+			pst.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error at getMsisdn : "+e.getMessage());
+			//send mail
+		}
+		return msisdn;
+	}
+	/**
+	 * 取出可能用到的msisdn
+	 * 建立msisdnMap
+	 * Key:imsi,Value:msisdn
+	 */
+	private void setMsisdnMap(){
+		logger.info("setMsisdnMap...");
+		String queryimsi=
+				"SELECT B.IMSI,A.SERVICECODE "
+				+ "FROM SERVICE A,IMSI B "
+				+ "WHERE A.SERVICEID=B.SERVICEID AND B.IMSI IN ?";
+		String a="(";
+		try {
+			for(String imsi: currentMap.keySet()){
+				a+=imsi+",";
+			}			
+			
+			a+=")";
+			a=a.replace(",)", ")");
+			//logger.info("a:"+a);
+			Statement st = conn.createStatement();
+			
+			ResultSet rs=st.executeQuery(queryimsi.replace("?", a));
+			
+			while(rs.next()){
+				msisdnMap.put(rs.getString("IMSI"), rs.getString("SERVICECODE"));
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error at getMsisdn : "+e.getMessage());
+			//send mail
+		}
+	}
+	
+	private void suspend(String imsi,String msisdn){
+		suspendGPRS sus=new suspendGPRS(conn,logger);
+		try {
+			sus.ReqStatus_17_Act(imsi, msisdn);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error at suspend : "+e.getMessage());
+			//send mail
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.error("Error at suspend : "+e.getMessage());
+			//send mail
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			logger.error("Error at suspend : "+e.getMessage());
+			//send mail
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Error at suspend : "+e.getMessage());
+			//send mail
+		}
 	}
 	
 	

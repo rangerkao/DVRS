@@ -1,7 +1,6 @@
 package program;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,11 +20,11 @@ public class suspendGPRS {
 		logger=log;
 	}
 	
-	// 缺少IMSI、MSISDN
+	// TWN_IMSI、TWN_MSISDN先代空值，sMNOSubCode不重要，sCount忽略
 	String cS2TMSISDN = "",cS2TIMSI = "",cReqStatus = "17",cGPRSStatus = "0",sMNOName = "TWNLD";
 	String sWSFStatus = "V",sWSFDStatus = "V",cServiceOrderNBR = "", sSql = "",cTWNLDIMSI="",cTWNLDMSISDN="";
 	String sM_CTYPE = "",c910SEQ = "", cFileName = "",cFileID = "", cWorkOrderNBR = "",Sdate = "", cRCode = "";
-	String sDATE = "",sCount = "", sCMHKLOGID = "",sMNOSubCode = "000",cTicketNumber = "",Process_Code = "";
+	String sDATE = "",sCount = "", sCMHKLOGID = "",sMNOSubCode = "",cTicketNumber = "",Process_Code = "";
 	String sTypeCode = "",sDataType = "",sValue = "",sMap = "",cGPRS = "",desc = "",sSubCode = "", sStepNo = "";
 	String sFMTH = "",sFMTHa = "",sSFMTH = "",sSFMTHa = "", sFORWARD_TO_HOME_NO = "",sS_FORWARD_TO_HOME_NO = "";
 	
@@ -34,20 +33,14 @@ public class suspendGPRS {
 	DateFormat dateFormat2 = new SimpleDateFormat("yyyyMMddhhmiss");
 	Vector<String> vln = new Vector<String>();
 
-	public void ReqStatus_17_Act(PrintWriter out17) throws SQLException,
+	public void ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
 		logger.debug("ReqStatus_17_Act");
 		
-		//TODO 設定IMSI
-
-		Get_GurrentS2TMSISDN();
-		if("".equals(cS2TMSISDN)){
-			logger.error("Cannot find S2TMSISDN");
-			return;
-		}
+		cS2TIMSI=imsi;
+		cS2TMSISDN=msisdn;
 
 		Check_Type_Code_87_MAP_VALUE(cS2TMSISDN);
-
 		Process_SyncFile(sWSFStatus);
 		Process_SyncFileDtl(sWSFDStatus);
 		Process_ServiceOrder();
@@ -59,29 +52,14 @@ public class suspendGPRS {
 		conn.createStatement().executeUpdate(sSql);
 		conn.commit();
 		logger.debug("update SERVICE_ORDER:" + sSql);
-		Query_PreProcessResult(out17, "000");
+		Query_PreProcessResult("000");
 		Query_GPRSStatus();
 		//待實做Log紀錄停止GPRS 回傳結果 desc
 	}
 	
-	
-	public void Get_GurrentS2TMSISDN() throws SQLException, IOException {
-		Temprs = null;
-		sSql = "SELECT a.servicecode as ab FROM service a,IMSI b WHERE a.serviceid = "
-				+ "(SELECT MAX(Serviceid) FROM imsi WHERE homeimsi = '"
-				+ cS2TIMSI + "') AND " + "a.serviceid=b.serviceid ";
-		logger.debug("Get_GurrentS2TMSISDN:" + sSql);
-		Temprs = conn.createStatement().executeQuery(sSql);
-
-		while (Temprs.next()) {
-			cS2TMSISDN = Temprs.getString("ab");
-		}
-	}
-
-	
-
 	public void Check_Type_Code_87_MAP_VALUE(String sServiceCode)
 			throws SQLException {
+		logger.info("Check_Type_Code_87_MAP_VALUE...");
 		Temprs = null;
 		sSql = "select CUSTOMERTYPE from service where servicecode='"
 				+ sServiceCode + "'";
@@ -98,7 +76,7 @@ public class suspendGPRS {
 
 	public void Process_SyncFile(String sSFStatus) throws SQLException,
 			Exception {
-
+		logger.info("Process_SyncFile...");
 		// 格式為YYYYMMDDXXX
 		sDATE = dateFormat.format(new Date());
 		c910SEQ = sDATE + sCount;
@@ -124,6 +102,7 @@ public class suspendGPRS {
 
 	public void Process_SyncFileDtl(String sSFDStatus) throws SQLException,
 			IOException {
+		logger.info("Process_SyncFileDtl...");
 		int iv, ix = 0;
 		String sVl = "", sC, sH;
 		cWorkOrderNBR = "";
@@ -170,6 +149,7 @@ public class suspendGPRS {
 	}
 
 	public void Process_ServiceOrder() throws SQLException, IOException {
+		logger.info("Process_ServiceOrder...");
 		sSql = "INSERT INTO S2T_TB_SERVICE_ORDER (SERVICE_ORDER_NBR, "
 				+ "WORK_TYPE, S2T_MSISDN, SOURCE_TYPE, SOURCE_ID, STATUS, "
 				+ "CREATE_DATE) " + "VALUES ('" + cServiceOrderNBR + "','"
@@ -197,6 +177,7 @@ public class suspendGPRS {
 	public void Process_WorkSubcode_05_17(String S2TImsiB, String TWNImsiB,
 			String sReqStatus, String sTWNLDMSISDN) throws SQLException,
 			IOException {
+		logger.info("Process_WorkSubcode_05_17...");
 		Temprs = null;
 		String cMd = "", Ssvrid = "";
 		sSql = "select nvl(serviceid,'0') as ab from imsi " + " where imsi = '"
@@ -302,6 +283,7 @@ public class suspendGPRS {
 	}
 
 	public void Process_ServiceOrderItem() throws SQLException, IOException {
+		logger.info("Process_ServiceOrderItem...");
 		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM (SERVICE_ORDER_NBR,"
 				+ "STEP_NO, SUB_CODE, IDENTIFIER, STATUS, SEND_DATE) "
 				+ "Values (" + cServiceOrderNBR + "," + sStepNo + ",'"
@@ -313,6 +295,7 @@ public class suspendGPRS {
 	}
 
 	public void Process_ServiceOrderItemDtl() throws SQLException, IOException {
+		logger.info("Process_ServiceOrderItemDtl...");
 		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM_DTL "
 				+ "(SERVICE_ORDER_NBR, STEP_NO, TYPE_CODE, DATA_TYPE, VALUE) "
 				+ "VALUES (" + cServiceOrderNBR + "," + sStepNo + ","
@@ -323,6 +306,7 @@ public class suspendGPRS {
 	}
 
 	public void Process_DefValue() throws SQLException, IOException {
+		logger.info("Process_DefValue...");
 		ResultSet TeRt = null;
 		sSql = "Select TYPE_CODE, DATA_TYPE, DEF_VALUE "
 				+ "From S2T_TB_SUBCODE_TYPECODE " + "Where subcode='"
@@ -340,6 +324,7 @@ public class suspendGPRS {
 
 
 	public void Process_MapValue() throws SQLException, IOException {
+		logger.info("Process_MapValue...");
 		ResultSet TeRtA = null;
 		sSql = "Select TYPE_CODE, DATA_TYPE, MAP_VALUE "
 				+ "From S2T_TB_SUBCODE_TYPECODE " + "Where subcode='"
@@ -416,8 +401,9 @@ public class suspendGPRS {
 	}
 
 
-	public void Query_PreProcessResult(PrintWriter outA, String rcode)
+	public void Query_PreProcessResult(String rcode)
 			throws SQLException, InterruptedException, Exception {
+		logger.info("Query_PreProcessResult...");
 		cRCode = "";
 
 		// rcode = "000"; //****************************************
@@ -451,6 +437,7 @@ public class suspendGPRS {
 	}
 
 	public String Load_ResultDescription(String sDecs) throws SQLException {
+		logger.info("Load_ResultDescription...");
 		sDecs = "000";
 
 		String sD = "";
@@ -469,6 +456,7 @@ public class suspendGPRS {
 	}
 
 	public void Query_GPRSStatus() throws IOException, SQLException {
+		logger.info("Query_GPRSStatus...");
 		String sG = "";
 		cGPRS = "";
 		Temprs = null;
