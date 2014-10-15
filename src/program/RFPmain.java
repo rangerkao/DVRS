@@ -17,8 +17,19 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.impl.StdSchedulerFactory;
 
-public class RFPmain {
+public class RFPmain implements Job{
 
 	
 	//DB config
@@ -32,7 +43,9 @@ public class RFPmain {
 	private  final String URL = "jdbc:oracle:thin:@"+ Host + ":"+Port+ServiceName; */
 	
 	Connection conn = null;
-	 
+	
+	static int runInterval=1*60;//單位秒
+	
 	private  Logger logger ;
 	Properties props=new Properties();
 
@@ -505,7 +518,7 @@ public class RFPmain {
 		// iniLog4j();
 		loadProperties();
 
-		logger.info("RFP Program Start!");
+		logger.info("RFP Program Start! "+new Date());
 		// 進行DB連線
 		//conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
@@ -794,9 +807,56 @@ public class RFPmain {
 	}
 
 	public static void main(String[] args) {
+		
+		try {
+			// Grab the Scheduler instance from the Factory
+			Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 
-		RFPmain rf = new RFPmain();
-		rf.process();
+			// define the job and tie it to our HelloJob class ->
+			// JobBuilder.newJob()
+			JobDetail job = JobBuilder.newJob(RFPmain.class)
+					.withIdentity("job1", "group1").build();
+
+			// Trigger the job to run now, and then repeat every 40 seconds ->
+			// TriggerBuilder.newTrigger()
+			Trigger trigger = TriggerBuilder
+					.newTrigger()
+					.withIdentity("trigger1", "group1")
+					.startNow()
+					.withSchedule(
+							SimpleScheduleBuilder.simpleSchedule()
+									.withIntervalInSeconds(runInterval)
+									.repeatForever()).build();
+
+			// Tell quartz to schedule the job using our trigger
+			scheduler.scheduleJob(job, trigger);
+			
+			// and start it off
+			scheduler.start();
+			
+			// 使程式暫停，Job持續運作
+			//pause();// 以sleep的方式暫停
+			//keyin();// 以等待使用者keyin的方式暫停
+
+			//scheduler.shutdown();
+			
+			
+			
+			
+			/*JobDetail job = new JobDetail("job1", "group1", SayHelloJob.class);
+			// 由於quartz support多group到多job. 這裡我們只有一個job. 我們自己我隨意把它命名.
+			// 但相同group裡如果出現相同的job名,會被overrride.
+			CronTrigger cTrigger = new CronTrigger("trigg1", "group1", "job1",
+			"group1", "1/10 * * * * ?");
+			// 這裡指定trigger執行那個group的job.
+			// "1/10 * * * * ?" 與 在unix like裡的crontab job的設定類似. 這裡表示每天裡的每10秒執行一次
+			// Seconds Minutes Hours Day-of-Month Month Day-of-Week Year(optional field)
+*/			
+			
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	/**
 	 * 依照額度需求發送警示簡訊
@@ -1062,6 +1122,11 @@ public class RFPmain {
 			//sendMail("At sendMail occur IOException error!");
 			//errorMsg=e.getMessage();
 		}*/
+	}
+
+	@Override
+	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		process();
 	}
 	
 	
