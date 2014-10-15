@@ -569,7 +569,7 @@ public class RFPmain implements Job{
 			charge();
 			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
 
-			showCurrent();
+			//showCurrent();
 			
 			
 			//取出msisdn資訊
