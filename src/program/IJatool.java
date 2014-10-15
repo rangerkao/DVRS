@@ -1,8 +1,17 @@
 package program;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+import org.apache.axis2.AxisFault;
 import org.apache.log4j.Logger;
 
 public interface IJatool {
@@ -15,9 +24,12 @@ public interface IJatool {
 	 * @param receiver
 	 * @param subject
 	 * @param content
+	 * @throws MessagingException 
+	 * @throws AddressException 
+	 * @throws IOException 
 	 * @throws Exception
 	 */
-	void sendMail(Logger logger,String sender,String receiver,String subject,String content);
+	void sendMail(Logger logger,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException;
 	
 	/**
 	 * 發送郵件
@@ -28,9 +40,12 @@ public interface IJatool {
 	 * @param receiver 多接收者允許以","隔開
 	 * @param subject
 	 * @param content
+	 * @throws MessagingException 
+	 * @throws AddressException 
+	 * @throws IOException 
 	 * @throws Exception
 	 */
-	void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content);
+	void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException;
 	
 	/**
 	 * DB連線
@@ -41,8 +56,10 @@ public interface IJatool {
 	 * @param UserName
 	 * @param PassWord
 	 * @return
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException 
 	 */
-	Connection connDB(Logger logger,String DriverClass,String URL,String UserName,String PassWord);
+	Connection connDB(Logger logger,String DriverClass,String URL,String UserName,String PassWord) throws ClassNotFoundException, SQLException;
 	
 	
 	/**
@@ -52,6 +69,54 @@ public interface IJatool {
 	 * 
 	 * @param param
 	 * @return
+	 * @throws AxisFault 
+	 * @throws RemoteException 
 	 */
-	String callWSDLServer(String param);
+	String callWSDLServer(String param) throws AxisFault, RemoteException;
+	
+	/**
+	 * 取得參數時間當月的第一天
+	 * @param date
+	 * @return
+	 */
+	Date getMonthFirstDate(Date date);
+	
+	/**
+	 * 取得參數時間當月的最後一天
+	 * @param date
+	 * @return
+	 */
+	Date getMonthLastDate(Date date);
+	
+	/**
+	 * 將util Date 轉換至sql Date
+	 * @param date
+	 * @return
+	 */
+	java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date);
+	
+	/**
+	 * 將sql Date 轉換至util Date
+	 * @param date
+	 * @return
+	 */
+	java.util.Date convertJaveSqlDate_To_JavaUtilDate(java.sql.Date date);
+	
+	/**
+	 * 將日期轉換成字串
+	 * @param date
+	 * @param form
+	 * @return
+	 */
+	String DateFormat();
+	String DateFormat(Date date,String form);
+	
+	/**
+	 * 將字串轉換成日期
+	 * @param dateString
+	 * @param form
+	 * @return
+	 * @throws ParseException 
+	 */
+	Date DateFormat(String dateString,String form) throws ParseException;
 }

@@ -3,14 +3,12 @@ package program;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,14 +22,14 @@ public class RFPmain {
 
 	
 	//DB config
-	private  final String DriverClass="oracle.jdbc.driver.OracleDriver";
+/*	private  final String DriverClass="oracle.jdbc.driver.OracleDriver";
 	private  final String Host="10.42.1.101";
 	private  final String Port="1521";
 	private  final String ServiceName=":S2TBSDEV";
 	private  final String UserName="foyadev";
 	private  final String PassWord="foyadev";
 
-	private  final String URL = "jdbc:oracle:thin:@"+ Host + ":"+Port+ServiceName; 
+	private  final String URL = "jdbc:oracle:thin:@"+ Host + ":"+Port+ServiceName; */
 	
 	Connection conn = null;
 	 
@@ -41,11 +39,15 @@ public class RFPmain {
 	
 	//mail conf
 	String mailSender="";
-	String mailReceiver="k1988242001@gmail.com";
+	String mailReceiver="";
 	String mailSubject="mail test";
 	String mailContent="mail content text";
 	
 	IJatool tool=new Jatool();
+	
+	
+	private String sql="";
+	private String errorMsg="";
 	
 	//Hur Data conf
 	private  int dataThreshold=1000;
@@ -83,19 +85,24 @@ public class RFPmain {
 	 */
 	private  void loadProperties(){
 		System.out.println("initial Log4g, property !");
+		String path=RFPmain.class.getResource("").toString().replace("file:/", "")+"/log4j.properties";
 		try {
-			props.load(new   FileInputStream(RFPmain.class.getResource("").toString().replace("file:/", "")+"/log4j.properties"));
+			props.load(new   FileInputStream(path));
 			PropertyConfigurator.configure(props);
 			logger =Logger.getLogger(RFPmain.class);
 		} catch (FileNotFoundException e) {
-			
 			e.printStackTrace();
 			System.out.println("File Not Found : "+e.getMessage());
-			System.out.println("File Path : "+RFPmain.class.getResource("").toString().replace("file:/", "")+"/log4j.properties");
+			System.out.println("File Path : "+path);
+			//send mail
+			sendMail("At loadProperties occur file not found error \n <br>"
+					+ "file path="+path);
 		} catch (IOException e) {
-			
 			e.printStackTrace();
 			System.out.println("IOException : "+e.getMessage());
+			//send mail
+			sendMail("At loadProperties occur IOException error !\n <br>"
+					+ "file path="+path);
 		}
 		
 	}
@@ -109,9 +116,10 @@ public class RFPmain {
 			try {
 				conn.close();
 			} catch (SQLException e) {
-				
 				e.printStackTrace();
 				logger.debug("close ResultSet Error : "+e.getMessage());
+				//send mail
+				sendMail("At closeConnect occur SQLException error!");
 			}
 
 		}
@@ -123,17 +131,13 @@ public class RFPmain {
 	 */
 	private void setMonthDate(){
 		logger.info("setMonthDate...");
-		Calendar calendar = Calendar.getInstance();
+
 		//設定每個月第一天
-		calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DATE));
-		monthFirstDate=calendar.getTime();
-		//calendar.clear();
+		monthFirstDate=tool.getMonthFirstDate(new Date());
 		logger.debug("set monthFirstDate:"+monthFirstDate);
 		
 		//設定每個月最後一天
-		calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
-		monthLastDate= calendar.getTime();
-		calendar.clear();
+		monthLastDate= tool.getMonthLastDate(new Date());
 		logger.debug("set monthLastDate:"+monthLastDate);
 	}
 	
@@ -142,12 +146,12 @@ public class RFPmain {
 	 */
 	private void setLastFileID(){
 		logger.info("setLastFileID...");
-		String searchLastID="SELECT MAX(A.LAST_FILEID) id FROM HUR_CURRENT A";
+		sql="SELECT MAX(A.LAST_FILEID) id FROM HUR_CURRENT A";
 		
 		try {
 			Statement st = conn.createStatement();
-			logger.debug("Execute SQL : "+searchLastID);
-			ResultSet rs = st.executeQuery(searchLastID);
+			logger.debug("Execute SQL : "+sql);
+			ResultSet rs = st.executeQuery(sql);
 			
 			while(rs.next()){
 				lastfileID=rs.getInt("id");
@@ -162,6 +166,8 @@ public class RFPmain {
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
+			sendMail("At setLastFileID occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -171,12 +177,12 @@ public class RFPmain {
 	 */
 	private void setCurrentMap(){
 		logger.info("setCurrentMap...");
-		String queryCurrent="SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.IS_UNKNOWN,A.LAST_DATA_TIME FROM HUR_CURRENT A";
+		sql="SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.IS_UNKNOWN,A.LAST_DATA_TIME FROM HUR_CURRENT A";
 		
 		try {
 			Statement st = conn.createStatement();
-			logger.debug("Execute SQL : "+queryCurrent);
-			ResultSet rs = st.executeQuery(queryCurrent);
+			logger.debug("Execute SQL : "+sql);
+			ResultSet rs = st.executeQuery(sql);
 			logger.debug("Set current map...");
 			while(rs.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
@@ -215,6 +221,8 @@ public class RFPmain {
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
+			sendMail("At setCurrentMap occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	/**
@@ -223,12 +231,12 @@ public class RFPmain {
 	 */
 	private void setDataRate(){
 		logger.info("setDataRate...");
-		String queryDataRate="SELECT A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY FROM HUR_DATA_RATE A";
+		sql="SELECT A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY FROM HUR_DATA_RATE A";
 		
 		try {
 			Statement st = conn.createStatement();
-			logger.debug("Execute SQL : "+queryDataRate);
-			ResultSet rs = st.executeQuery(queryDataRate);
+			logger.debug("Execute SQL : "+sql);
+			ResultSet rs = st.executeQuery(sql);
 			
 			
 			
@@ -250,6 +258,8 @@ public class RFPmain {
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
 			//sendMail
+			sendMail("At setDataRate occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -259,16 +269,16 @@ public class RFPmain {
 	 */
 	private int dataCount(){
 		logger.info("dataCount...");
-		String queryCount="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? ";
+		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? ";
 		int count=0;
 		//找出總量
 		PreparedStatement pst;
 		try {
-			pst = conn.prepareStatement(queryCount);
+			pst = conn.prepareStatement(sql);
 			pst.setInt(1, lastfileID+1);
 			
 			ResultSet rs = pst.executeQuery();
-			logger.debug("Execute SQL : "+queryCount);
+			logger.debug("Execute SQL : "+sql);
 			
 			while(rs.next()){
 				count=rs.getInt("count");
@@ -281,6 +291,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
+			//sendMail
+			sendMail("At dataCount occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 		return count;
 	}
@@ -293,15 +306,15 @@ public class RFPmain {
 		logger.info("maxRate...");
 		double max=0;
 		
-		String queryMaxRate=
+		sql=
 				"SELECT MAX(CASE WHEN A.CURRENCY = 'HKD' THEN A.RATE/A.CHARGEUNIT*"+exchangeRate+" ELSE  A.RATE/A.CHARGEUNIT END)  max "
 				+ "FROM HUR_DATA_RATE A ";
 		//找出最貴價格
 		try {
 			Statement st = conn.createStatement();
 			
-			ResultSet rs = st.executeQuery(queryMaxRate);
-			logger.debug("Execute SQL : "+queryMaxRate);
+			ResultSet rs = st.executeQuery(sql);
+			logger.debug("Execute SQL : "+sql);
 			
 			while(rs.next()){
 				max=rs.getDouble("max");
@@ -314,6 +327,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
+			//sendMail
+			sendMail("At maxRate occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 		
 		return max;
@@ -324,7 +340,7 @@ public class RFPmain {
 	 */
 	private void charge(){
 		logger.info("charge...");
-		String queryUsage=
+		sql=
 				"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
 				+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
 				+ "			FROM HUR_DATA_USAGE A WHERE A.FILEID>=? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID) "
@@ -341,10 +357,10 @@ public class RFPmain {
 			count=dataCount();
 			maxRate=maxRate();
 			//批次Query 避免ram空間不足
-			logger.debug("Execute SQL : "+queryUsage);
+			logger.debug("Execute SQL : "+sql);
 			
 			for(int i=1;(i-1)*dataThreshold+1<count ;i++){
-				PreparedStatement pst = conn.prepareStatement(queryUsage);
+				PreparedStatement pst = conn.prepareStatement(sql);
 				pst.setInt(1, lastfileID+1);
 				pst.setInt(2, i*dataThreshold);
 				pst.setInt(3, lastfileID+1);
@@ -453,6 +469,10 @@ public class RFPmain {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			logger.error("Got a SQLException : "+e.getMessage());
+			//sendMail
+			sendMail("At charge occur SQLException error!");
+			errorMsg=e.getMessage();
 		}	
 	}
 	/**
@@ -467,7 +487,9 @@ public class RFPmain {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Error Occur at setAutoCommit !");
-			//send email
+			//sendMail
+			sendMail("At cancelAutoCommit occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -484,17 +506,34 @@ public class RFPmain {
 		loadProperties();
 
 		logger.info("RFP Program Start!");
-		
 		// 進行DB連線
-		conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
-		
+		//conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
+		try {
+			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), 
+					props.getProperty("Oracle.URL")
+					.replace("{{Host}}", props.getProperty("Oracle.Host"))
+					.replace("{{Port}}", props.getProperty("Oracle.Port"))
+					.replace("{{ServiceName}}", props.getProperty("Oracle.ServiceName")), 
+					props.getProperty("Oracle.UserName"), 
+					props.getProperty("Oracle.PassWord"));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			logger.error("Error at connDB : "+e.getMessage());
+			//sendMail
+			sendMail("At connDB occur ClassNotFoundException error!");
+			errorMsg=e.getMessage();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error at connDB : "+e.getMessage());
+			//sendMail
+			sendMail("At connDB occur SQLException error!");
+			errorMsg=e.getMessage();
+		}
 		
 		
 		if (conn != null) {
 			logger.debug("connect success!");
 			startTime = System.currentTimeMillis();
-			
-			
 			//取消自動Commit
 			cancelAutoCommit();
 			//設定日期區間
@@ -517,22 +556,23 @@ public class RFPmain {
 			charge();
 			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
 
-			/*for(String s : currentMap.keySet()){
-				System.out.println(
-						"IMSI:"+s+",\t\tCHARGE:"+currentMap.get(s).get("CHARGE")+",\t\tLAST_FILEID:"+currentMap.get(s).get("LAST_FILEID"));
-			}
-			for(String s : currentMapU.keySet()){
-				System.out.println(
-						"IMSI:"+s+",\t\tVOLUME:"+currentMapU.get(s).get("CHARGE")+",\t\tLAST_FILEID:"+currentMapU.get(s).get("LAST_FILEID"));
-			}*/
+			showCurrent();
+			
+			
 			//取出msisdn資訊
+			subStartTime = System.currentTimeMillis();
 			setMsisdnMap();
+			logger.info("setMsisdnMap execute time :"+(System.currentTimeMillis()-subStartTime));
 			//發送警示簡訊
+			subStartTime = System.currentTimeMillis();
 			sendAlertSMS();
+			logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
 			
 			//回寫批價結果
+			subStartTime = System.currentTimeMillis();
 			insert();
 			update();
+			logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
 
 			// 程式執行完成
 			endTime = System.currentTimeMillis();
@@ -545,19 +585,34 @@ public class RFPmain {
 		}
 	}
 	
+	private void showCurrent() {
+		for (String s : currentMap.keySet()) {
+			System.out.println("IMSI:" + s + ",\t\tCHARGE:"
+					+ currentMap.get(s).get("CHARGE") + ",\t\tLAST_FILEID:"
+					+ currentMap.get(s).get("LAST_FILEID")+",\t\tTimes:"
+					+ currentMap.get(s).get("SMS_TIMES"));
+		}
+		for (String s : currentMapU.keySet()) {
+			System.out.println("IMSI:" + s + ",\t\tVOLUME:"
+					+ currentMapU.get(s).get("CHARGE") + ",\t\tLAST_FILEID:"
+					+ currentMapU.get(s).get("LAST_FILEID")+",\t\tTimes:"
+					+ currentMapU.get(s).get("SMS_TIMES"));
+		}
+	}
+	
 	/**
 	 * 計算完畢後寫回資料庫-更新
 	 */
 	private void update(){
 		logger.info("Update...");
-		String updateCurrent=
+		sql=
 				"UPDATE HUR_CURRENT "
 				+ "SET CHARGE=?,LAST_FILEID=?,SMS_TIMES=?,LAST_DATA_TIME=?,UPDATE_DATE=SYSDATE "
 				+ "WHERE IMSI=? AND IS_UNKNOWN=? ";
 		
-		logger.info("Execute SQL :"+updateCurrent);
-		updateCurrentMap(updateCurrent);
-		updateCurrentMapU(updateCurrent);
+		logger.info("Execute SQL :"+sql);
+		updateCurrentMap(sql);
+		updateCurrentMapU(sql);
 	}
 
 	private void updateCurrentMap(String sql){
@@ -571,11 +626,10 @@ public class RFPmain {
 			
 			for(String imsi : updatList){
 				if(count<=dataThreshold){
-					Date date=(Date) currentMap.get(imsi).get("LAST_DATA_TIME") ;
 					pst.setDouble(1,(Double) currentMap.get(imsi).get("CHARGE"));
 					pst.setInt(2, (Integer) currentMap.get(imsi).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMap.get(imsi).get("SMS_TIMES"));
-					pst.setDate(4, new java.sql.Date(date.getTime()));
+					pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(imsi).get("LAST_DATA_TIME")));
 					pst.setString(5, imsi);
 					pst.setInt(6, 0);//具有mccmnc
 					pst.addBatch();
@@ -597,7 +651,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Error at updateCurrentMap : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At updateCurrentMap occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	private void updateCurrentMapU(String sql){
@@ -613,7 +669,7 @@ public class RFPmain {
 					pst.setDouble(1,(Double) currentMapU.get(imsi).get("CHARGE"));
 					pst.setInt(2, (Integer) currentMapU.get(imsi).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMapU.get(imsi).get("SMS_TIMES"));
-					pst.setDate(4, (java.sql.Date) currentMapU.get(imsi).get("LAST_DATA_TIME"));
+					pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMapU.get(imsi).get("LAST_DATA_TIME")));
 					pst.setString(5, imsi);
 					pst.setInt(6, 1);//不具有mccmnc
 					pst.addBatch();
@@ -635,7 +691,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Error at updateCurrentMapU : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At updateCurrentMapU occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -644,13 +702,13 @@ public class RFPmain {
 	 */
 	private void insert(){
 		logger.info("insert...");
-		String insertCurrent=
+		sql=
 				"INSERT INTO HUR_CURRENT"
 				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,IS_UNKNOWN,CREATE_DATE) "
 				+ "VALUES(?,?,?,?,?,?,SYSDATE)";
-		logger.info("Execute SQL :"+insertCurrent);
-		insertCurrentMap(insertCurrent);
-		insertCurrentMapU(insertCurrent);
+		logger.info("Execute SQL :"+sql);
+		insertCurrentMap(sql);
+		insertCurrentMapU(sql);
 	}
 	
 	private void insertCurrentMap(String sql){
@@ -667,7 +725,7 @@ public class RFPmain {
 					pst.setDouble(2,(Double) currentMap.get(imsi).get("CHARGE"));
 					pst.setInt(3,(Integer) currentMap.get(imsi).get("LAST_FILEID"));
 					pst.setInt(4, (Integer) currentMap.get(imsi).get("SMS_TIMES"));
-					pst.setDate(5, (java.sql.Date) currentMap.get(imsi).get("LAST_DATA_TIME"));
+					pst.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(imsi).get("LAST_DATA_TIME")));
 					pst.setInt(6, 0);//具有mccmnc
 					pst.addBatch();
 					count++;
@@ -688,7 +746,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Error at insertCurrentMap : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At insertCurrentMap occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	private void insertCurrentMapU(String sql){
@@ -705,7 +765,7 @@ public class RFPmain {
 					pst.setDouble(2,(Double) currentMapU.get(imsi).get("CHARGE"));
 					pst.setInt(3, (Integer) currentMapU.get(imsi).get("LAST_FILEID"));
 					pst.setInt(4, (Integer) currentMapU.get(imsi).get("SMS_TIMES"));
-					pst.setDate(5, (java.sql.Date) currentMapU.get(imsi).get("LAST_DATA_TIME"));
+					pst.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMapU.get(imsi).get("LAST_DATA_TIME")));
 					pst.setInt(6, 1);//具有mccmnc
 					pst.addBatch();
 					count++;
@@ -727,7 +787,9 @@ public class RFPmain {
 			
 			e.printStackTrace();
 			logger.error("Error at insertCurrentMapU : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At insertCurrentMapU occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 
@@ -744,11 +806,7 @@ public class RFPmain {
 	private void sendAlertSMS(){
 		logger.info("sendAlertSMS...");
 		
-		String querySMSSetting="SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND FROM HUR_SMS_SETTING A";
-		String insertSMSLog=
-				"INSERT INTO HUR_SMS_LOG"
-				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-				+ "VALUES(SMS_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+		sql="SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID";	
 		
 		List<Integer> times=new ArrayList<Integer>();
 		List<Double> bracket=new ArrayList<Double>();
@@ -759,8 +817,8 @@ public class RFPmain {
 		String phone=null;
 		try {
 			Statement st =conn.createStatement();
-			logger.debug("Execute SQL:"+querySMSSetting);
-			ResultSet rs=st.executeQuery(querySMSSetting);
+			logger.debug("Execute SQL:"+sql);
+			ResultSet rs=st.executeQuery(sql);
 			
 			while(rs.next()){
 				times.add(rs.getInt("ID"));
@@ -774,15 +832,20 @@ public class RFPmain {
 				logger.error("No SMS Setting!");
 				return;
 			}
+			sql="INSERT INTO HUR_SMS_LOG"
+					+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+					+ "VALUES(SMS_ID.NEXTVAL,?,?,?,?,SYSDATE)";
 			
-			 PreparedStatement pst = conn.prepareStatement(insertSMSLog);
-			 logger.info("Execute SQL :"+insertSMSLog);
+			 PreparedStatement pst = conn.prepareStatement(sql);
+			 logger.info("Execute SQL :"+sql);
 			
 			for(String imsi: currentMap.keySet()){
 				
 				phone=msisdnMap.get(imsi);
 				if(phone==null ||"".equals(phone)){
-					//send mail
+					//sendMail
+					sendMail("At sendAlertSMS occur error!<br>\n "
+							+ "The IMSI:"+imsi+" can't find msisdn to send! ");
 					continue;
 				}
 				
@@ -797,6 +860,7 @@ public class RFPmain {
 						smsTimes++;
 						//寄送簡訊
 						logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
+						//TODO
 						//result=tool.callWSDLServer(setParam(msg.get(i),phone));
 						logger.debug("send message result : "+result);						
 						currentMap.get(imsi).put("SMS_TIMES", smsTimes);
@@ -808,7 +872,7 @@ public class RFPmain {
 						//寫入資料庫
 						pst.setString(1, phone);
 						pst.setString(2, msg.get(i));
-						pst.setDate(3,new java.sql.Date(new Date().getTime()) );
+						pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
 						pst.setString(4, result);
 						pst.addBatch();
 						
@@ -826,9 +890,15 @@ public class RFPmain {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Error at sendAlertSMS : "+e.getMessage());
+			//sendMail
+			sendMail("At sendAlertSMS occur SQLException error!");
+			errorMsg=e.getMessage();
 		}catch(Exception e){
 			e.printStackTrace();
 			logger.error("Error at sendAlertSMS : "+e.getMessage());
+			//sendMail
+			sendMail("At sendAlertSMS occur Exception error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -862,7 +932,7 @@ public class RFPmain {
 				+ "			<PHONE>"+phone+"</PHONE>"
 				+ "		</ITEM>"
 				+ "	</DATA>"
-				+ "	<REMARK>備註資料</REMARK>"
+				+ "	<REMARK></REMARK>"
 				+ "</SMSREQUEST>");
 		
 		return sb.toString();
@@ -870,13 +940,13 @@ public class RFPmain {
 	
 	private String getMsisdn(String imsi){
 		logger.info("getMsisdn");
-		String queryimsi=
+		sql=
 				"SELECT A.SERVICECODE "
 				+ "FROM SERVICE A,IMSI B "
 				+ "WHERE A.SERVICEID=B.SERVICEID AND B.IMSI=?";
 		String msisdn=null;
 		try {
-			PreparedStatement pst = conn.prepareStatement(queryimsi);
+			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setString(1, imsi);
 			ResultSet rs=pst.executeQuery();
 			
@@ -888,7 +958,9 @@ public class RFPmain {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Error at getMsisdn : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At getMsisdn occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 		return msisdn;
 	}
@@ -899,7 +971,7 @@ public class RFPmain {
 	 */
 	private void setMsisdnMap(){
 		logger.info("setMsisdnMap...");
-		String queryimsi=
+		sql=
 				"SELECT B.IMSI,A.SERVICECODE "
 				+ "FROM SERVICE A,IMSI B "
 				+ "WHERE A.SERVICEID=B.SERVICEID AND B.IMSI IN ?";
@@ -914,7 +986,7 @@ public class RFPmain {
 			//logger.info("a:"+a);
 			Statement st = conn.createStatement();
 			
-			ResultSet rs=st.executeQuery(queryimsi.replace("?", a));
+			ResultSet rs=st.executeQuery(sql.replace("?", a));
 			
 			while(rs.next()){
 				msisdnMap.put(rs.getString("IMSI"), rs.getString("SERVICECODE"));
@@ -923,8 +995,10 @@ public class RFPmain {
 			st.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at getMsisdn : "+e.getMessage());
-			//send mail
+			logger.error("Error at setMsisdnMap : "+e.getMessage());
+			//sendMail
+			sendMail("At setMsisdnMap occur SQLException error!");
+			errorMsg=e.getMessage();
 		}
 	}
 	
@@ -935,20 +1009,59 @@ public class RFPmain {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Error at suspend : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At suspend occur SQLException error!");
+			errorMsg=e.getMessage();
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.error("Error at suspend : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At suspend occur IOException error!");
+			errorMsg=e.getMessage();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			logger.error("Error at suspend : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At suspend occur ClassNotFoundException error!");
+			errorMsg=e.getMessage();
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("Error at suspend : "+e.getMessage());
-			//send mail
+			//sendMail
+			sendMail("At suspend occur Exception error!");
+			errorMsg=e.getMessage();
 		}
+	}
+	
+	private void sendMail(String content){
+		mailReceiver=props.getProperty("mail.Receiver");
+		mailSubject="RFP Warnning Mail";
+		mailContent="Error :"+content+"<br>\n"
+				+ "Error occurr time: "+tool.DateFormat()+"<br>\n"
+				+ "SQL : "+sql+"<br>\n"
+				+ "Error Msg : "+errorMsg;
+
+		/*try {
+			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
+		} catch (AddressException e) {
+			e.printStackTrace();
+			logger.error("Error at sendMail : "+e.getMessage());
+			//sendMail
+			//sendMail("At sendMail occur AddressException error!");
+			//errorMsg=e.getMessage();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			logger.error("Error at sendMail : "+e.getMessage());
+			//sendMail
+			//sendMail("At sendMail occur MessagingException error!");
+			//errorMsg=e.getMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.error("Error at sendMail : "+e.getMessage());
+			//sendMail
+			//sendMail("At sendMail occur IOException error!");
+			//errorMsg=e.getMessage();
+		}*/
 	}
 	
 	

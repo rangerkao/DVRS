@@ -5,6 +5,10 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
@@ -26,6 +30,11 @@ import org.apache.log4j.Logger;
 /*import com.infotech.smpp.SMPPServicesStub;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
+
+
+
+
 
 
 //199
@@ -51,13 +60,13 @@ public class Jatool implements IJatool{
 	}
 	
 	@Override
-	public void sendMail(Logger logger,String sender, String receiver, String subject,String content) {
+	public void sendMail(Logger logger,String sender, String receiver, String subject,String content) throws AddressException, MessagingException, IOException {
 		sendMail(logger,null,sender,receiver,subject,content);
 	}
 	
 
 	@Override
-	public void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) {
+	public void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException {
 
 		if(props==null){
 			props=getProperties();
@@ -121,8 +130,6 @@ public class Jatool implements IJatool{
 		
 		mailSession.setDebug(sessionDebug); 
 		
-		
-		try {
 			Message msg = new MimeMessage(mailSession); 
 			msg.setFrom(new InternetAddress(sender));			// mail sender 
 			
@@ -150,23 +157,6 @@ public class Jatool implements IJatool{
 										"Subject : "+msg.getSubject()+"\n<br>"+
 										"Content : "+msg.getContent()+"\n<br>"+
 										"SendDate: "+msg.getSentDate());			
-			
-
-			
-		} catch (AddressException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logControl(logger,"error","Got AddressException : " + e.getMessage());
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logControl(logger,"error","Got MessagingException : "+ e.getMessage());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logControl(logger,"error","Got IOException : "+ e.getMessage());
-		} 
-
 	}
 	
 	private Properties getProperties(){
@@ -196,24 +186,13 @@ public class Jatool implements IJatool{
 	
 	@Override
 	public Connection connDB(Logger logger, String DriverClass, String URL,
-			String UserName, String PassWord) {
+			String UserName, String PassWord) throws ClassNotFoundException, SQLException {
 		logControl(logger, "debug", "Start to connect DB ");
 
 		Connection conn = null;
-		try {
+
 			Class.forName(DriverClass);
 			conn = DriverManager.getConnection(URL, UserName, PassWord);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logControl(logger, "error",
-					"connecting DB error : " + e.getMessage());
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logControl(logger, "error",
-					"connecting DB error : " + e.getMessage());
-		}
 
 		logControl(logger, "debug", "Finished to connect DB ");
 
@@ -221,27 +200,86 @@ public class Jatool implements IJatool{
 	}
 
 	@Override
-	public String callWSDLServer(String param) {
+	public String callWSDLServer(String param) throws RemoteException {
 
 		String result = null;
-		try {
-			SMPPServicesStub stub = new SMPPServicesStub();
+		SMPPServicesStub stub = new SMPPServicesStub();
 
-			SendSMPP smpp = new SendSMPP();
-			smpp.setArgs0(param);
-			SendSMPPResponse res = stub.sendSMPP(smpp);
+		SendSMPP smpp = new SendSMPP();
+		smpp.setArgs0(param);
+		SendSMPPResponse res = stub.sendSMPP(smpp);
 
-			result = res.get_return();
-		} catch (AxisFault e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		result = res.get_return();
 
 		return result;
 
+	}
+
+	@Override
+	public Date getMonthFirstDate(Date date) {
+		
+		Calendar calendar = Calendar.getInstance();//默認為當前時間
+		Date monthFirstDate=null;
+
+		calendar.setTime(date);
+		calendar.set(Calendar.DATE, calendar.getActualMinimum(Calendar.DATE));
+		monthFirstDate=calendar.getTime();
+		calendar.clear();
+
+		return monthFirstDate;
+	}
+
+	@Override
+	public Date getMonthLastDate(Date date) {
+		Calendar calendar = Calendar.getInstance();//默認為當前時間
+		Date monthLastDate=null;
+		
+		calendar.setTime(date);
+		calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+		monthLastDate= calendar.getTime();
+		calendar.clear();
+		return monthLastDate;
+	}
+
+	@Override
+	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
+		
+		return new java.sql.Date(date.getTime());
+	}
+
+	@Override
+	public java.util.Date convertJaveSqlDate_To_JavaUtilDate(java.sql.Date date) {
+		return new java.util.Date(date.getTime());
+	}
+
+	String iniform="yyyy/MM/dd hh24:mm:ss";
+	@Override
+	public String DateFormat(){
+		DateFormat dateFormat = new SimpleDateFormat(iniform);
+		return dateFormat.format(new Date());
+	}
+	
+	@Override
+	public String DateFormat(Date date, String form) {
+		
+		if(date==null) date=new Date();
+		if(form==null ||"".equals(form)) form=iniform;
+		
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		return dateFormat.format(date);
+	}
+
+	@Override
+	public Date DateFormat(String dateString, String form) throws ParseException {
+		Date result=new Date();
+		
+		if(dateString==null) return result;
+		
+		if(form==null ||"".equals(form)) form=iniform;
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		dateFormat.parse(dateString);
+		
+		return result;
 	}
 	
 	
