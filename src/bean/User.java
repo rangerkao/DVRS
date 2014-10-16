@@ -2,28 +2,31 @@ package bean;
 
 public class User {
 
-	String userid;
-	String rold;
+	String account;
+	String role;
 	
 	public User(){}
 	
-	public User(String userid, String rold) {
+	
+
+	
+	public User(String account, String role) {
 		super();
-		this.userid = userid;
-		this.rold = rold;
+		this.account = account;
+		this.role = role;
+	}
+
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public String getAccount() {
+		return account;
+	}
+	public void setAccount(String account) {
+		this.account = account;
 	}
 	
-	
-	public String getUserid() {
-		return userid;
-	}
-	public void setUserid(String userid) {
-		this.userid = userid;
-	}
-	public String getRold() {
-		return rold;
-	}
-	public void setRold(String rold) {
-		this.rold = rold;
-	}
 }

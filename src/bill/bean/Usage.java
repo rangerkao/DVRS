@@ -1,4 +1,4 @@
-package bean;
+package bill.bean;
 
 public class Usage {
 	private String RecordFlag;//資料類別(識別資料格式)

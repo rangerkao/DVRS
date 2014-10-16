@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import bean.Admin;
 import bean.User;
 import program.IJatool;
 import program.Jatool;
@@ -45,7 +46,7 @@ public class Login {
 		}
 	}
 	
-	public String loginC(Map session,String userid,String password){
+	public String loginC(Map session,String account,String password){
 		
 		loadProperties();
 		logger.info("loginC...");
@@ -67,7 +68,7 @@ public class Login {
 					+ "WHERE A.ACCOUNT=? ";
 			
 			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setString(1, userid);
+			pst.setString(1, account);
 			
 			ResultSet rs=pst.executeQuery();
 			
@@ -78,13 +79,13 @@ public class Login {
 			
 			if(pass==null || "".equals(pass)){
 				msg="Account error or without !";
-				logger.error(userid+msg);
+				logger.error(account+" "+msg);
 			}else if(!pass.equals(password)){
 				msg="PassWord Error !";
-				logger.error(userid+msg);
+				logger.error(account+" "+msg);
 			}else{
 				msg="success";
-				User user=new User(userid,role);
+				User user=new User(account,role);
 				session.put("s2tUser", user);
 			}
 			

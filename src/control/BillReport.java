@@ -17,19 +17,20 @@ import java.util.Map;
 
 
 
+
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import bean.BillData;
-import bean.Charge;
-import bean.ChargeDetail;
-import bean.Invoice;
-import bean.InvoiceDetail;
-import bean.Usage;
-import bean.UsageDetail;
+import bill.bean.BillData;
+import bill.bean.Charge;
+import bill.bean.ChargeDetail;
+import bill.bean.Invoice;
+import bill.bean.InvoiceDetail;
+import bill.bean.Usage;
+import bill.bean.UsageDetail;
 
 public class BillReport{
 	

@@ -1,10 +1,16 @@
 package action;
 
-import control.BillReport;
-import bean.BillData;
+import com.opensymphony.xwork2.ActionSupport;
 
-public class BillAction {
+import control.BillReport;
+import bill.bean.BillData;
+
+public class BillAction extends ActionSupport{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String fileName;
 	private BillData billData;
 	
@@ -16,7 +22,7 @@ public class BillAction {
 		
 		/*if(billData!=null)
 		System.out.println(billData.getI().getData());*/
-	   return "bill";        
+	   return SUCCESS;        
 	}
 	
 	/**

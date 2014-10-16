@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.struts2.interceptor.SessionAware;
 
-import bean.Invoice;
+import bill.bean.Invoice;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
@@ -20,7 +20,7 @@ public class LoginAction extends ActionSupport{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String userid;
+	private String account;
 	private String password;
 	private String tag;
 	Map<String, Object> session;
@@ -28,8 +28,8 @@ public class LoginAction extends ActionSupport{
 	Login login=new Login();
 
 	public void validate() {
-		if (userid == null || "".equals(userid))
-			addFieldError("userid", "帳號為必填，請輸入帳號");
+		if (account == null || "".equals(account))
+			addFieldError("account", "帳號為必填，請輸入帳號");
 		if (password == null || "".equals(password))
 			addFieldError("password", "密碼為必填，請輸入密碼");
 	}
@@ -40,19 +40,19 @@ public class LoginAction extends ActionSupport{
 		Map session = ac.getSession();
 		
 		
-		tag=login.loginC(session,userid,password);
+		tag=login.loginC(session,account,password);
 		if(!"success".equals(tag)) return "input";
 		else return "success";
 		
 	}
 
 
-	public String getUserid() {
-		return userid;
+	public String getAccount() {
+		return account;
 	}
 
-	public void setUserid(String userid) {
-		this.userid = userid;
+	public void setAccount(String account) {
+		this.account = account;
 	}
 
 	public String getPassword() {

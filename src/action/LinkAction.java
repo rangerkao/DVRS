@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.struts2.interceptor.SessionAware;
 
-import bean.Invoice;
+import bill.bean.Invoice;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
@@ -21,6 +21,7 @@ public class LinkAction extends ActionSupport{
 	private String tag;
 	private String LOGIN="login";
 	private String BILL="bill";
+	private String Admin="admin";
 	Map<String, Object> session;
 	
 	Logout logout=new Logout();
@@ -28,6 +29,10 @@ public class LinkAction extends ActionSupport{
 	public String bill()  
 	{  
 	   return BILL;        
+	}  
+	public String admin()  
+	{  
+	   return Admin;        
 	}  
 	   
 	public String logout()  

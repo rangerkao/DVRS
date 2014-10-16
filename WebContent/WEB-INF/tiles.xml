@@ -17,5 +17,9 @@
 	<definition name="bill" extends="web_base">
 		<put-attribute name="main" value="/web/bill.jsp" />
 	</definition>
+	
+	<definition name="admin" extends="web_base">
+		<put-attribute name="main" value="/web/admin.jsp" />
+	</definition>
 
 </tiles-definitions>

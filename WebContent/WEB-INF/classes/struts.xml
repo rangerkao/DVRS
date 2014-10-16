@@ -29,6 +29,7 @@
 		<action name="*Link" method="{1}" class="action.LinkAction">
 			<interceptor-ref name="authentication"></interceptor-ref>	
 			<result name="bill" type="tiles">bill</result>
+			<result name="admin" type="tiles">admin</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -38,7 +39,15 @@
 		</action>
 
 		<action name="billReport" method="bill" class="action.BillAction">
-			<result name="bill" type="tiles">bill</result>
+			<result name="success" type="tiles">bill</result>
 		</action>
 	</package>
+	<package name="ajax" extends="json-default">
+		<action name="queryAdmin" method="queryAdmin" class="action.AdminAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">/admin.jsp
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    </package>
 </struts>

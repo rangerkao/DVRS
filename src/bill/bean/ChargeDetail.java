@@ -1,4 +1,4 @@
-package bean;
+package bill.bean;
 
 import java.util.List;
 

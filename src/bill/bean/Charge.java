@@ -1,4 +1,4 @@
-package bean;
+package bill.bean;
 
 public class Charge {
 

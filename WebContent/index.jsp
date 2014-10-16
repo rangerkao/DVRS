@@ -28,7 +28,7 @@
 	</s:else>
 	<br />
 	<s:form action="login" method="post">
-		<s:textfield name="userid" label="±b¸¹" placeholder="Userid"></s:textfield>
+		<s:textfield name="account" label="±b¸¹" placeholder="Account"></s:textfield>
 		<s:password name="password" label="±K½X" placeholder="Password"></s:password>
 		<s:submit></s:submit>
 	</s:form>

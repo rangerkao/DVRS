@@ -11,8 +11,8 @@
 	<div align="center">
 		<h1>
 			Welcome,
-			<s:property value="userid" />
-			<s:property value="#session.s2tUser.userid"/>
+			<s:property value="account" />
+			<s:property value="#session.s2tUser.account"/>
 		</h1>
 	</div>
 </body>
