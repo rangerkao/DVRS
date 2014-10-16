@@ -12,6 +12,7 @@
 		<h1>
 			Welcome,
 			<s:property value="userid" />
+			<s:property value="#session.s2tUser.userid"/>
 		</h1>
 	</div>
 </body>

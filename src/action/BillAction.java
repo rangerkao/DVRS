@@ -3,7 +3,7 @@ package action;
 import control.BillReport;
 import bean.BillData;
 
-public class Action {
+public class BillAction {
 	
 	private String fileName;
 	private BillData billData;

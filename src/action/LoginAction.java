@@ -1,10 +1,17 @@
 package action;
 
+import java.util.Map;
+
+import org.apache.struts2.interceptor.SessionAware;
+
 import bean.Invoice;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
-import control.BillReport;
+import control.Login;
+
+
 
 public class LoginAction extends ActionSupport{
 		
@@ -16,19 +23,27 @@ public class LoginAction extends ActionSupport{
 	private String userid;
 	private String password;
 	private String tag;
+	Map<String, Object> session;
 	
-	
+	Login login=new Login();
 
 	public void validate() {
 		if (userid == null || "".equals(userid))
-			addFieldError("userid", "±b¸¹¬°¥²¶ñ¡A½Ð¿é¤J±b¸¹");
+			addFieldError("userid", "å¸³è™Ÿç‚ºå¿…å¡«ï¼Œè«‹è¼¸å…¥å¸³è™Ÿ");
 		if (password == null || "".equals(password))
-			addFieldError("password", "±K½X¬°¥²¶ñ¡A½Ð¿é¤J±K½X");
+			addFieldError("password", "å¯†ç¢¼ç‚ºå¿…å¡«ï¼Œè«‹è¼¸å…¥å¯†ç¢¼");
 	}
 
 	public String execute() throws Exception {
+
+		ActionContext ac = ActionContext.getContext();
+		Map session = ac.getSession();
 		
-		return "success";
+		
+		tag=login.loginC(session,userid,password);
+		if(!"success".equals(tag)) return "input";
+		else return "success";
+		
 	}
 
 
@@ -55,5 +70,4 @@ public class LoginAction extends ActionSupport{
 	public void setTag(String tag) {
 		this.tag = tag;
 	}
-
 }

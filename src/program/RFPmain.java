@@ -44,7 +44,7 @@ public class RFPmain implements Job{
 	
 	Connection conn = null;
 	
-	static int runInterval=1*60;//單位秒
+	static int runInterval=1*60*60;//單位秒
 	
 	private  Logger logger ;
 	Properties props=new Properties();
