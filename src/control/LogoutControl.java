@@ -2,7 +2,7 @@ package control;
 
 import java.util.Map;
 
-public class Logout {
+public class LogoutControl {
 
 	public String execute(Map session){
 		if(session!=null)session.remove("s2tUser");

@@ -9,7 +9,7 @@ import bill.bean.Invoice;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
-import control.Login;
+import control.LoginControl;
 
 
 
@@ -25,7 +25,7 @@ public class LoginAction extends ActionSupport{
 	private String tag;
 	Map<String, Object> session;
 	
-	Login login=new Login();
+	LoginControl logincControl=new LoginControl();
 
 	public void validate() {
 		if (account == null || "".equals(account))
@@ -38,9 +38,8 @@ public class LoginAction extends ActionSupport{
 
 		ActionContext ac = ActionContext.getContext();
 		Map session = ac.getSession();
-		
-		
-		tag=login.loginC(session,account,password);
+
+		tag=logincControl.loginC(session,account,password);
 		if(!"success".equals(tag)) return "input";
 		else return "success";
 		

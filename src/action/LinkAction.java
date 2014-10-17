@@ -10,7 +10,7 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
 import control.BillReport;
-import control.Logout;
+import control.LogoutControl;
 
 public class LinkAction extends ActionSupport{
 	/**
@@ -24,7 +24,7 @@ public class LinkAction extends ActionSupport{
 	private String Admin="admin";
 	Map<String, Object> session;
 	
-	Logout logout=new Logout();
+	LogoutControl logoutControl=new LogoutControl();
 	
 	public String bill()  
 	{  
@@ -40,7 +40,7 @@ public class LinkAction extends ActionSupport{
 		ActionContext ac = ActionContext.getContext();
 		Map session = ac.getSession();
 		
-		logout.execute(session);
+		logoutControl.execute(session);
 		setTag("你已經登出！");
 		return LOGIN;         
 	}

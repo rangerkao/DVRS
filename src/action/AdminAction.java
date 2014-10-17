@@ -6,12 +6,15 @@ import java.util.List;
 
 
 
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import bean.Admin;
 
 import com.opensymphony.xwork2.ActionSupport;
+
+import control.AdminControl;
 
 public class AdminAction extends ActionSupport{
 
@@ -23,24 +26,45 @@ public class AdminAction extends ActionSupport{
 	  * ajax返回结果，也可是其他类型的，这里以String类型为例
 	  */
 	 private String result;
-	 private List<Admin> adminList=new ArrayList<Admin>();
+	 private AdminControl adminControl=new AdminControl();
+	 private Admin admin;
+	 private String mod;
 	
 	public String queryAdmin(){
 		
-		
-		Admin admin =new Admin();
-		admin.setUserid("userid");
-		admin.setAccount("account");
-		admin.setPassword("password");
-		admin.setRole("role");
-		adminList.add(admin);
-		System.out.println( beanToJson(adminList));
-		result=beanToJson(adminList);
+		List<Admin> adminList=new ArrayList<Admin>();
+		adminList=adminControl.queryAdminList();
+		System.out.println( beanToJSONArray(adminList));
+		result=beanToJSONArray(adminList);
 		return SUCCESS;
 	}
 	
-	private String beanToJson(Object admin){
+	public String updateAdmin(){
+		result=SUCCESS;
+		System.out.println( beanToJSONObject(admin));
+		System.out.println(	"mod:"+mod);
+		int r=0;
+		if(mod.equalsIgnoreCase("add")){
+			if(adminControl.addAdmin(admin)!=1)
+				result="Error To add new data!";
+		}else if(mod.equalsIgnoreCase("mod")){
+			if(adminControl.modAdmin(admin)!=1)
+				result="Error To modify data!";
+		}else if(mod.equalsIgnoreCase("del")){
+			if(adminControl.delAdmin(admin)!=1)
+				result="Error To delete data!";
+		}
+
+		return SUCCESS;
+
+	}
+	
+	private String beanToJSONArray(List admin){
 		JSONArray jo = (JSONArray) JSONObject.wrap(admin);
+		return jo.toString();
+	}
+	private String beanToJSONObject(Object admin){
+		JSONObject jo = (JSONObject) JSONObject.wrap(admin);
 		return jo.toString();
 	}
 	
@@ -56,13 +80,20 @@ public class AdminAction extends ActionSupport{
 	  return result;
 	 }
 
-	public List<Admin> getAdminList() {
-		return adminList;
+	public Admin getAdmin() {
+		return admin;
 	}
 
-	public void setAdminList(List<Admin> adminList) {
-		this.adminList = adminList;
+	public void setAdmin(Admin admin) {
+		this.admin = admin;
 	}
-	 
+
+	public String getMod() {
+		return mod;
+	}
+
+	public void setMod(String mod) {
+		this.mod = mod;
+	} 
 
 }

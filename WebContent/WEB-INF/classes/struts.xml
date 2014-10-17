@@ -45,7 +45,12 @@
 	<package name="ajax" extends="json-default">
 		<action name="queryAdmin" method="queryAdmin" class="action.AdminAction">
 	        <!-- 将返回类型设置为json -->
-	        <result type="json">/admin.jsp
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="updateAdmin" method="updateAdmin" class="action.AdminAction">
+	        <result type="json" >
 	        	<param name="root">result</param>
 	        </result>
         </action>

@@ -24,46 +24,170 @@
 .even_columm{
 	background-color: #C7FF91
 }
+.label{
+	
+}
 
 </style>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <script type="text/javascript">
-	function queryAdmin(){
-		alert("button is clicked!");
-		 $.ajax({
-		      url: '<s:url action="queryAdmin"/>',
-		      data: {}, //parameters go here in object literal form
-		      type: 'POST',
-		      datatype: 'json',
-		      success: function(json) {  
-		    	  //jQuery.parseJSON,JSON.parse(json)
-		    	  alert(json);
-		    	  var list=$.parseJSON(json);
-		    	  alert("j[0]"+list[0].role);
-		    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-		    	  
-		    	    $.each(list,function(i,admin){  
-                      var _tr = $(	"<tr>"+
-                      					"<td align='center'>"+admin.userid+"</td>"+
-                      					"<td align='center'>"+admin.account+"</td>"+
-                      					"<td align='center'>"+admin.password+"</td>"+
-                      					"<td align='center'>"+admin.role+"</td>"+
-                      				"</tr>");  
-                      
-                    $("#table1").append(_tr); });
-		    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-		    	    $("#table1 tr:even").addClass("even_columm");
-		    	  },
-		      error: function() { alert('something bad happened'); }
-		    });
-	}
+	$(document).ready(function(){
+		queryAdmin();
+	});
+		var adminList;
+		function queryAdmin(){
+			 $.ajax({
+			      url: '<s:url action="queryAdmin"/>',
+			      data: {}, //parameters go here in object literal form
+			      type: 'POST',
+			      datatype: 'json',
+			      success: function(json) {  
+			    	  //jQuery.parseJSON,JSON.parse(json)
+			    	  //alert(json);
+			    	  var list=$.parseJSON(json);
+			    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
+			    	  	adminList=list;
+			    	    $.each(list,function(i,admin){  
+	                      var _tr = $(	"<tr>"+
+	                      					"<td align='center'>"+admin.userid+"</td>"+
+	                      					"<td align='center'>"+admin.account+"</td>"+
+	                      					"<td align='center'>"+admin.password+"</td>"+
+	                      					"<td align='center'>"+admin.role+"</td>"+
+	                      					"<td ><button onclick='chooseRow(this)'>選擇</button></td>"+
+	                      				"</tr>");  
+	                      
+	                    $("#table1").append(_tr); });
+			    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
+			    	    $("#table1 tr:even").addClass("even_columm");
+			    	  },
+			      error: function() { alert('something bad happened'); }
+			    });
+		}
+		//將被選擇的table欄位放入編輯區
+		function chooseRow(bu){
+			var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
+			//alert(row.cells[0].innerText);
+			$("#Userid").val(row.cells[0].innerText);
+			$("#Account").val(row.cells[1].innerText);
+			$("#Password").val(row.cells[2].innerText);
+			$("#Role").val(row.cells[3].innerText);
+		}
+		//新增資料
+		function updateAdmin(mod,String){
+			
+			if(confirm("確認要"+String+"資料？")){
+				if(!validateForm(mod)){return}
+				
+				alert("updateAdmin clicked!");
+				$.ajax({
+				      url: '<s:url action="updateAdmin"/>',
+				      data: { "admin.userid":$("#Userid").val(),
+					    	  "admin.account":$("#Account").val(),
+					    	  "admin.password":$("#Password").val(),
+					    	  "admin.role":$("#Role").val(),
+					    	  "mod":mod}, //parameters go here in object literal form
+				      type: 'POST',
+				      datatype: 'json',
+				      success: function(json) { 
+				    	  	//alert(json);  
+				    	  	if(json=='success'){
+				    	  		alert("Add Success!")
+				    	  		queryAdmin();
+				    	  	}else{
+				    	  			alert(json);
+				    	  		}},
+				      error: function(json) { alert('insert error!'+(json)); }
+				    });
+			}
+		}
+		
+		//驗證帳號是否已存在
+		var exist;
+		function validateText(val){
+			exist=false;
+			$.each(adminList,function(i,admin){
+				if(admin.account==val)	exist=true;
+			});
+		}
+		var validation;
+		function validateForm(mod){
+			validation=true;//預設驗證通過
+
+			if(mod!='del'&& $("#Userid").val()==''){
+				$("#LUserid").html("使用者ID為必填");
+				validation=false;
+			}
+			if($("#Account").val()==''){
+				$("#LAccount").html("使用者帳號為必填");
+				validation=false;
+			}
+			if(mod!='del'&& $("#Password").val()==''){
+				$("#LPassword").html("使用者密碼為必填");
+				validation=false;
+			}
+			if(mod!='del'&& $("#Role").val()==''){
+				$("#LRole").html("使用者角色為必填");
+				validation=false;
+			}
+			
+			validateText($("#Account").val());
+			
+			if(mod=='add'&& exist){
+				$("#LAccount").html("此帳號已存在，無法新增");
+				validation=false;
+			}
+				
+			if(mod!='add'&& !exist){
+				$("#LAccount").html("此帳號不存在，無法進行修改刪除");
+				validation=false;
+			}
+			
+			return validation;
+		}
+		function clearText(item){
+			$("#L"+item).html("");
+		}
 </script>
 </head>
 <body>
 <div align="center">
-	<div><button onclick="queryAdmin()">查詢</button></div>
+	<div>
+		<form>
+		<table>
+			<tr>
+				<td class="label" align="right"><label>USERID:</label></td>
+				<td><input type="text" id="Userid" onkeyup="clearText('Userid')" /></td>
+				<td><label id="LUserid" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
+			</tr>
+			<tr>
+				<td class="label" align="right"><label>ACCOUNT:</label></td>
+				<td><input type="text" id="Account" onkeyup="clearText('Account')" /></td>
+				<td><label id="LAccount" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
+			</tr>
+			<tr>
+				<td class="label" align="right"><label>PASSWORD:</label></td>
+				<td><input type="text" id="Password" onkeyup="clearText('Password')" /></td>
+				<td><label id="LPassword" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
+			</tr>
+			<tr>
+				<td class="label" align="right"><label>ROLE:</label></td>
+				<td><input type="text" id="Role" onkeyup="clearText('Role')" /></td>
+				<td><label id="LRole" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
+			</tr>
+			<tr>
+				<td>
+					<input type="button"  onclick="this.form.reset()" value="清除">
+					<input type="button" onclick="updateAdmin('add','新增')" value="新增">
+					<input type="button" onclick="updateAdmin('mod','修改')" value="修改">
+					<input type="button" onclick="updateAdmin('del','刪除')" value="刪除">
+					<input type="button" onclick="queryAdmin()" value="查詢">
+				</td>
+			</tr>
+		</table>
+		</form>
+	</div>
 	<div >
 		<table id="table1" class="datatable" align="center">
 			<tr class="even_columm" >
@@ -71,6 +195,7 @@
 				<td class="columnLabel" align="center">ACCOUNT</td>
 				<td class="columnLabel" align="center">PASSWORD</td>
 				<td class="columnLabel" align="center">ROLE</td>
+				<td>&nbsp;</td>
 			</tr>
 		</table>
 	</div>
