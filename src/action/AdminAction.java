@@ -16,7 +16,7 @@ import com.opensymphony.xwork2.ActionSupport;
 
 import control.AdminControl;
 
-public class AdminAction extends ActionSupport{
+public class AdminAction extends BaseAction{
 
 	/**
 	 * 
@@ -25,7 +25,7 @@ public class AdminAction extends ActionSupport{
 	 /**
 	  * ajax返回结果，也可是其他类型的，这里以String类型为例
 	  */
-	 private String result;
+	 
 	 private AdminControl adminControl=new AdminControl();
 	 private Admin admin;
 	 private String mod;
@@ -58,27 +58,6 @@ public class AdminAction extends ActionSupport{
 		return SUCCESS;
 
 	}
-	
-	private String beanToJSONArray(List admin){
-		JSONArray jo = (JSONArray) JSONObject.wrap(admin);
-		return jo.toString();
-	}
-	private String beanToJSONObject(Object admin){
-		JSONObject jo = (JSONObject) JSONObject.wrap(admin);
-		return jo.toString();
-	}
-	
-	 /**
-	  * 
-	 * @Title: getResult 
-	 * @Description:json调取结果  
-	 * @param @return    
-	 * @return String
-	 * @throws
-	  */
-	 public String getResult() {
-	  return result;
-	 }
 
 	public Admin getAdmin() {
 		return admin;

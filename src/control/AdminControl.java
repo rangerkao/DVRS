@@ -5,7 +5,7 @@ import java.util.List;
 import dao.AdminDao;
 import bean.Admin;
 
-public class AdminControl {
+public class AdminControl extends BaseControl{
 	
 	private AdminDao adminDao=new AdminDao();
 	

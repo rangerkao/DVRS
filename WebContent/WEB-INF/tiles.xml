@@ -21,5 +21,9 @@
 	<definition name="admin" extends="web_base">
 		<put-attribute name="main" value="/web/admin.jsp" />
 	</definition>
+	
+	<definition name="dataRate" extends="web_base">
+		<put-attribute name="main" value="/web/dataRate.jsp" />
+	</definition>
 
 </tiles-definitions>

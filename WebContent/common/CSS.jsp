@@ -7,28 +7,7 @@
 <title>Insert title here</title>
 
 <style type="text/css">
-/* ÂX®i base Start */
-* {
-	border: none;
-	padding: 0;
-	margin: 0;
-	z-index: 0;
-}
 
-body, html {
-	height: 100%;
-}
-
-.wapper {
-	height: 100%;
-	min-height: 100%;
-	width: 100%;
-}
-/* ÂX®i base End */
-div.scroll {
-	overflow: auto;
-	overflow: scroll;
-}
 </style>
 
 </head>

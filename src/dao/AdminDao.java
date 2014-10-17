@@ -101,7 +101,7 @@ public class AdminDao extends BaseDao {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		closeConnect();
 		return list;
 		
 	}

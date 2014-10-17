@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 </head>
-<body>
+<body >
 	<div class="wapper">
 		<table style="height: 100%; width: 100%">
 			<tr style="height: 20%">
@@ -19,7 +19,8 @@
 				<td width="15%" bgcolor="#AFFFB0"><tiles:insertAttribute
 						name="menu" /></td>
 				<td width="85%" bgcolor="#AFFFD8"><tiles:insertAttribute
-						name='main' /></td>
+						name='main' />
+				</td>
 			</tr>
 		</table>
 	</div>

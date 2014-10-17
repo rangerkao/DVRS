@@ -2,17 +2,12 @@ package action;
 
 import java.util.Map;
 
-import org.apache.struts2.interceptor.SessionAware;
-
-import bill.bean.Invoice;
 
 import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionSupport;
 
-import control.BillReport;
 import control.LogoutControl;
 
-public class LinkAction extends ActionSupport{
+public class LinkAction extends BaseAction{
 	/**
 	 * 
 	 */
@@ -22,6 +17,7 @@ public class LinkAction extends ActionSupport{
 	private String LOGIN="login";
 	private String BILL="bill";
 	private String Admin="admin";
+	private String DataRate="dataRate";
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
@@ -33,6 +29,10 @@ public class LinkAction extends ActionSupport{
 	public String admin()  
 	{  
 	   return Admin;        
+	}  
+	public String dataRate()  
+	{  
+	   return DataRate;        
 	}  
 	   
 	public String logout()  

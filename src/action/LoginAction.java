@@ -2,18 +2,13 @@ package action;
 
 import java.util.Map;
 
-import org.apache.struts2.interceptor.SessionAware;
-
-import bill.bean.Invoice;
-
 import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionSupport;
 
 import control.LoginControl;
 
 
 
-public class LoginAction extends ActionSupport{
+public class LoginAction extends BaseAction{
 		
 	   /**
 	 * 

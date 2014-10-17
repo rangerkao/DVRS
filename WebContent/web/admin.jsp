@@ -5,33 +5,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<style type="text/css">
-
-#table1, #table1 td, #table1 th {
-	border:1px solid #FF7573;
-	border-color: #FF7573
-}
-#table1 td {
-	align:center
-}
-.datatable{
-	width:50%;
-	background-color: #FF7573
-}
-.odd_columm{
-	background-color: #FEFFAF
-}
-.even_columm{
-	background-color: #C7FF91
-}
-.label{
-	
-}
-
-</style>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
-<title>Insert title here</title>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 	$(document).ready(function(){
 		queryAdmin();
@@ -55,7 +30,7 @@
 	                      					"<td align='center'>"+admin.account+"</td>"+
 	                      					"<td align='center'>"+admin.password+"</td>"+
 	                      					"<td align='center'>"+admin.role+"</td>"+
-	                      					"<td ><button onclick='chooseRow(this)'>選擇</button></td>"+
+	                      					"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
 	                      				"</tr>");  
 	                      
 	                    $("#table1").append(_tr); });
@@ -93,7 +68,7 @@
 				      success: function(json) { 
 				    	  	//alert(json);  
 				    	  	if(json=='success'){
-				    	  		alert("Add Success!")
+				    	  		alert("Success!")
 				    	  		queryAdmin();
 				    	  	}else{
 				    	  			alert(json);
@@ -153,9 +128,10 @@
 </head>
 <body>
 <div align="center">
+	<h3>使用者管理頁面</h3>
 	<div>
 		<form>
-		<table>
+		<table >
 			<tr>
 				<td class="label" align="right"><label>USERID:</label></td>
 				<td><input type="text" id="Userid" onkeyup="clearText('Userid')" /></td>

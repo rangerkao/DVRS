@@ -61,6 +61,7 @@ var count=logOutTime/checkPeriod;
 		<ul>
 			<li><a href="<s:url action="billLink"/>">帳單匯出</a><br></li>
 			<li><a href="<s:url action="adminLink"/>">使用者管理</a><br></li>
+			<li><a href="<s:url action="dataRateLink"/>">資費管理</a><br></li>
 			<li><a id='logoutLink' href="<s:url action="logoutLink"/>" >登出</a><br></li>
 		</ul>
 	</div>

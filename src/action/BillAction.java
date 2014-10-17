@@ -1,11 +1,9 @@
 package action;
 
-import com.opensymphony.xwork2.ActionSupport;
-
 import control.BillReport;
 import bill.bean.BillData;
 
-public class BillAction extends ActionSupport{
+public class BillAction extends BaseAction{
 	
 	/**
 	 * 
