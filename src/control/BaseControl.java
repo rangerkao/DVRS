@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import dao.BaseDao;
 import program.IJatool;
 import program.Jatool;
 import program.RFPmain;
@@ -17,8 +18,8 @@ public class BaseControl {
 
 	Properties props =new Properties();
 	Logger logger ;
-	
-	BaseControl(){
+	private BaseDao baseDao=new BaseDao();
+	public BaseControl(){
 		loadProperties();
 	}
 	
@@ -38,4 +39,10 @@ public class BaseControl {
 			System.out.println("IOException : " + e.getMessage());
 		}
 	}
+	
+	public int loggerAction(String userid,String page,String action,String parameter){
+		return baseDao.loggerAction(userid, page, action, parameter);
+	}
+	
+	
 }

@@ -28,8 +28,8 @@
 	</s:else>
 	<br />
 	<s:form action="login" method="post">
-		<s:textfield name="account" label="±b¸¹" placeholder="Account"></s:textfield>
-		<s:password name="password" label="±K½X" placeholder="Password"></s:password>
+		<s:textfield name="acc" label="±b¸¹" placeholder="Account"></s:textfield>
+		<s:password name="psw" label="±K½X" placeholder="Password"></s:password>
 		<s:submit></s:submit>
 	</s:form>
 </body>

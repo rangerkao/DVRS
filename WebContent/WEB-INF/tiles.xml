@@ -25,5 +25,9 @@
 	<definition name="dataRate" extends="web_base">
 		<put-attribute name="main" value="/web/dataRate.jsp" />
 	</definition>
+	
+	<definition name="smsQuery" extends="web_base">
+		<put-attribute name="main" value="/web/smsQuery.jsp" />
+	</definition>
 
 </tiles-definitions>

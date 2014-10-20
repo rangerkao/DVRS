@@ -2,6 +2,8 @@ package action;
 
 import java.util.Map;
 
+import bean.User;
+
 import com.opensymphony.xwork2.ActionContext;
 
 import control.LoginControl;
@@ -15,46 +17,46 @@ public class LoginAction extends BaseAction{
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String account;
-	private String password;
+	private String acc;
+	private String psw;
 	private String tag;
-	Map<String, Object> session;
+	private String page="Login";
 	
 	LoginControl logincControl=new LoginControl();
 
 	public void validate() {
-		if (account == null || "".equals(account))
-			addFieldError("account", "帳號為必填，請輸入帳號");
-		if (password == null || "".equals(password))
-			addFieldError("password", "密碼為必填，請輸入密碼");
+		if (acc == null || "".equals(acc))
+			addFieldError("acc", "帳號為必填，請輸入帳號");
+		if (psw == null || "".equals(psw))
+			addFieldError("psw", "密碼為必填，請輸入密碼");
 	}
 
 	public String execute() throws Exception {
 
-		ActionContext ac = ActionContext.getContext();
-		Map session = ac.getSession();
-
-		tag=logincControl.loginC(session,account,password);
-		if(!"success".equals(tag)) return "input";
-		else return "success";
+		tag=logincControl.loginC(session,acc,psw);
+		if(!"success".equals(tag)) result= "input";
+		else result= "success";
+		
+		loggerAction(acc, page, "login", "");
+		return result;
 		
 	}
 
 
-	public String getAccount() {
-		return account;
+	public String getAcc() {
+		return acc;
 	}
 
-	public void setAccount(String account) {
-		this.account = account;
+	public void setAcc(String acc) {
+		this.acc = acc;
 	}
 
-	public String getPassword() {
-		return password;
+	public String getPsw() {
+		return psw;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPsw(String psw) {
+		this.psw = psw;
 	}
 
 	public String getTag() {
@@ -63,5 +65,5 @@ public class LoginAction extends BaseAction{
 
 	public void setTag(String tag) {
 		this.tag = tag;
-	}
+	}	
 }

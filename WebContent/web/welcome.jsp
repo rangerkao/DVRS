@@ -11,7 +11,7 @@
 	<div align="center">
 		<h1>
 			Welcome,
-			<s:property value="account" />
+			<s:property value="acc" />
 			<s:property value="#session.s2tUser.account"/>
 		</h1>
 	</div>

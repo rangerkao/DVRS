@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -23,7 +24,11 @@ public class BaseDao {
 	protected IJatool tool=new Jatool();
 	protected String sql="";
 	
-	BaseDao(){
+	private String logDB="INSERT INTO HUR_MANERGER_LOG "
+			+ "(ID,USERID,PAGE,ACTION,PARAMETER,CREATE_DATE) "
+			+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+	
+	public BaseDao(){
 		loadProperties();
 		connectDB();
 	}
@@ -66,6 +71,27 @@ public class BaseDao {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public int loggerAction(String userid,String page,String action,String parameter){
+		
+		int result=0;
+		 try {
+			PreparedStatement pst = conn.prepareStatement(logDB);
+			pst.setString(1, userid);
+			pst.setString(2, page);
+			pst.setString(3, action);
+			pst.setString(4, parameter);
+			result= pst.executeUpdate();
+			
+			pst.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
+		 closeConnect();
+		
+		 return result;
 	}
 	
 	
