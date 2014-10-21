@@ -9,7 +9,7 @@ import java.util.List;
 
 import bean.Admin;
 
-public class AdminDao extends BaseDao {
+public class AdminDao extends BaseDao {	
 	
 	public int insert(Admin admin){
 		sql=

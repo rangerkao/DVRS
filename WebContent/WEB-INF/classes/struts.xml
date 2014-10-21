@@ -34,6 +34,7 @@
 			<result name="smsQuery" type="tiles">smsQuery</result>
 			<result name="actionQuery" type="tiles">actionQuery</result>
 			<result name="smsSetting" type="tiles">smsSetting</result>
+			<result name="program" type="tiles">program</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -88,6 +89,13 @@
         </action>
     <!-- SMSQuery -->
         <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    <!-- Program -->
+        <action name="executeProgram" method="execute" class="action.ProgrmaAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>

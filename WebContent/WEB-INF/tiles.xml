@@ -37,6 +37,10 @@
 	<definition name="actionQuery" extends="web_base">
 		<put-attribute name="main" value="/web/actionQuery.jsp" />
 	</definition>
+	
+	<definition name="program" extends="web_base">
+		<put-attribute name="main" value="/web/program.jsp" />
+	</definition>
 
 
 </tiles-definitions>

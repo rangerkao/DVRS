@@ -37,7 +37,6 @@ public class LoginAction extends BaseAction{
 		if(!"success".equals(tag)) result= "input";
 		else result= "success";
 		
-		loggerAction(acc, page, "login", "");
 		return result;
 		
 	}

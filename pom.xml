@@ -75,6 +75,12 @@
 		<groupId>org.apache.axis2</groupId>
 		<artifactId>axis2-kernel</artifactId>
 		<version>1.6.2</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>servlet-api</artifactId>
+				<groupId>javax.servlet</groupId>
+			</exclusion>
+		</exclusions>
 	</dependency>
 	<dependency>
 		<groupId>org.apache.axis2</groupId>

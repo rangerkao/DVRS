@@ -1,5 +1,6 @@
 package dao;
 
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class BaseDao {
 	protected Connection conn =null;
 	protected IJatool tool=new Jatool();
 	protected String sql="";
-	
+	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:/", "").replace("%20", " ");
 	private String logDB="INSERT INTO HUR_MANERGER_LOG "
 			+ "(ID,USERID,PAGE,ACTION,PARAMETER,CREATE_DATE) "
 			+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,SYSDATE)";
@@ -32,10 +33,10 @@ public class BaseDao {
 		loadProperties();
 		connectDB();
 	}
-	private void loadProperties() {
+	protected void loadProperties() {
 		System.out.println("initial Log4g, property !");
-		String path = BillReport.class.getClassLoader().getResource("").toString().replace("file:/", "")
-				+ "/log4j.properties";
+
+		String path=classPath+ "/log4j.properties";
 		try {
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
@@ -49,7 +50,7 @@ public class BaseDao {
 			System.out.println("IOException : " + e.getMessage());
 		}
 	}
-	private void connectDB(){
+	protected void connectDB(){
 		try {
 			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), 
 					props.getProperty("Oracle.URL")

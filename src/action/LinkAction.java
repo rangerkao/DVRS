@@ -21,7 +21,7 @@ public class LinkAction extends BaseAction{
 	private String SmsQuery="smsQuery";
 	private String ActionQuery="actionQuery";
 	private String SmsSetting="smsSetting";
-	
+	private String Progrma="program";
 	
 	Map<String, Object> session;
 	
@@ -52,6 +52,11 @@ public class LinkAction extends BaseAction{
 	public String smsSetting()  
 	{  
 	   return SmsSetting;        
+	}  
+	
+	public String program()  
+	{  
+	   return Progrma;        
 	}  
 	   
 	public String logout()  

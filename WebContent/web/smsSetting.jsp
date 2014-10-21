@@ -73,6 +73,10 @@ function validat(mod,txt){
 		$("#LMsg").html("此欄位不可為空!");
 		validation=false;
 	}
+	if(!isNaN($('#Bracket').val())){
+		$("#LBracket").html("此欄位必須為數字!");
+		validation=false;
+	}
 	
 	
 	if(mod=='add'){

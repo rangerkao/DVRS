@@ -68,6 +68,7 @@ var count=logOutTime/checkPeriod;
 				使用者管理
 				<ul>
 					<li><a href="<s:url action="adminLink"/>">使用者管理</a><br></li>
+					<li><a href="<s:url action="programLink"/>">程式管理</a><br></li>
 				</ul>
 			</li>
 			<li>

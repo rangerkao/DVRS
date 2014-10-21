@@ -9,10 +9,10 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import dao.BaseDao;
 import program.IJatool;
 import program.Jatool;
 import program.RFPmain;
+import dao.BaseDao;
 
 public class BaseControl {
 
