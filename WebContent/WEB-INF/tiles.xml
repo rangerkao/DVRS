@@ -29,5 +29,14 @@
 	<definition name="smsQuery" extends="web_base">
 		<put-attribute name="main" value="/web/smsQuery.jsp" />
 	</definition>
+	
+	<definition name="smsSetting" extends="web_base">
+		<put-attribute name="main" value="/web/smsSetting.jsp" />
+	</definition>
+
+	<definition name="actionQuery" extends="web_base">
+		<put-attribute name="main" value="/web/actionQuery.jsp" />
+	</definition>
+
 
 </tiles-definitions>

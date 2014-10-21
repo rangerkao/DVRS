@@ -1,12 +1,17 @@
 <%@ page language="java" contentType="text/html; charset=BIG5"
 	pageEncoding="BIG5"%>
 <%@taglib uri="/struts-tags" prefix="s"%>
-<%@ include file="../common/CSS.jsp"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
+<style type="text/css">
+#menu{
+padding: none;
+
+}
+</style>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var mousePos;
@@ -55,15 +60,37 @@ var count=logOutTime/checkPeriod;
 </script>
 </head>
 <body>
-	<div class="wapper" align="center">
+	<div class="wapper" >
 	<label id="x">x.index</label>
 	<label id="y">y.index</label>
-		<ul>
-			<li><a href="<s:url action="billLink"/>">帳單匯出</a><br></li>
-			<li><a href="<s:url action="adminLink"/>">使用者管理</a><br></li>
-			<li><a href="<s:url action="dataRateLink"/>">資費管理</a><br></li>
-			<li><a href="<s:url action="smsQueryLink"/>">簡訊發送查詢</a><br></li>
-			<li><a id='logoutLink' href="<s:url action="logoutLink"/>" >登出</a><br></li>
+		<ul id="menu">
+			<li>
+				使用者管理
+				<ul>
+					<li><a href="<s:url action="adminLink"/>">使用者管理</a><br></li>
+				</ul>
+			</li>
+			<li>
+				查詢相關
+				<ul>
+					<li><a href="<s:url action="actionQueryLink"/>">使用者操作紀錄查詢</a><br></li>
+					<li><a href="<s:url action="smsQueryLink"/>">簡訊發送查詢</a><br></li>
+					<li><a href="<s:url action="dataRateLink"/>">資費管理</a><br></li>
+				</ul>
+			</li>
+			<li>
+				設定相關
+				<ul>
+					<li><a href="<s:url action="smsSettingLink"/>">簡訊設定</a><br></li>
+				</ul>
+			</li>
+			<li>
+				其他
+				<ul>
+					<li><a href="<s:url action="billLink"/>">帳單匯出</a><br></li>
+					<li><a id='logoutLink' href="<s:url action="logoutLink"/>" >登出</a><br></li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 </body>

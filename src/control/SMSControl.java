@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import bean.SMSLog;
+import bean.SMSSetting;
 import dao.SMSDao;
 
 public class SMSControl {
@@ -15,5 +16,11 @@ public class SMSControl {
 	}
 	public List<SMSLog> querySMSLog(Date fromDate,Date toDate){
 		return smsDao.querySMSLog();
+	}
+	public List<SMSSetting> querySMSSetting(){
+		return smsDao.querySMSSetting();
+	}
+	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list){
+		return smsDao.updateSMSSetting(list);
 	}
 }

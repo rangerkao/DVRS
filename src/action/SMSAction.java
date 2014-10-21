@@ -4,8 +4,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import control.SMSControl;
 import bean.SMSLog;
+import bean.SMSSetting;
 
 public class SMSAction extends BaseAction{
 
@@ -14,10 +18,14 @@ public class SMSAction extends BaseAction{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	String mod;
 	String dateFrom;
 	String dateTo;
 	SMSLog smsLog;
+	SMSSetting smsSetting;
 	List<SMSLog> smsLoglist = new ArrayList<SMSLog>();
+	List<SMSSetting> smsSettinglist = new ArrayList<SMSSetting>();
+	String smsSettinglistString;
 	private SMSControl smsControl = new SMSControl();
 	
 	
@@ -33,6 +41,65 @@ public class SMSAction extends BaseAction{
 		
 		return SUCCESS;
 	}
+	
+	
+	public String querySMSSetting(){
+		
+		smsSettinglist=smsControl.querySMSSetting();
+		result=beanToJSONArray(smsSettinglist);
+		
+		return SUCCESS;
+	}
+	
+	
+	public String updateSMSSetting(){
+		JSONArray json =new JSONArray(smsSettinglistString);
+		
+			for(int i=0;i<json.length();i++){
+				JSONObject o=json.getJSONObject(i);
+				SMSSetting set=new SMSSetting();
+				set.setBracket(o.getDouble("bracket"));
+				set.setMsg(o.getString("msg"));
+				set.setSuspend(o.getBoolean("suspend"));
+				smsSettinglist.add(set);
+			}
+			
+			System.out.println("mod:"+mod);
+			
+			
+			if("add".equalsIgnoreCase(mod)){
+				boolean inserted=false;
+				//尋找插入點
+				for(int i=0;i<smsSettinglist.size();i++){
+					SMSSetting s= smsSettinglist.get(i);
+					if(s.getBracket()>smsSetting.getBracket()){
+						smsSettinglist.add(i,smsSetting);
+						inserted=!inserted;
+						break;
+					}
+				}
+				if(!inserted){
+					smsSettinglist.add(smsSetting);
+				}
+			}else if("mod".equalsIgnoreCase(mod)){
+				smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setBracket(smsSetting.getBracket());
+				smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setMsg(smsSetting.getMsg());
+				smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setSuspend(smsSetting.getSuspend());
+				
+			}else if("del".equalsIgnoreCase(mod)){
+				smsSettinglist.remove(Integer.parseInt(smsSetting.getId())-1);
+			}		
+			
+			//重新編號ID
+			for(int i=0;i<smsSettinglist.size();i++){
+				smsSettinglist.get(i).setId(Integer.toString(i+1));
+			}
+			smsSettinglist=smsControl.updateSMSSetting(smsSettinglist);
+			result=beanToJSONArray(smsSettinglist);
+
+		return SUCCESS;
+	}
+
 
 	public String getDateFrom() {
 		return dateFrom;
@@ -74,6 +141,48 @@ public class SMSAction extends BaseAction{
 	public void setSmsLoglist(List<SMSLog> smsLoglist) {
 		this.smsLoglist = smsLoglist;
 	}
+
+
+	public SMSSetting getSmsSetting() {
+		return smsSetting;
+	}
+
+
+	public void setSmsSetting(SMSSetting smsSetting) {
+		this.smsSetting = smsSetting;
+	}
+
+
+	public List<SMSSetting> getSmsSettinglist() {
+		return smsSettinglist;
+	}
+
+
+	public void setSmsSettinglist(List<SMSSetting> smsSettinglist) {
+		this.smsSettinglist = smsSettinglist;
+	}
+
+
+	public String getSmsSettinglistString() {
+		return smsSettinglistString;
+	}
+
+
+	public void setSmsSettinglistString(String smsSettinglistString) {
+		this.smsSettinglistString = smsSettinglistString;
+	}
+
+
+	public String getMod() {
+		return mod;
+	}
+
+
+	public void setMod(String mod) {
+		this.mod = mod;
+	}
+	
+	
 	
 	
 }

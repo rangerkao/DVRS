@@ -19,6 +19,10 @@ public class LinkAction extends BaseAction{
 	private String Admin="admin";
 	private String DataRate="dataRate";
 	private String SmsQuery="smsQuery";
+	private String ActionQuery="actionQuery";
+	private String SmsSetting="smsSetting";
+	
+	
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
@@ -38,6 +42,16 @@ public class LinkAction extends BaseAction{
 	public String smsQuery()  
 	{  
 	   return SmsQuery;        
+	}  
+	
+	public String actionQuery()  
+	{  
+	   return ActionQuery;        
+	}  
+	
+	public String smsSetting()  
+	{  
+	   return SmsSetting;        
 	}  
 	   
 	public String logout()  

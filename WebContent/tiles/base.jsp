@@ -11,11 +11,11 @@
 <body >
 	<div class="wapper">
 		<table style="height: 100%; width: 100%">
-			<tr style="height: 20%">
+			<tr style="height: 10%">
 				<td colspan="2" bgcolor="#AFFEFF"><tiles:insertAttribute
 						name="top" /></td>
 			</tr>
-			<tr style="height: 80%">
+			<tr style="height: 90%">
 				<td width="15%" bgcolor="#AFFFB0"><tiles:insertAttribute
 						name="menu" /></td>
 				<td width="85%" bgcolor="#AFFFD8"><tiles:insertAttribute

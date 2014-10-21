@@ -29,14 +29,16 @@
 }
 /* ÂX®i base Start */
 * {
-	border: none;
-	padding: 0;
+	/* border: none; */
+	/* padding: 0;
 	margin: 0;
-	z-index: 0;
+	z-index: 0; */
 }
 
 body, html {
 	height: 100%;
+	margin:0px;
+	padding:0px;
 }
 
 .wapper {

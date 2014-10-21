@@ -20,11 +20,11 @@ $(function() {
         dateFormat: 'yy-mm-dd'
     });
   });
-var smsLoglist;
+var actionLoglist;
 function query(){
 	if(!validate()) return flase;
 	$.ajax({
-	      url: '<s:url action="querySMSLog"/>',
+	      url: '<s:url action="queryActionLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
 	    	  		"dateTo":$("#dateTo").val()
 	    	  		},//parameters go here in object literal form
@@ -35,15 +35,15 @@ function query(){
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  	smsLoglist=list;
-	    	    $.each(list,function(i,smsLog){  
+	    	  actionLoglist=list;
+	    	    $.each(list,function(i,actionLoglist){  
                var _tr = $(	"<tr>"+
-               					"<td align='center' width='9%'>"+smsLog.id+"</td>"+
-               					"<td align='center' width='15%'>"+smsLog.sendNumber+"</td>"+
-               					"<td align='center' width='20%'>"+smsLog.msg+"</td>"+
-               					"<td align='center' width='20%'>"+smsLog.sendDate+"</td>"+
-               					"<td align='center' width='18%'>"+smsLog.result+"</td>"+
-               					"<td align='center' width='8%'>"+smsLog.createDate+"</td>"+
+               					"<td align='center' width='9%'>"+actionLoglist.id+"</td>"+
+               					"<td align='center' width='15%'>"+actionLoglist.account+"</td>"+
+               					"<td align='center' width='20%'>"+actionLoglist.page+"</td>"+
+               					"<td align='center' width='20%'>"+actionLoglist.action+"</td>"+
+               					"<td align='center' width='18%'>"+actionLoglist.parameter+"</td>"+
+               					"<td align='center' width='8%'>"+actionLoglist.createDate+"</td>"+
                					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
                				"</tr>");  
                
@@ -76,7 +76,7 @@ function clearDate(){
 </head>
 <body>
 <div align="center" >
-	<h3>簡訊發送查詢頁面</h3>
+	<h3>使用者操作紀錄查詢</h3>
 	<div>
 		查詢期間從
 		<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
@@ -88,10 +88,10 @@ function clearDate(){
 		<table class="datatable" align="center" style="width: 80%">
 			<tr class="even_columm" >
 				<td class="columnLabel" align="center" width="9%">ID</td>
-				<td class="columnLabel" align="center" width="15%">SEND_NUMBER</td>
-				<td class="columnLabel" align="center" width="20%">MSG</td>
-				<td class="columnLabel" align="center" width="20%">SEND_DATE</td>
-				<td class="columnLabel" align="center" width="20%">RESULT</td>
+				<td class="columnLabel" align="center" width="15%">ACCOUNT</td>
+				<td class="columnLabel" align="center" width="20%">PAGE</td>
+				<td class="columnLabel" align="center" width="20%">ACTION</td>
+				<td class="columnLabel" align="center" width="20%">PARAMETER</td>
 				<td class="columnLabel" align="center" width="5%">CREATE_DATE</td>
 				<td width="1%">&nbsp;</td>
 			</tr>

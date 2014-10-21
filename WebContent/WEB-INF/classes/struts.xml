@@ -32,7 +32,8 @@
 			<result name="admin" type="tiles">admin</result>
 			<result name="dataRate" type="tiles">dataRate</result>
 			<result name="smsQuery" type="tiles">smsQuery</result>
-			
+			<result name="actionQuery" type="tiles">actionQuery</result>
+			<result name="smsSetting" type="tiles">smsSetting</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -68,6 +69,25 @@
         </action>
     <!-- SMSQuery -->
     	<action name="querySMSLog" method="querySMSLog" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="querySMSSetting" method="querySMSSetting" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="updateSMSSetting" method="updateSMSSetting" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    <!-- SMSQuery -->
+        <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>

@@ -7,16 +7,12 @@
 <title>Insert title here</title>
 <!-- Tab ­¶ÅÒ  ¨Ï¥Î Start-->
 <style type="text/css">
-ul, li {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
 
 .abgne_tab {
 	clear: left;
 	/* width: 400px; */
 	margin: 10px 0;
+	list-style: none;
 }
 
 ul.tabs1 {
@@ -31,6 +27,8 @@ ul.tabs {
 	height: 32px;
 	border-bottom: 1px solid #999;
 	border-left: 1px solid #999;
+	margin:0px;
+	padding:0px;
 }
 
 ul.tabs li {
