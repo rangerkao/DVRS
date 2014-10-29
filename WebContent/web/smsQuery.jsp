@@ -7,9 +7,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
- <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 <script type="text/javascript">
 $(function() {
     $(".datapicker").datepicker({
@@ -22,7 +21,8 @@ $(function() {
   });
 var smsLoglist;
 function query(){
-	if(!validate()) return flase;
+	if(!validate()) return false;
+	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="querySMSLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
@@ -31,6 +31,7 @@ function query(){
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
@@ -51,7 +52,7 @@ function query(){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { alert('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened');  }
 	    });
 }
 function validate(){
@@ -83,7 +84,9 @@ function clearDate(){
 		到
 		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
 		<input type="button" onclick="query()" value="查詢">
-		<input type="button" onclick="clearDate()" value="清除"></div>
+		<input type="button" onclick="clearDate()" value="清除">
+		<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
+	</div>
 	<div>
 		<table class="datatable" align="center" style="width: 80%">
 			<tr class="even_columm" >

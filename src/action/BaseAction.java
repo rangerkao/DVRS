@@ -1,5 +1,6 @@
 package action;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -9,10 +10,12 @@ import org.json.JSONObject;
 
 import program.IJatool;
 import program.Jatool;
+import bean.User;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
+import control.ActionLogControl;
 import control.BaseControl;
 
 public class BaseAction extends ActionSupport implements SessionAware {
@@ -23,9 +26,14 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 1L;
 	
 	protected String result;
+	protected String exception;
 	protected Map<String, Object> session;
-	private BaseControl baseControl=new BaseControl();
 	protected IJatool tool= new Jatool();
+	protected ActionLogControl actionLogControl = new ActionLogControl();
+	
+	public BaseAction() throws Exception {
+		super();
+	}
 	
 /*	public void setSession() {
 		ActionContext ac = ActionContext.getContext();
@@ -39,12 +47,12 @@ public class BaseAction extends ActionSupport implements SessionAware {
 		JSONObject jo = (JSONObject) JSONObject.wrap(object);
 		return jo.toString();
 	}
-	
-	protected void loggerAction(String userid,String page,String action,String parameter){
-		baseControl.loggerAction(userid, page, action, parameter);
+	protected User getUser(){
+		return (User) session.get("s2tUser");
 	}
 	
-	 public String getResult() {
+	
+	public String getResult() {
 	  return result;
 	 }
 	public void setResult(String result) {
@@ -58,5 +66,17 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	public Map<String, Object> getSession() {
 		return session;
 	}
+
+	public String getException() {
+		return exception;
+	}
+
+	public void setException(String exception) {
+		this.exception = exception;
+	}
+	
+	
+	
+	
 	 
 }

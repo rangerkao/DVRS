@@ -14,20 +14,23 @@ import bean.SMSLog;
 public class ActionLogDao extends BaseDao{
 
 	
-	public List<ActionLog> queryActionLog(Date fromDate,Date toDate){
+	public ActionLogDao() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException{
 		
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate)))
 			return queryActionLog();
 		
-		
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
-				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE "
-				+ "FROM HUR_MANERGER_LOG A "
+				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE,A.RESULT "
+				+ "FROM HUR_ACTION_LOG A "
 				+ "WHERE A.CREATE_DATE >= ? -1 AND A.CREATE_DATE <= ? "
 				+ "ORDER BY A.CREATE_DATE ";
 		
-		try {
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
 			pst.setDate(2, tool.convertJaveUtilDate_To_JavaSqlDate(toDate));
@@ -41,24 +44,26 @@ public class ActionLogDao extends BaseDao{
 				log.setAction(rs.getString("ACTION"));
 				log.setParameter(rs.getString("PARAMETER"));
 				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setResult(rs.getString("RESULT"));
 				list.add(log);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			
+			rs.close();
+			pst.close();
+			
+			closeConnect();
+			
 		return list;
 
 	}
 	
-	public List<ActionLog> queryActionLog(){
+	public List<ActionLog> queryActionLog() throws SQLException{
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
-				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE "
-				+ "FROM HUR_MANERGER_LOG A "
+				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE,A.RESULT "
+				+ "FROM HUR_ACTION_LOG A "
 				+ "ORDER BY A.CREATE_DATE ";
 		
-		try {
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 			
@@ -70,12 +75,36 @@ public class ActionLogDao extends BaseDao{
 				log.setAction(rs.getString("ACTION"));
 				log.setParameter(rs.getString("PARAMETER"));
 				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setResult(rs.getString("RESULT"));
 				list.add(log);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			
+			rs.close();
+			st.close();
+			
+			closeConnect();
 		return list;
 	}
+	
+	public int loggerAction(String userid,String page,String action,String parameter,String result) throws SQLException{
+		
+		sql="INSERT INTO HUR_MANERGER_LOG "
+				+ "(ID,USERID,PAGE,ACTION,PARAMETER,CREATE_DATE) "
+				+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+		
+		int aResult=0;
+			PreparedStatement pst = conn.prepareStatement(sql);
+			pst.setString(1, userid);
+			pst.setString(2, page);
+			pst.setString(3, action);
+			pst.setString(4, parameter);
+			pst.setString(5, result);
+			aResult= pst.executeUpdate();
+			
+			pst.close();
+			closeConnect();
+			
+		 return aResult;
+	}
+	
 }

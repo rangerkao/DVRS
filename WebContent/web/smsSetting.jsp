@@ -13,12 +13,14 @@ $(function(){
 	query();
 })
 function query(){
+	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="querySMSSetting"/>',
 	      data: {},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
@@ -37,7 +39,7 @@ function query(){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { alert('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened');  }
 	    });
 }
 function validate(){
@@ -63,7 +65,6 @@ var validation;
 function validat(mod,txt){
 	exist=false;
 	validation=true;
-	alert("你要執行"+txt+"!");
 	
 	if($("#Bracket").val()==null||$("#Bracket").val()==""){
 		$("#LBracket").html("此欄位不可為空!");
@@ -117,7 +118,7 @@ function validat(mod,txt){
 
 function updateSetting(mod,txt){
 	if (!validat(mod,txt)) return false;
-	
+	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="updateSMSSetting"/>',
 	      data: {
@@ -131,6 +132,7 @@ function updateSetting(mod,txt){
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  $("#BClear").click();
@@ -150,9 +152,8 @@ function updateSetting(mod,txt){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { alert('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened'); }
 	    });
-	
 }
 function clearText(txt){
 	$("#L"+txt).html("");
@@ -200,6 +201,7 @@ function replacetxt(txt){
 					<input type="button" onclick="updateSetting('mod','修改')" value="修改">
 					<input type="button" onclick="updateSetting('del','刪除')" value="刪除">
 					<!-- <input type="button" onclick="queryAdmin()" value="查詢"> -->
+					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
 				</td>
 			</tr>
 		</table>

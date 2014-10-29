@@ -1,6 +1,10 @@
 package action;
 
+import interceptor.Authority;
+
 import java.util.Map;
+
+
 
 
 import com.opensymphony.xwork2.ActionContext;
@@ -8,6 +12,11 @@ import com.opensymphony.xwork2.ActionContext;
 import control.LogoutControl;
 
 public class LinkAction extends BaseAction{
+	public LinkAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * 
 	 */
@@ -22,6 +31,7 @@ public class LinkAction extends BaseAction{
 	private String ActionQuery="actionQuery";
 	private String SmsSetting="smsSetting";
 	private String Progrma="program";
+	private String CDR="cdr";
 	
 	Map<String, Object> session;
 	
@@ -31,6 +41,7 @@ public class LinkAction extends BaseAction{
 	{  
 	   return BILL;        
 	}  
+	@Authority(action="admin", privilege="admin")  
 	public String admin()  
 	{  
 	   return Admin;        
@@ -59,6 +70,11 @@ public class LinkAction extends BaseAction{
 	   return Progrma;        
 	}  
 	   
+	public String cdr()  
+	{  
+	   return CDR;        
+	} 
+	
 	public String logout()  
 	{  
 		ActionContext ac = ActionContext.getContext();

@@ -41,6 +41,9 @@
 	<definition name="program" extends="web_base">
 		<put-attribute name="main" value="/web/program.jsp" />
 	</definition>
+	<definition name="cdr" extends="web_base">
+		<put-attribute name="main" value="/web/cdr.jsp" />
+	</definition>
 
 
 </tiles-definitions>

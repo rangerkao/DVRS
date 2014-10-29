@@ -10,14 +10,18 @@ import bean.DataRate;
 
 public class DataRateDao extends BaseDao {
 	
-	//查詢列表
-		public List<DataRate> queryDataRateList(){
+	public DataRateDao() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+		//查詢列表
+		public List<DataRate> queryDataRateList() throws SQLException{
 			sql=
 					"SELECT A.PRICEPLANID,A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY "
 					+ "FROM HUR_DATA_RATE A";
 			List<DataRate> list=new ArrayList<DataRate>();
 			
-			try {
 				Statement st = conn.createStatement();
 				ResultSet rs=st.executeQuery(sql);
 				
@@ -32,11 +36,6 @@ public class DataRateDao extends BaseDao {
 				}
 				st.close();
 				rs.close();
-				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
 			closeConnect();
 			

@@ -1,5 +1,6 @@
 package action;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,13 @@ import control.SMSControl;
 import bean.SMSLog;
 import bean.SMSSetting;
 
-public class SMSAction extends BaseAction{
+public class SMSAction extends BaseAction {
+
+	public SMSAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 
 	/**
 	 * 
@@ -28,8 +35,7 @@ public class SMSAction extends BaseAction{
 	String smsSettinglistString;
 	private SMSControl smsControl = new SMSControl();
 	
-	
-	public String querySMSLog() throws ParseException{
+	public String querySMSLog() throws ParseException, SQLException{
 		System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo);
 		if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo)))
 			smsLoglist=smsControl.querySMSLog();
@@ -38,21 +44,21 @@ public class SMSAction extends BaseAction{
 					tool.DateFormat(dateTo, "yyyy-MM-dd"));		
 		
 		result=beanToJSONArray(smsLoglist);
-		
+		actionLogControl.loggerAction(super.getUser().getAccount(), "SMSLog", "query","", result);
 		return SUCCESS;
 	}
 	
 	
-	public String querySMSSetting(){
+	public String querySMSSetting() throws SQLException{
 		
 		smsSettinglist=smsControl.querySMSSetting();
 		result=beanToJSONArray(smsSettinglist);
-		
+		actionLogControl.loggerAction(super.getUser().getAccount(), "SMSSetting", "query","", result);
 		return SUCCESS;
 	}
 	
 	
-	public String updateSMSSetting(){
+	public String updateSMSSetting() throws SQLException{
 		JSONArray json =new JSONArray(smsSettinglistString);
 		
 			for(int i=0;i<json.length();i++){
@@ -96,6 +102,7 @@ public class SMSAction extends BaseAction{
 			}
 			smsSettinglist=smsControl.updateSMSSetting(smsSettinglist);
 			result=beanToJSONArray(smsSettinglist);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "SMSSetting", "update",mod+":"+smsSettinglistString, result);
 
 		return SUCCESS;
 	}

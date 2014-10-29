@@ -7,6 +7,11 @@ import bean.Admin;
 
 public class AdminControl extends BaseControl{
 	
+	public AdminControl() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	private AdminDao adminDao=new AdminDao();
 	
 	public List<Admin> queryAdminList(){
@@ -20,7 +25,7 @@ public class AdminControl extends BaseControl{
 	public int modAdmin(Admin admin){
 		return adminDao.update(admin);
 	}
-	
+
 	public int delAdmin(Admin admin){
 		return adminDao.delete(admin);
 	}

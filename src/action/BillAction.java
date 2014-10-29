@@ -5,6 +5,11 @@ import bill.bean.BillData;
 
 public class BillAction extends BaseAction{
 	
+	public BillAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * 
 	 */

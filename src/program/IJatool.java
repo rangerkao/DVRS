@@ -90,6 +90,20 @@ public interface IJatool {
 	Date getMonthLastDate(Date date);
 	
 	/**
+	 * 眔把计丁讽ら箂翴
+	 * @param date
+	 * @return
+	 */
+	Date getDayFirstDate(Date date);
+	
+	/**
+	 * 眔把计丁讽る23翴59だ
+	 * @param date
+	 * @return
+	 */
+	Date getDayLastDate(Date date);
+	
+	/**
 	 * 盢util Date 锣传sql Date
 	 * @param date
 	 * @return
@@ -120,4 +134,13 @@ public interface IJatool {
 	 * @throws ParseException 
 	 */
 	Date DateFormat(String dateString,String form) throws ParseException;
+	
+	/**
+	 * Http Post よΑ肚癳把计
+	 * @param url "https://selfsolve.apple.com/wcResults.do"
+	 * @param param "sn=C02G8416DRJM&cn=&locale=&caller=&num=12345"
+	 * @return
+	 * @throws IOException 
+	 */
+	String HttpPost(String url,String param,String charset) throws IOException;
 }

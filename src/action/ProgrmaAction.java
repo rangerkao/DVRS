@@ -1,8 +1,16 @@
 package action;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import control.ProgramControl;
 
 public class ProgrmaAction extends BaseAction {
+
+	public ProgrmaAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	/**
 	 * 
@@ -13,8 +21,19 @@ public class ProgrmaAction extends BaseAction {
 
 	private ProgramControl programControl=new ProgramControl();
 	
-	public String execute(){
-		result = programControl.execute(filename);
+	public String execute() throws SQLException {
+		try {
+			result = programControl.execute(filename);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result=e.getMessage();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result=e.getMessage();
+		}
+		actionLogControl.loggerAction(super.getUser().getAccount(), "Program", "execute","filename¡G"+filename, result);
 		return SUCCESS;
 	}
 	public String getFilename() {

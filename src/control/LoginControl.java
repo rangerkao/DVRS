@@ -8,8 +8,13 @@ import bean.User;
 
 public class LoginControl extends BaseControl{
 
-	private AdminDao adminDao=new AdminDao();
+	private AdminDao adminDao = new AdminDao();
 	
+	public LoginControl() throws Exception {
+		super();
+	}
+
+
 	public String loginC(Map session,String account,String password){
 		String msg="";
 			Admin admin = adminDao.queryAdminByAccount(account);

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -18,31 +19,15 @@ public class BaseControl {
 
 	Properties props =new Properties();
 	Logger logger ;
-	private BaseDao baseDao=new BaseDao();
-	public BaseControl(){
+	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
+	public BaseControl() throws Exception{
 		loadProperties();
 	}
 	
-	private void loadProperties() {
-		String path = BillReport.class.getClassLoader().getResource("").toString().replace("file:/", "")
-				+ "/log4j.properties";
-		try {
+	private void loadProperties() throws FileNotFoundException, IOException {
+			String path=classPath+ "/log4j.properties";
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
 			logger = Logger.getLogger(RFPmain.class);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.out.println("File Not Found : " + e.getMessage());
-			System.out.println("File Path : " + path);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("IOException : " + e.getMessage());
-		}
-	}
-	
-	public int loggerAction(String userid,String page,String action,String parameter){
-		return baseDao.loggerAction(userid, page, action, parameter);
-	}
-	
-	
+	}	
 }

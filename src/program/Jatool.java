@@ -1,7 +1,13 @@
 package program;
 
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -24,13 +31,23 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.axis2.AxisFault;
+
+
 import org.apache.log4j.Logger;
 
 //190
 /*import com.infotech.smpp.SMPPServicesStub;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
+
+
+
+
+
+
+
+
 
 
 
@@ -243,6 +260,36 @@ public class Jatool implements IJatool{
 		calendar.clear();
 		return monthLastDate;
 	}
+	
+	@Override
+	public Date getDayFirstDate(Date date) {
+		
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));//默認為當前時間
+		Date monthFirstDate=null;
+
+		calendar.setTime(date);
+		calendar.set(Calendar.HOUR_OF_DAY, calendar.getActualMinimum(Calendar.HOUR_OF_DAY));
+		calendar.set(Calendar.MINUTE, calendar.getActualMinimum(Calendar.MINUTE));
+		calendar.set(Calendar.SECOND, calendar.getActualMinimum(Calendar.SECOND));
+		monthFirstDate=calendar.getTime();
+		calendar.clear();
+
+		return monthFirstDate;
+	}
+
+	@Override
+	public Date getDayLastDate(Date date) {
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));//默認為當前時間
+		Date monthLastDate=null;
+		
+		calendar.setTime(date);
+		calendar.set(Calendar.HOUR_OF_DAY, calendar.getActualMaximum(Calendar.HOUR_OF_DAY));
+		calendar.set(Calendar.MINUTE, calendar.getActualMaximum(Calendar.MINUTE));
+		calendar.set(Calendar.SECOND, calendar.getActualMaximum(Calendar.SECOND));
+		monthLastDate= calendar.getTime();
+		calendar.clear();
+		return monthLastDate;
+	}
 
 	@Override
 	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
@@ -280,11 +327,51 @@ public class Jatool implements IJatool{
 		
 		if(form==null ||"".equals(form)) form=iniform;
 		DateFormat dateFormat = new SimpleDateFormat(form);
-		dateFormat.parse(dateString);
+		result=dateFormat.parse(dateString);
 		
 		return result;
 	}
 	
+	@Override
+	public String HttpPost(String url,String param,String charset) throws IOException{
+		URL obj = new URL(url);
+		
+		if(charset!=null && !"".equals(charset))
+			param=URLEncoder.encode(param, charset);
+		
+		
+		HttpURLConnection con =  (HttpURLConnection) obj.openConnection();
+ 
+		//add reuqest header
+		/*con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");*/
+ 
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(param);
+		wr.flush();
+		wr.close();
+ 
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + param);
+		System.out.println("Response Code : " + responseCode);
+ 
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+ 
+		//print result
+		return(response.toString());
+	}
 	
 	
 }

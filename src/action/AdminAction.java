@@ -1,7 +1,10 @@
 package action;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 
 
@@ -18,6 +21,11 @@ import control.AdminControl;
 
 public class AdminAction extends BaseAction{
 
+	public AdminAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * 
 	 */
@@ -30,16 +38,17 @@ public class AdminAction extends BaseAction{
 	 private Admin admin;
 	 private String mod;
 	
-	public String queryAdmin(){
+	public String queryAdmin() throws SQLException{
 		
 		List<Admin> adminList=new ArrayList<Admin>();
 		adminList=adminControl.queryAdminList();
 		System.out.println( beanToJSONArray(adminList));
 		result=beanToJSONArray(adminList);
+		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", result);
 		return SUCCESS;
 	}
 	
-	public String updateAdmin(){
+	public String updateAdmin() throws SQLException{
 		result=SUCCESS;
 		System.out.println( beanToJSONObject(admin));
 		System.out.println(	"mod:"+mod);
@@ -54,6 +63,7 @@ public class AdminAction extends BaseAction{
 			if(adminControl.delAdmin(admin)!=1)
 				result="Error To delete data!";
 		}
+		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "update", mod+":"+ beanToJSONObject(admin), result);
 
 		return SUCCESS;
 

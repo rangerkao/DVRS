@@ -11,6 +11,10 @@ import bean.Admin;
 
 public class AdminDao extends BaseDao {	
 	
+	public AdminDao() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 	public int insert(Admin admin){
 		sql=
 				"INSERT INTO HUR_ADMIN(ID,ACCOUNT,PASSWORD,ROLE,CREATE_DATE)"

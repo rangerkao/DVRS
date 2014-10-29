@@ -13,12 +13,14 @@
 	});
 		var adminList;
 		function queryAdmin(){
+			$("#Qmsg").html("正在查尋，請稍待...");
 			 $.ajax({
 			      url: '<s:url action="queryAdmin"/>',
 			      data: {}, //parameters go here in object literal form
 			      type: 'POST',
 			      datatype: 'json',
 			      success: function(json) {  
+			    	  $("#Qmsg").html("Success");
 			    	  //jQuery.parseJSON,JSON.parse(json)
 			    	  //alert(json);
 			    	  var list=$.parseJSON(json);
@@ -37,8 +39,9 @@
 			    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 			    	    $("#table1 tr:even").addClass("even_columm");
 			    	  },
-			      error: function() { alert('something bad happened'); }
+			      error: function() { $("#Qmsg").html('something bad happened');}
 			    });
+			 $("#Qmsg").html("&nbsp;");
 		}
 		//將被選擇的table欄位放入編輯區
 		function chooseRow(bu){
@@ -54,8 +57,7 @@
 			
 			if(confirm("確認要"+String+"資料？")){
 				if(!validateForm(mod)){return}
-				
-				alert("updateAdmin clicked!");
+				$("#Qmsg").html("正在查尋，請稍待...");
 				$.ajax({
 				      url: '<s:url action="updateAdmin"/>',
 				      data: { "admin.userid":$("#Userid").val(),
@@ -68,12 +70,12 @@
 				      success: function(json) { 
 				    	  	//alert(json);  
 				    	  	if(json=='success'){
-				    	  		alert("Success!")
+				    	  		$("#Qmsg").html("Success");
 				    	  		queryAdmin();
 				    	  	}else{
-				    	  			alert(json);
+				    	  		$("#Qmsg").html(json);
 				    	  		}},
-				      error: function(json) { alert('insert error!'+(json)); }
+				      error: function(json) { $("#Qmsg").html('something bad happened');}
 				    });
 			}
 		}
@@ -159,6 +161,7 @@
 					<input type="button" onclick="updateAdmin('mod','修改')" value="修改">
 					<input type="button" onclick="updateAdmin('del','刪除')" value="刪除">
 					<input type="button" onclick="queryAdmin()" value="查詢">
+					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
 				</td>
 			</tr>
 		</table>

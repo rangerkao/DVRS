@@ -77,6 +77,7 @@ var count=logOutTime/checkPeriod;
 					<li><a href="<s:url action="actionQueryLink"/>">使用者操作紀錄查詢</a><br></li>
 					<li><a href="<s:url action="smsQueryLink"/>">簡訊發送查詢</a><br></li>
 					<li><a href="<s:url action="dataRateLink"/>">資費管理</a><br></li>
+					<li><a href="<s:url action="cdrLink"/>">CDR查詢</a><br></li>
 				</ul>
 			</li>
 			<li>

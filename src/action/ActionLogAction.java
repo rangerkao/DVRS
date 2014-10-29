@@ -1,5 +1,6 @@
 package action;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,12 @@ import control.ActionLogControl;
 
 public class ActionLogAction extends BaseAction {
 
+	public ActionLogAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
 	/**
 	 * 
 	 */
@@ -19,18 +26,19 @@ public class ActionLogAction extends BaseAction {
 	String dateTo;
 	SMSLog actionLog;
 	List<ActionLog> actionLoglist = new ArrayList<ActionLog>();
-	private ActionLogControl actionLogControl = new ActionLogControl();
 	
-	
-	public String queryActionLog() throws ParseException{
+	public String queryActionLog() throws ParseException, SQLException{
 		System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo);
-		if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo)))
+		if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo))){
 			actionLoglist=actionLogControl.queryActionLog();
-		else
+		}
+		else{
 			actionLoglist=actionLogControl.queryActionLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
 					tool.DateFormat(dateTo, "yyyy-MM-dd"));		
-		
+		}
 		result=beanToJSONArray(actionLoglist);
+
+		actionLogControl.loggerAction(super.getUser().getAccount(), "ActionLog", "query", "dateFrom:"+dateFrom+";dateTo:"+dateTo, result);
 		
 		return SUCCESS;
 	}

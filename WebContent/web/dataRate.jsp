@@ -11,12 +11,14 @@ $(document).ready(function(){
 	queryDataRate();
 });
 	function queryDataRate(){
+		$("#Qmsg").html("正在查尋，請稍待...");
 		$.ajax({
 	      url: '<s:url action="queryDataRate"/>',
 	      data: {}, //parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
@@ -36,7 +38,7 @@ $(document).ready(function(){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { alert('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened'); }
 	    });
 	}
 
@@ -48,6 +50,7 @@ $(document).ready(function(){
 <body>
 <div align="center" >
 	<h3>費率查詢頁面</h3>
+	<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
 	<div>
 		<table class="datatable" align="center">
 			<tr class="even_columm" >

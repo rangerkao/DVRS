@@ -15,7 +15,12 @@ public class SMSDao extends BaseDao{
 
 	
 	
-	public List<SMSLog> querySMSLog(Date fromDate,Date toDate){
+	public SMSDao() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public List<SMSLog> querySMSLog(Date fromDate,Date toDate) throws SQLException{
 		
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate)))
 			return querySMSLog();
@@ -28,7 +33,6 @@ public class SMSDao extends BaseDao{
 				+ "WHERE A.SEND_DATE >= ? -1 AND A.SEND_DATE <= ? "
 				+ "ORDER BY A.CREATE_DATE ";
 		
-		try {
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
 			pst.setDate(2, tool.convertJaveUtilDate_To_JavaSqlDate(toDate));
@@ -44,22 +48,17 @@ public class SMSDao extends BaseDao{
 				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
 				list.add(log);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return list;
 
 	}
 	
-	public List<SMSLog> querySMSLog(){
+	public List<SMSLog> querySMSLog() throws SQLException{
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
 				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,A.SEND_DATE,A.CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A "
 				+ "ORDER BY A.CREATE_DATE ";
 		
-		try {
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 			
@@ -73,21 +72,17 @@ public class SMSDao extends BaseDao{
 				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
 				list.add(log);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		return list;
 	}
 	
-	public List<SMSSetting> querySMSSetting(){
+	public List<SMSSetting> querySMSSetting() throws SQLException{
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
 				"SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND "
 				+ "FROM HUR_SMS_SETTING A "
 				+ "ORDER BY A.ID ";
 		
-		try {
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 			
@@ -105,17 +100,12 @@ public class SMSDao extends BaseDao{
 					
 				list.add(log);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		return list;
 	}
 	
-	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list){
+	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
 		
-		
-		try {
 			//移除所有資料
 			sql=
 					"TRUNCATE  TABLE  HUR_SMS_SETTING";
@@ -143,10 +133,6 @@ public class SMSDao extends BaseDao{
 			pst.close();
 			conn.close();
 			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 		return list;
 	}

@@ -9,6 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -24,34 +29,22 @@ public class BaseDao {
 	protected Connection conn =null;
 	protected IJatool tool=new Jatool();
 	protected String sql="";
-	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:/", "").replace("%20", " ");
-	private String logDB="INSERT INTO HUR_MANERGER_LOG "
-			+ "(ID,USERID,PAGE,ACTION,PARAMETER,CREATE_DATE) "
-			+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
 	
-	public BaseDao(){
+	public BaseDao() throws Exception{
+		System.out.println("Base Dao InI...");
 		loadProperties();
 		connectDB();
 	}
-	protected void loadProperties() {
-		System.out.println("initial Log4g, property !");
-
+	protected void loadProperties() throws FileNotFoundException, IOException {
 		String path=classPath+ "/log4j.properties";
-		try {
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
 			logger = Logger.getLogger(RFPmain.class);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.out.println("File Not Found : " + e.getMessage());
-			System.out.println("File Path : " + path);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("IOException : " + e.getMessage());
-		}
+
 	}
-	protected void connectDB(){
-		try {
+	protected void connectDB() throws Exception{
+
 			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), 
 					props.getProperty("Oracle.URL")
 					.replace("{{Host}}", props.getProperty("Oracle.Host"))
@@ -62,39 +55,18 @@ public class BaseDao {
 			if(conn==null){
 				throw new Exception("DB Connect null !");
 			}
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	public int loggerAction(String userid,String page,String action,String parameter){
-		
-		int result=0;
-		 try {
-			PreparedStatement pst = conn.prepareStatement(logDB);
-			pst.setString(1, userid);
-			pst.setString(2, page);
-			pst.setString(3, action);
-			pst.setString(4, parameter);
-			result= pst.executeUpdate();
-			
-			pst.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		 
-		 closeConnect();
-		
-		 return result;
+
 	}
 	
+	protected void connectDB2() throws NamingException, SQLException{
+			 	DataSource dataSource;
+	            // Get DataSource
+	            Context initContext  = new InitialContext();
+	            Context envContext  = (Context)initContext.lookup("java:/comp/env");
+	            dataSource = (DataSource)envContext.lookup("jdbc/testdb");
+	            conn = dataSource.getConnection();
+	}
+
 	
 	/**
 	 * Ãö³¬³s½u

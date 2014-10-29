@@ -1,13 +1,18 @@
 package action;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import bean.DataRate;
-
 import control.DataRateControl;
 
 public class DataRateAction extends BaseAction{
+
+	public DataRateAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	/**
 	 * 
@@ -17,9 +22,10 @@ public class DataRateAction extends BaseAction{
 	List<DataRate> dataRateList=new ArrayList<DataRate>();
 	DataRateControl dataRateControl = new DataRateControl();
 	
-	public String queryDataRate(){
+	public String queryDataRate() throws SQLException{
 		dataRateList=dataRateControl.queryDataRateList();
 		result=beanToJSONArray(dataRateList);
+		actionLogControl.loggerAction(super.getUser().getAccount(), "DataRate", "query","", result);
 		return SUCCESS;
 	}
 }

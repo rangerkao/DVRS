@@ -8,29 +8,51 @@
 <title>Insert title here</title>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-function execute(){
-	alert($('input[name=act]:checked').val());
+$( document ).ready(function(){
+	
+});
 
+
+function execute(){
+	
+	$("#result").html("正在執行，請稍待...");
+	var filename;
+	
+	if($('input[name=act]:checked').val()=='filename'){
+		filename=$("#filename").val();
+	}else{
+		filename="show.sh "+$('input[name=act]:checked').val();
+	}
+	
+	//alert(filename);
 	$.ajax({
 	      url: '<s:url action="executeProgram"/>',
-	      data: {"filename":$('input[name=act]:checked').val()},//parameters go here in object literal form
+	      data: {"filename":filename},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) { $("#result").html(json); },
 	      error: function() { alert('something bad happened'); }
 	    });
-}
+};
+
+
 </Script>
 </head>
 <body>
-<div>
+<div align="center">
 	程式執行管理頁面<br>
-	<!-- <input type="text" id="filename"> -->
-	<input type="radio" name="act" value="test.bat" checked="checked">test <br>
-	<input type="radio" name="act" value="run.bat" >run<br>
-	<input type="radio" name="act" value="terminate.bat" >terminate<br>
-	<input type="button" value="執行" onclick="execute()">
-	<label style="width: 500px;height: 300px;" id="result"></label>
+	<div align="left" style="width: 200px">
+		<input type="radio" name="act" value="info" >info<br>
+		<input type="radio" name="act" value="status" >status<br>
+		<input type="radio" name="act" value="start" >start<br>
+		<input type="radio" name="act" value="stop" >stop<br>
+		<input type="radio" name="act" value="filename" ><input type="text" id="filename"><br>
+		<input type="button" value="執行" onclick="execute()"><br>
+	</div>
+	<div style="width: 80%;max-height: 300px;height: 300px; overflow: auto;" align="left">
+		<br>
+		<label style="width: 100%;height: 100%" id="result"></label>
+	</div>
 </div>
 </body>
 </html>

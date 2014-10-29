@@ -1,5 +1,6 @@
 package control;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import bean.DataRate;
@@ -9,7 +10,13 @@ public class DataRateControl extends BaseControl{
 	
 	private DataRateDao dataRateDao = new DataRateDao();
 	
-	public List<DataRate> queryDataRateList(){
+	
+	
+	public DataRateControl() throws Exception {
+		super();
+	}
+
+	public List<DataRate> queryDataRateList() throws SQLException{
 		return dataRateDao.queryDataRateList();
 	}
 

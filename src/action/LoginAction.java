@@ -12,7 +12,12 @@ import control.LoginControl;
 
 public class LoginAction extends BaseAction{
 		
-	   /**
+	   public LoginAction() throws Exception {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
@@ -35,8 +40,9 @@ public class LoginAction extends BaseAction{
 
 		tag=logincControl.loginC(session,acc,psw);
 		if(!"success".equals(tag)) result= "input";
-		else result= "success";
-		
+		else{ result= "success";
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Login", "Login","", result);
+		}
 		return result;
 		
 	}
