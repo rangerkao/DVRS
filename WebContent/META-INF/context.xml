@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- Specify a JDBC datasource -->
+    <Resource name="jdbc/testdb" auth="Container"
+        type="javax.sql.DataSource" username="foyadev" password="foyadev"
+        driverClassName="oracle.jdbc.driver.OracleDriver"
+        url="jdbc:oracle:thin:@10.42.1.101:1521:S2TBSDEV"
+        maxActive="10" maxIdle="4" />
+ 
+</Context>

@@ -1009,9 +1009,7 @@ public class RFPmain implements Job{
 	 */
 	private void sendAlertSMS(){
 		logger.info("sendAlertSMS...");
-		
-		sql="SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID";	
-		
+
 		List<Integer> times=new ArrayList<Integer>();
 		List<Double> bracket=new ArrayList<Double>();
 		List<String> msg=new ArrayList<String>();
@@ -1021,8 +1019,11 @@ public class RFPmain implements Job{
 		String phone=null;
 		
 		//載入簡訊設定
-		Statement st;
+		
 		try {
+			sql="SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID";	
+			
+			Statement st;
 			st = conn.createStatement();
 			logger.debug("Execute SQL:"+sql);
 			ResultSet rs=st.executeQuery(sql);
@@ -1030,16 +1031,19 @@ public class RFPmain implements Job{
 			while(rs.next()){
 				times.add(rs.getInt("ID"));
 				bracket.add(rs.getDouble("BRACKET"));
-				msg.add(processMag(rs.getString("MEG"),rs.getDouble("BRACKET")));
+				msg.add(rs.getString("MEGID"));
 				suspend.add(rs.getString("SUSPEND"));
 				logger.info("times:"+times.get(times.size()-1)+",bracket:"+bracket.get(bracket.size()-1)+",msg:"+msg.get(msg.size()-1)+",suspend:"+suspend.get(suspend.size()-1));
 			}
+			
+			rs.close();
+			st.close();
 
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 			logger.error("Error at Load SMSSetting : "+e1.getMessage());
 			//sendMail
-			sendMail("At sendAlertSMS occur SQLException error!");
+			sendMail("At sendAlertSMS:Load SMSSetting occur SQLException error!");
 			errorMsg=e1.getMessage();
 		}
 		
@@ -1048,6 +1052,38 @@ public class RFPmain implements Job{
 			logger.error("No SMS Setting!");
 			return;
 		}
+		
+		
+		Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
+		
+		try {
+			sql=
+					"SELECT A.ID,A.COMTENT,A.CHARSET "
+					+ "FROM HUR_SMS_COMTENT A ";	
+			
+			Statement st;
+			st = conn.createStatement();
+			logger.debug("Execute SQL:"+sql);
+			ResultSet rs=st.executeQuery(sql);
+			
+			while(rs.next()){
+				Map<String,String> map =new HashMap<String,String>();
+				map.put("COMTENT", rs.getString("COMTENT"));
+				map.put("CHARSET", rs.getString("CHARSET"));
+				content.put(rs.getString("ID"), map);
+			}
+
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			logger.error("Error at Load SMSContent : "+e1.getMessage());
+			//sendMail
+			sendMail("At sendAlertSMS:Load SMSContent occur SQLException error!");
+			errorMsg=e1.getMessage();
+		}
+		
+		
+		
+		
 
 		try {
 			sql="INSERT INTO HUR_SMS_LOG"
@@ -1079,36 +1115,39 @@ public class RFPmain implements Job{
 						smsTimes++;
 						//寄送簡訊
 						logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
-						//TODO
-						//WSDL方式呼叫 WebServer
-						//result=tool.callWSDLServer(setSMSXmlParam(msg.get(i),phone));
-						//WSDL方式呼叫 WebServer
-						res=setSMSPostParam(msg.get(i),phone);
-						
-						logger.debug("send message result : "+res);						
-						currentMap.get(sYearmonth).get(imsi).put("SMS_TIMES", smsTimes);
-						smsCount++;
-						if("1".equals(suspend.get(i))){
-							suspend(imsi,phone);
-						}
+						for(String s:msg.get(i).split(",")){
+							String cont =processMag(content.get(s).get("COMTENT"),bracket.get(i));
+							//TODO
+							//WSDL方式呼叫 WebServer
+							//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
+							//WSDL方式呼叫 WebServer
+							res=setSMSPostParam(cont,phone);
+							
+							logger.debug("send message result : "+res);						
+							currentMap.get(sYearmonth).get(imsi).put("SMS_TIMES", smsTimes);
+							smsCount++;
+							if("1".equals(suspend.get(i))){
+								suspend(imsi,phone);
+							}
 
-						//寫入資料庫
-						pst.setString(1, phone);
-						pst.setString(2, msg.get(i));
-						pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
-						pst.setString(4, res);
-						pst.addBatch();
-						
-						//HUR_Current 需更新
-						//如果是新資料，insertList會已有資料，直接註記update
-						if(!updateMap.containsKey(sYearmonth)){
-							Set se=new HashSet();
-							se.add(imsi);
-							updateMap.put(sYearmonth, se);
-						}else{
-							updateMap.get(sYearmonth).add(imsi);
+							//寫入資料庫
+							pst.setString(1, phone);
+							pst.setString(2, msg.get(i));
+							pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
+							pst.setString(4, res);
+							pst.addBatch();
+							
+							//HUR_Current 需更新
+							//如果是新資料，insertList會已有資料，直接註記update
+							if(!updateMap.containsKey(sYearmonth)){
+								Set<String> se=new HashSet<String>();
+								se.add(imsi);
+								updateMap.put(sYearmonth, se);
+							}else{
+								updateMap.get(sYearmonth).add(imsi);
+							}
+							break;
 						}
-						break;
 					}
 				}	
 			}
