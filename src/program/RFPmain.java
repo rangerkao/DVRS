@@ -68,7 +68,7 @@ public class RFPmain implements Job{
 	private String errorMsg="";
 	
 	//Hur Data conf
-	private  int dataThreshold=1000;
+	private  int dataThreshold=500;
 	private  int lastfileID=0;
 	private final int exchangeRate=4; //港幣對台幣匯率，暫訂為4
 	private final double kByte=1/1024D;//RATE單位KB，USAGE單位B
@@ -97,6 +97,7 @@ public class RFPmain implements Job{
 	Map <String,Map <String,Set<String>>> updateMapD = new HashMap<String,Map <String,Set<String>>>();
 	Map <String,Set<String>> insertMap = new HashMap<String,Set<String>>();
 	Map <String,Map <String,Set<String>>> insertMapD = new HashMap<String,Map <String,Set<String>>>();
+	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
 	
 	List<String> updateList = new ArrayList<String>();
 	List<String> updateListU = new ArrayList<String>();
@@ -119,8 +120,8 @@ public class RFPmain implements Job{
 	 * 同時載入參數porps
 	 */
 	private  void loadProperties(){
-		System.out.println("initial Log4g, property !");
-		String path=RFPmain.class.getResource("").toString().replace("file:/", "")+"/log4j.properties";
+		System.out.println("initial Log4j, property !");
+		String path=RFPmain.class.getResource("").toString().replace("file:", "")+"/Log4j.properties";
 		try {
 			props.load(new   FileInputStream(path));
 			PropertyConfigurator.configure(props);
@@ -153,7 +154,7 @@ public class RFPmain implements Job{
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.debug("close ResultSet Error : "+e.getMessage());
+				logger.debug("close Connect Error : "+e.getMessage());
 				//send mail
 				sendMail("At closeConnect occur SQLException error!");
 			}
@@ -212,7 +213,6 @@ public class RFPmain implements Job{
 			while(rs.next()){
 				lastfileID=rs.getInt("id");
 			}
-			
 			logger.info("Last process file ID :"+lastfileID);
 			
 			st.close();
@@ -247,19 +247,26 @@ public class RFPmain implements Job{
 			pst.setString(2, sYearmonth2);
 			
 			logger.debug("Execute SQL : "+sql);
-			ResultSet rs = pst.executeQuery(sql);
+			ResultSet rs = pst.executeQuery();
 			logger.debug("Set current map...");
 			
 			while(rs.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
+				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
+
 				String imsi =rs.getString("IMSI");
 				String month=rs.getString("MONTH");
+				
+				if(currentMap.containsKey(month)){
+					map2=currentMap.get(month);
+				}
+				
 				map.put("LAST_FILEID", rs.getInt("LAST_FILEID"));
 				map.put("SMS_TIMES", rs.getInt("SMS_TIMES"));
 				map.put("LAST_DATA_TIME", (rs.getDate("LAST_DATA_TIME")!=null?rs.getDate("LAST_DATA_TIME"):new Date()));
 				map.put("CHARGE", rs.getDouble("CHARGE"));
 				map.put("VOLUME", rs.getDouble("VOLUME"));
-				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
+
 				map2.put(imsi, map);
 				currentMap.put(month,map2);
 			}
@@ -288,7 +295,7 @@ public class RFPmain implements Job{
 		logger.info("setCurrentMapDay...");
 		try {
 			sql=
-					"SELECT SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY "
+					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY "
 					+ "FROM HUR_CURRENT_DAY A ";
 			logger.debug("Execute SQL : "+sql);
 			Statement st = conn.createStatement();
@@ -297,28 +304,34 @@ public class RFPmain implements Job{
 			
 			while(rs2.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
+				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();			
+				Map<String,Map<String,Map<String,Object>>> map3=new HashMap<String,Map<String,Map<String,Object>>>();
+				
 				String mccmnc=rs2.getString("MCCMNC");
 				if(mccmnc==null || "".equals(mccmnc)) mccmnc=DEFAULT_MCCMNC;
-				
-				
 				String imsi =rs2.getString("IMSI");
 				String day =rs2.getString("DAY");
 				//System.out.println("imsi : "+imsi);
 				
+				if(currentDayMap.containsKey(day)){
+					map3=currentDayMap.get(day);
+					if(map.containsKey(imsi)){
+						map2=map3.get(imsi);
+					}
+				}
+						
 				map.put("LAST_FILEID", rs2.getInt("LAST_FILEID"));
 				map.put("LAST_DATA_TIME", (rs2.getDate("LAST_DATA_TIME")!=null?rs2.getDate("LAST_DATA_TIME"):new Date()));
 				map.put("CHARGE", rs2.getDouble("CHARGE"));
 				map.put("VOLUME", rs2.getDouble("VOLUME"));
-	
-				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
+
 				map2.put(mccmnc, map);
-				Map<String,Map<String,Map<String,Object>>> map3=new HashMap<String,Map<String,Map<String,Object>>>();
+				
 				map3.put(imsi, map2);
 				currentDayMap.put(day,map3);
 			}
 			st.close();
 			rs2.close();
-			closeConnect();
 			
 		} catch (SQLException e) {
 			
@@ -353,12 +366,17 @@ public class RFPmain implements Job{
 				String priceplanID =rs.getString("PRICEPLANID");
 				
 				Map<String,Object> map=new HashMap<String,Object>();
+				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
+				
 				map.put("RATE", rs.getDouble("RATE"));
 				map.put("CHARGEUNIT", rs.getDouble("CHARGEUNIT"));
 				map.put("CURRENCY", rs.getString("CURRENCY"));
 				map.put("DAYCAP", rs.getString("DAYCAP"));
 				
-				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
+				if(dataRate.containsKey(priceplanID)){
+					map2=dataRate.get(priceplanID);
+				}
+
 				map2.put(mccmnc, map);
 				
 				dataRate.put(priceplanID, map2);
@@ -453,50 +471,46 @@ public class RFPmain implements Job{
 	 */
 	private void charge(){
 		logger.info("charge...");
-		sql=
-				"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
-				+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
-				+ "			FROM HUR_DATA_USAGE A WHERE A.FILEID>=? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID) "
-				+ "MINUS "
-				+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
-				+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
-				+ "			FROM HUR_DATA_USAGE A WHERE A.FILEID>=? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID)";
-
-		String sql2=
-				"UPDATE HUR_DATA_USAGE A "
-				+ "SET A.CHARGE=? "
-				+ "WHERE A.USAGEID=? ";
-
+		
 		int count=0;
 		double maxRate=0;
 		int j=1;
 		try {
 			count=dataCount();
 			maxRate=maxRate();
-			//批次Query 避免ram空間不足
+			
+			sql=
+					"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
+					+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
+					+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID) "
+					+ "MINUS "
+					+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
+					+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
+					+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID)";
+			
 			logger.debug("Execute SQL : "+sql);
-
-			for(int i=1;(i-1)*dataThreshold+1<count ;i++){	
+			
+			//批次Query 避免ram空間不足
+			for(int i=1;(i-1)*dataThreshold+1<count ;i++){
+				logger.debug("Round "+i+" Procsess ...");
 				PreparedStatement pst = conn.prepareStatement(sql);
-				
 				pst.setInt(1, lastfileID+1);
 				pst.setInt(2, i*dataThreshold);
 				pst.setInt(3, lastfileID+1);
 				pst.setInt(4, (i-1)*dataThreshold);
-				
+			
 				ResultSet rs = pst.executeQuery();
-
-				PreparedStatement pst2 = conn.prepareStatement(sql2);
-				
+				j=0;
 				while(rs.next()){
-					/*System.out.println(j+"\t:\t"+rs.getString("USAGEID"));
-					j++;*/
+					/*System.out.println(j+"\t:\t"+rs.getString("USAGEID"));*/
+					j++;
 					
 					String imsi= rs.getString("IMSI");
+					logger.debug(j+" Charge imsi : "+imsi+"...");
 					String mccmnc=rs.getString("MCCMNC");
 					//假如沒有mccmnc給予預設字樣，必須要有
 					if(mccmnc==null || "".equals(mccmnc)) mccmnc= DEFAULT_MCCMNC;
-					
+					String usageId=rs.getString("USAGEID");
 					Double volume=rs.getDouble("DATAVOLUME");
 					Date callTime=rs.getDate("CALLTIME");
 					Integer fileID=rs.getInt("FILEID");
@@ -505,13 +519,22 @@ public class RFPmain implements Job{
 					Double oldCharge=0D;
 					Double dayCap=null;
 					
-					String pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
-					
+					String pricplanID=null;
+					if(msisdnMap.containsKey(imsi))
+						pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
+					logger.debug("Round "+i+" pricplanID ...");
 					Map<String,Map<String,Map<String,Object>>> map=new HashMap<String,Map<String,Map<String,Object>>>();
 					Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
 					Map<String,Object> map3=new HashMap<String,Object>();
 					
-					
+					if(currentDayMap.containsKey(cDay)){
+						map=currentDayMap.get(cDay);
+						if(map.containsKey(imsi)){
+							map2=map.get(imsi);
+						}
+					}
+									
+					logger.debug("Round "+i+" Charge ...");
 					//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
@@ -524,39 +547,42 @@ public class RFPmain implements Job{
 						charge=volume*kByte*maxRate;
 					}
 					
-					//將此筆CDR結果，回寫到USAGE TABLE
-					pst2.setDouble(1, charge);
-					pst2.setString(2, rs.getString("USAGEID"));
-					pst2.addBatch();
-					
+					//將此筆CDR結果記錄，稍後回寫到USAGE TABLE
+					cdrChargeMap.put(usageId, charge);
+
 					//察看是否有以存在的資料，有的話取出做累加
-					if(currentDayMap.containsKey(cDay)&& map.containsKey(imsi)&& map2.containsKey(mccmnc)){
+					
+					Map<String,Set<String>> smd= new HashMap<String,Set<String>>();
+					Set<String> sed=new HashSet<String>();
+					
+					if( map2.containsKey(mccmnc)){
 						oldCharge=(Double)currentDayMap.get(cDay).get(imsi).get(mccmnc).get("CHARGE");
 						charge=oldCharge+charge;
 						
-						if(!updateMapD.containsKey(cDay)){
-							Set<String> se=new HashSet<String>();
-							se.add(mccmnc);
-							Map<String,Set<String>> sm= new HashMap<String,Set<String>>();
-							sm.put(imsi, se);
-							updateMapD.put(cDay, sm);
-						}else{
-							updateMapD.get(cDay).get(imsi).add(mccmnc);
+						if(updateMapD.containsKey(cDay)){
+							smd= updateMapD.get(cDay);
+							if(smd.containsKey(imsi)){
+								sed=smd.get(imsi);
+							}
 						}
+						sed.add(mccmnc);
+						smd.put(imsi, sed);
+						updateMapD.put(cDay, smd);
 					}else{
-						if(!insertMapD.containsKey(cDay)){
-							Set<String> se=new HashSet<String>();
-							se.add(mccmnc);
-							Map<String,Set<String>> sm= new HashMap<String,Set<String>>();
-							sm.put(imsi, se);
-							insertMapD.put(cDay, sm);
-						}else{
-							insertMapD.get(cDay).get(imsi).add(mccmnc);
+						if(insertMapD.containsKey(cDay)){
+							smd= insertMapD.get(cDay);
+							if(smd.containsKey(imsi)){
+								sed=smd.get(imsi);
+							}
 						}
+						sed.add(mccmnc);
+						smd.put(imsi, sed);
+						insertMapD.put(cDay, smd);
 					}
 					
 					
 					//如果有計費上線，限制最大值
+					logger.debug("Round "+i+" daycap ...");
 					if(dayCap!=null && charge>dayCap) charge=dayCap;
 					
 					//將結果記錄到currentDayMap
@@ -571,46 +597,49 @@ public class RFPmain implements Job{
 					//更新currentMap，如果此筆CDR記錄時間的月紀錄存在
 					Double preCharge=0D;
 					Integer smsTimes=0;
-					String cMonth=cDay.substring(0,4);
-					if(currentMap.containsKey(cMonth) && currentMap.get(cMonth).containsKey(imsi)){
-						preCharge=(Double)currentMap.get(cMonth).get(imsi).get("CHARGE")-oldCharge;
-						smsTimes=(Integer) currentMap.get(cMonth).get(imsi).get("SMS_TIMES");
-						volume=(Double)currentMap.get(cMonth).get(imsi).get("VOLUME")+volume;
-						
-						if(!updateMap.containsKey(cMonth)){
-							Set<String> se=new HashSet<String>();
-							se.add(imsi);
-							updateMap.put(cMonth, se);
-						}else{
-							updateMap.get(cMonth).add(imsi);
-						}
-					}else{
-						if(!insertMap.containsKey(cMonth)){
-							Set<String> se=new HashSet<String>();
-							se.add(imsi);
-							insertMap.put(cMonth, se);
-						}else{
-							insertMap.get(cMonth).add(imsi);
-						}
-					}
+					String cMonth=cDay.substring(0,6);
 					
 					Map<String,Object> map4=new HashMap<String,Object>();
-					map4.put("LAST_FILEID", lastfileID);
+					Map<String,Map<String,Object>> map5=new HashMap<String,Map<String,Object>>();
+					
+					if(currentMap.containsKey(cMonth)){
+						map5=currentMap.get(cMonth);
+					}
+					
+					Set<String> se=new HashSet<String>();
+					if(map5.containsKey(imsi)){
+						map4=map5.get(imsi);
+						
+						preCharge=(Double)map4.get("CHARGE")-oldCharge;
+						smsTimes=(Integer) map4.get("SMS_TIMES");
+						volume=(Double)map4.get("VOLUME")+volume;
+	
+						logger.debug("Round "+i+" put updateMap ...");
+						if(updateMap.containsKey(cMonth)){
+							se=updateMap.get(cMonth);
+						}
+						se.add(imsi);
+						updateMap.put(cMonth, se);
+
+					}else{
+						if(insertMap.containsKey(cMonth)){
+							se=insertMap.get(cMonth);
+						}
+						se.add(imsi);
+						insertMap.put(cMonth, se);
+					}
+					
+					map4.put("LAST_FILEID", fileID);
 					map4.put("SMS_TIMES", smsTimes);
 					map4.put("LAST_DATA_TIME", callTime);
 					map4.put("CHARGE", preCharge+charge);
 					map4.put("VOLUME", volume);
-					
-					Map<String,Map<String,Object>> map5=new HashMap<String,Map<String,Object>>();
 					map5.put(imsi, map4);
 					currentMap.put(cMonth, map5);
 				}
-				pst2.executeUpdate();
-				pst2.close();
 				pst.close();
 				rs.close();
 			}
-			closeConnect();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getMessage());
@@ -619,6 +648,55 @@ public class RFPmain implements Job{
 			errorMsg=e.getMessage();
 		}	
 	}
+	
+	/***
+	 * 回寫CDR的CHARGE
+	 */
+	private void updateCdr(){
+		String sql=
+				"UPDATE HUR_DATA_USAGE A "
+				+ "SET A.CHARGE=? "
+				+ "WHERE A.USAGEID=? ";
+		
+		try {
+			PreparedStatement pst = conn.prepareStatement(sql);
+			int count=0;
+			int [] result;
+			for(String s: cdrChargeMap.keySet()){
+				if(count<dataThreshold){
+					pst.setDouble(1, cdrChargeMap.get(s));
+					pst.setString(2, s);
+					pst.addBatch();
+					count++;
+				}else{
+					logger.info("Execute updateCdr Batch");
+					result=pst.executeBatch();
+					count=0;
+				}	
+			}
+			if(count!=0){
+				logger.info("Execute updateCdr Batch");
+				result=pst.executeBatch();
+			}
+			
+			conn.commit();
+			pst.close();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			logger.error("Error at updateCdr : "+e.getMessage());
+			//sendMail
+			sendMail("At updateCdr occur SQLException error!");
+			errorMsg=e.getMessage();
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
 	/**
 	 * 取消connection的Auto commit
 	 */
@@ -705,33 +783,36 @@ public class RFPmain implements Job{
 			setCurrentMapDay();
 			logger.info("setCurrentMap execute time :"+(System.currentTimeMillis()-subStartTime));
 			
-			/*//取出HUR_DATARATE
+			//取出HUR_DATARATE
 			subStartTime = System.currentTimeMillis();
 			setDataRate();
-			logger.info("setDataRate execute time :"+(System.currentTimeMillis()-subStartTime));*/
+			logger.info("setDataRate execute time :"+(System.currentTimeMillis()-subStartTime));
 			
-			/*//取出msisdn資訊
+			//取出msisdn資訊
 			subStartTime = System.currentTimeMillis();
 			setMsisdnMap();
-			logger.info("setMsisdnMap execute time :"+(System.currentTimeMillis()-subStartTime));*/
+			logger.info("setMsisdnMap execute time :"+(System.currentTimeMillis()-subStartTime));
 	
-			/*//開始批價 
+			//開始批價 
 			subStartTime = System.currentTimeMillis();
 			charge();
 			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
 			//showCurrent();
-*/
-			/*//發送警示簡訊
+
+			//發送警示簡訊
 			subStartTime = System.currentTimeMillis();
 			sendAlertSMS();
 			logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
-			*/
-			/*//回寫批價結果
+			
+			//回寫批價結果
 			subStartTime = System.currentTimeMillis();
-			insert();
-			update();
+			updateCdr();
+			insertCurrentMap();
+			insertCurrentMapDay();
+			updateCurrentMap();
+			updateCurrentMapDay();
 			logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
-*/
+
 			
 			show();
 			// 程式執行完成
@@ -747,11 +828,13 @@ public class RFPmain implements Job{
 	
 	private void show(){
 		//System.out.println("Show lastfileID"+" : ");
-		System.out.println("lastfileID"+" : "+lastfileID);
-		System.out.println("Show Current"+" : ");
-		showCurrent();
-		System.out.println("Show CurrentDay"+" : ");
-		showCurrentDay();
+		//System.out.println("lastfileID"+" : "+lastfileID);
+		//System.out.println("Show Current"+" : ");
+		//showCurrent();
+		//System.out.println("Show CurrentDay"+" : ");
+		//showCurrentDay();
+		//System.out.println("Show MsisdnMap"+" : ");
+		//showMsisdnMap();
 		
 	}
 	
@@ -759,11 +842,11 @@ public class RFPmain implements Job{
 		for(String mon : currentMap.keySet()){
 			for(String imsi : currentMap.get(mon).keySet()){
 				System.out.print(" mon"+" : "+mon);
-				System.out.println(", imsi"+" : "+imsi);
-				System.out.println(", CHARGE"+" : "+currentMap.get(mon).get(imsi).get("CHARGE"));
-				System.out.println(", VOLUME"+" : "+currentMap.get(mon).get(imsi).get("VOLUME"));
-				System.out.println(", LAST_FILEID"+" : "+currentMap.get(mon).get(imsi).get("LAST_FILEID"));
-				System.out.println(", SMS_TIMES"+" : "+currentMap.get(mon).get(imsi).get("SMS_TIMES"));
+				System.out.print(", imsi"+" : "+imsi);
+				System.out.print(", CHARGE"+" : "+currentMap.get(mon).get(imsi).get("CHARGE"));
+				System.out.print(", VOLUME"+" : "+currentMap.get(mon).get(imsi).get("VOLUME"));
+				System.out.print(", LAST_FILEID"+" : "+currentMap.get(mon).get(imsi).get("LAST_FILEID"));
+				System.out.print(", SMS_TIMES"+" : "+currentMap.get(mon).get(imsi).get("SMS_TIMES"));
 				System.out.println(", LAST_DATA_TIME"+" : "+currentMap.get(mon).get(imsi).get("LAST_DATA_TIME"));
 			}
 		}
@@ -773,13 +856,27 @@ public class RFPmain implements Job{
 			for(String imsi : currentDayMap.get(day).keySet()){
 				for(String mccmnc : currentDayMap.get(day).get(imsi).keySet()){
 					System.out.print(" day"+" : "+day);
-					System.out.println(", imsi"+" : "+imsi);
-					System.out.println(", mccmnc"+" : "+mccmnc);
-					System.out.println(", CHARGE"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
-					System.out.println(", VOLUME"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
-					System.out.println(", LAST_FILEID"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
-					System.out.println(", LAST_DATA_TIME"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME"));
+					System.out.print(", imsi"+" : "+imsi);
+					System.out.print(", mccmnc"+" : "+mccmnc);
+					System.out.print(", CHARGE"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
+					System.out.print(", VOLUME"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
+					System.out.print(", LAST_FILEID"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
+					System.out.print(", LAST_DATA_TIME"+" : "+currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME"));
+					System.out.println();
 				}
+			}
+		}
+	}
+	private void showMsisdnMap(){
+		for(String priceplanid : dataRate.keySet()){
+			for(String mccmnc:dataRate.get(priceplanid).keySet() ){
+				System.out.print(" priceplanid"+" : "+priceplanid);
+				System.out.print(", mccmnc"+" : "+mccmnc);
+				System.out.print(", RATE"+" : "+dataRate.get(priceplanid).get(mccmnc).get("RATE"));
+				System.out.print(", CHARGEUNIT"+" : "+dataRate.get(priceplanid).get(mccmnc).get("CHARGEUNIT"));
+				System.out.print(", CURRENCY"+" : "+dataRate.get(priceplanid).get(mccmnc).get("CURRENCY"));
+				System.out.print(", DAYCAP"+" : "+dataRate.get(priceplanid).get(mccmnc).get("DAYCAP"));
+				System.out.println();
 			}
 		}
 	}
@@ -790,7 +887,7 @@ public class RFPmain implements Job{
 	 * 計算完畢後寫回資料庫-更新
 	 */
 
-	private void updateCurrentMap(String sql){
+	private void updateCurrentMap(){
 		logger.info("updateCurrentMap...");
 
 		int[] result;
@@ -842,7 +939,7 @@ public class RFPmain implements Job{
 			errorMsg=e.getMessage();
 		}
 	}
-	private void updateCurrentMapDay(String sql){
+	private void updateCurrentMapDay(){
 		logger.info("updateCurrentMapDay...");
 		int[] result;
 		int count=0;
@@ -863,11 +960,11 @@ public class RFPmain implements Job{
 						if(count<dataThreshold){
 							pst.setDouble(1,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
 							pst.setInt(2, (Integer) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
-							pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME")));
-							pst.setDouble(5,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
-							pst.setString(6, day);
-							pst.setString(7, imsi);
-							pst.setString(8, mccmnc);
+							pst.setDate(3, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME")));
+							pst.setDouble(4,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
+							pst.setString(5, day);
+							pst.setString(6, imsi);
+							pst.setString(7, mccmnc);
 							pst.addBatch();
 							count++;
 						}else{
@@ -899,7 +996,7 @@ public class RFPmain implements Job{
 	 * 計算完畢後寫回資料庫-新增
 	 */
 	
-	private void insertCurrentMap(String sql){
+	private void insertCurrentMap(){
 		logger.info("insertCurrentMap...");
 		int[] result;
 		int count=0;
@@ -947,7 +1044,7 @@ public class RFPmain implements Job{
 			errorMsg=e.getMessage();
 		}
 	}
-	private void insertCurrentMapDay(String sql){
+	private void insertCurrentMapDay(){
 		logger.info("insertCurrentMapDay...");
 		int[] result;
 		int count=0;
@@ -1021,7 +1118,7 @@ public class RFPmain implements Job{
 		//載入簡訊設定
 		
 		try {
-			sql="SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID";	
+			sql="SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID";	
 			
 			Statement st;
 			st = conn.createStatement();
@@ -1081,7 +1178,10 @@ public class RFPmain implements Job{
 			errorMsg=e1.getMessage();
 		}
 		
-		
+		if(content.size()==0){
+			logger.error("No SMS content!");
+			return;
+		}
 		
 		
 
@@ -1096,11 +1196,13 @@ public class RFPmain implements Job{
 			for(String imsi: currentMap.get(sYearmonth).keySet()){
 				
 				//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
-				phone=(String) msisdnMap.get(imsi).get("SERVICECODE");
+				if(msisdnMap.containsKey(imsi))
+					phone=(String) msisdnMap.get(imsi).get("SERVICECODE");
 				if(phone==null ||"".equals(phone)){
 					//sendMail
 					sendMail("At sendAlertSMS occur error!<br>\n "
 							+ "The IMSI:"+imsi+" can't find msisdn to send! ");
+					logger.debug("The IMSI:"+imsi+" can't find msisdn to send! ");
 					continue;
 				}
 				
@@ -1121,13 +1223,14 @@ public class RFPmain implements Job{
 							//WSDL方式呼叫 WebServer
 							//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
 							//WSDL方式呼叫 WebServer
-							res=setSMSPostParam(cont,phone);
+							//res=setSMSPostParam(cont,phone);
 							
 							logger.debug("send message result : "+res);						
 							currentMap.get(sYearmonth).get(imsi).put("SMS_TIMES", smsTimes);
 							smsCount++;
+							//中斷GPRS服務
 							if("1".equals(suspend.get(i))){
-								suspend(imsi,phone);
+								//suspend(imsi,phone);
 							}
 
 							//寫入資料庫
@@ -1248,6 +1351,7 @@ public class RFPmain implements Job{
 		try {
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setString(1, imsi);
+			 logger.info("Execute SQL :"+sql);
 			ResultSet rs=pst.executeQuery();
 			
 			while(rs.next()){
@@ -1274,19 +1378,22 @@ public class RFPmain implements Job{
 		sql=
 				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID "
 				+ "FROM SERVICE A,IMSI B "
-				+ "WHERE A.SERVICEID=B.SERVICEID AND B.IMSI IN ?";
-		String a="(";
+				+ "WHERE A.SERVICEID=B.SERVICEID ";
+		
 		try {
+			/*String a="(";
 			for(String imsi: currentMap.keySet()){
 				a+=imsi+",";
 			}			
-			
 			a+=")";
 			a=a.replace(",)", ")");
+			
+			sql=sql.replace("?", a);*/
+			
 			//logger.info("a:"+a);
 			Statement st = conn.createStatement();
-			
-			ResultSet rs=st.executeQuery(sql.replace("?", a));
+			logger.info("Execute SQL :"+sql);
+			ResultSet rs=st.executeQuery(sql);
 			
 			while(rs.next()){
 				Map<String,String> map =new HashMap<String,String>();
@@ -1374,6 +1481,9 @@ public class RFPmain implements Job{
 	
 	public static void main(String[] args) {
 		
+		/*RFPmain rf =new RFPmain();
+		rf.process();*/
+
 		try {
 			// Grab the Scheduler instance from the Factory
 			Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -1405,24 +1515,23 @@ public class RFPmain implements Job{
 			//keyin();// 以等待使用者keyin的方式暫停
 
 			//scheduler.shutdown();
-			
-			
-			
-			
-			/*JobDetail job = new JobDetail("job1", "group1", SayHelloJob.class);
-			// 由於quartz support多group到多job. 這裡我們只有一個job. 我們自己我隨意把它命名.
-			// 但相同group裡如果出現相同的job名,會被overrride.
-			CronTrigger cTrigger = new CronTrigger("trigg1", "group1", "job1",
-			"group1", "1/10 * * * * ?");
-			// 這裡指定trigger執行那個group的job.
-			// "1/10 * * * * ?" 與 在unix like裡的crontab job的設定類似. 這裡表示每天裡的每10秒執行一次
-			// Seconds Minutes Hours Day-of-Month Month Day-of-Week Year(optional field)
-*/			
+
+			//JobDetail job = new JobDetail("job1", "group1", SayHelloJob.class);
+			//// 由於quartz support多group到多job. 這裡我們只有一個job. 我們自己我隨意把它命名.
+			//// 但相同group裡如果出現相同的job名,會被overrride.
+			//CronTrigger cTrigger = new CronTrigger("trigg1", "group1", "job1",
+			//"group1", "1/10 * * * * ?");
+			//// 這裡指定trigger執行那個group的job.
+			//// "1/10 * * * * ?" 與 在unix like裡的crontab job的設定類似. 這裡表示每天裡的每10秒執行一次
+			//// Seconds Minutes Hours Day-of-Month Month Day-of-Week Year(optional field)
+		
 			
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
 	}
 	
 	

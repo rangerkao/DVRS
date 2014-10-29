@@ -6,7 +6,7 @@ cd /root/apache-tomcat-7.0.50/webapps/DVRS/WEB-INF/classes
 pwd
 #echo "`ls -altr`"
 
-programdir="."  
+programdir="." 
 
 num=$# 
 temp=$CLASSPATH 
@@ -22,5 +22,5 @@ export CLASSPATH=$temp:.:../:$programdir
 #export LANG=zh_CN 
 #nohup java -classpath $CLASSPATH    program.hello #&
 echo "$CLASSPATH"
-java -classpath $CLASSPATH    program.hello
+java -classpath $CLASSPATH    program.RFPmain
 echo "finished"
