@@ -19,7 +19,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import program.IJatool;
 import program.Jatool;
-import program.RFPmain;
+import program.DVRSmain;
 import control.BillReport;
 
 public class BaseDao {
@@ -40,7 +40,7 @@ public class BaseDao {
 		String path=classPath+ "/log4j.properties";
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
-			logger = Logger.getLogger(RFPmain.class);
+			logger = Logger.getLogger(DVRSmain.class);
 
 	}
 	protected void connectDB() throws Exception{

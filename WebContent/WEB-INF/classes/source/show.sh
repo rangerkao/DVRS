@@ -17,7 +17,7 @@ RUNNING_USER=root
 APP_HOME=/root/apache-tomcat-7.0.50/webapps/DVRS/WEB-INF/
 
 #需要啟動的java（main方法（main方法?）
-APP_MAINCLASS=program.RFPmain
+APP_MAINCLASS=program.DVRSmain
 
 #拼出完整的classPath，包括指定lib目錄下的所有jar
 CLASSPATH=$APP_HOME/classes

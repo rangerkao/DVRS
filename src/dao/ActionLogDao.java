@@ -88,9 +88,9 @@ public class ActionLogDao extends BaseDao{
 	
 	public int loggerAction(String userid,String page,String action,String parameter,String result) throws SQLException{
 		
-		sql="INSERT INTO HUR_MANERGER_LOG "
-				+ "(ID,USERID,PAGE,ACTION,PARAMETER,CREATE_DATE) "
-				+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+		sql="INSERT INTO HUR_ACTION_LOG "
+				+ "(ID,USERID,PAGE,ACTION,PARAMETER,RESULT,CREATE_DATE) "
+				+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,?,SYSDATE)";
 		
 		int aResult=0;
 			PreparedStatement pst = conn.prepareStatement(sql);

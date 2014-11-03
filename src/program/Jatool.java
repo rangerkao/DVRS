@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,12 +34,14 @@ import javax.mail.internet.MimeMultipart;
 
 
 
+
 import org.apache.log4j.Logger;
 
 //190
 /*import com.infotech.smpp.SMPPServicesStub;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
 
 
 
@@ -371,6 +374,19 @@ public class Jatool implements IJatool{
  
 		//print result
 		return(response.toString());
+	}
+	
+	@Override
+	public Double FormatDouble(Double value,String form){
+		
+		if(form==null || "".equals(form)){
+			form="0.00";
+		}
+			
+		DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);
+		
+		return Double.valueOf(str);
 	}
 	
 	

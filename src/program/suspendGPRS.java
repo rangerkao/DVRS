@@ -22,17 +22,17 @@ public class suspendGPRS {
 	}
 	
 	// TWN_IMSI、TWN_MSISDN先代空值，sMNOSubCode不重要，sCount忽略
-	String cS2TMSISDN = "",cS2TIMSI = "",cReqStatus = "17",cGPRSStatus = "0",sMNOName = "TWNLD";
-	String sWSFStatus = "V",sWSFDStatus = "V",cServiceOrderNBR = "", sSql = "",cTWNLDIMSI="",cTWNLDMSISDN="";
-	String sM_CTYPE = "",c910SEQ = "", cFileName = "",cFileID = "", cWorkOrderNBR = "",Sdate = "", cRCode = "";
-	String sDATE = "",sCount = "", sCMHKLOGID = "",sMNOSubCode = "",cTicketNumber = "",Process_Code = "";
-	String sTypeCode = "",sDataType = "",sValue = "",sMap = "",cGPRS = "",desc = "",sSubCode = "", sStepNo = "";
-	String sFMTH = "",sFMTHa = "",sSFMTH = "",sSFMTHa = "", sFORWARD_TO_HOME_NO = "",sS_FORWARD_TO_HOME_NO = "";
-	
-	ResultSet Temprs,TempRtA;
-	DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-	DateFormat dateFormat2 = new SimpleDateFormat("yyyyMMddhhmiss");
-	Vector<String> vln = new Vector<String>();
+	private String cRCode,Process_Code,sCMHKLOGID,cMSISDNOLD,cM205OT,cMVLN,cGPRS,csta,bb;
+	private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,cTWNLDIMSI,cTWNLDMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
+	private String sMNOSubCode,sMNOName,sWSFStatus,sWSFDStatus,cServiceOrderNBR;
+	private SimpleDateFormat dFormat1=new SimpleDateFormat("yyyyMMdd");
+	private SimpleDateFormat dFormat2=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	private SimpleDateFormat dFormat3=new SimpleDateFormat("yyMMddHHmm");
+	private String cFileID,cFileName,c910SEQ,sCount,cWorkOrderNBR,sDATE,Sdate,sDataType,sValue,sSubCode,sStepNo,sTypeCode,sMap,sM_CTYPE,cGPRSStatus;
+	private String sFMTH,sFMTHa,sSFMTH,sSFMTHa;
+	static Vector<String> vln=new Vector<String>();
+	private ResultSet Temprs;
+	private String sSql;
 
 	public void ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
@@ -40,8 +40,36 @@ public class suspendGPRS {
 		
 		cS2TIMSI=imsi;
 		cS2TMSISDN=msisdn;
+		
+		cTWNLDIMSI=imsi;
+		cTWNLDMSISDN=msisdn;
+		cReqStatus="17";
+		dReqDate=dFormat3.format(new Date());
+		//20141103 set as TWNLD
+		sMNOSubCode="950";
+		
+		//設定sCount 
+		
+		Temprs = null;
+		sSql = "select DVRS_SUSPEND_ID.NEXTVAL as ab from dual";
+		Temprs = conn.createStatement().executeQuery(sSql);
+		while (Temprs.next()) {
+			sCount = Temprs.getString("ab");
+		}
+		for (int i = sCount.length(); i < 3; i++) {
+			sCount = "0" + sCount;
+		}
+		
+		cTicketNumber="D"+dReqDate+sCount;
+		
 
-		Check_Type_Code_87_MAP_VALUE(cS2TMSISDN);
+		/*
+		 * logger.debug("ReqStatus_17_Act");
+		 */
+		// 確認台灣門號的 MAP VALUE，移除
+		/* Check_Type_Code_87_MAP_VALUE(cS2TMSISDN); */
+		sWSFStatus = "V";
+		sWSFDStatus = "V";
 		Process_SyncFile(sWSFStatus);
 		Process_SyncFileDtl(sWSFDStatus);
 		Process_ServiceOrder();
@@ -51,11 +79,10 @@ public class suspendGPRS {
 		sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
 				+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
 		logger.debug("update SERVICE_ORDER:" + sSql);
-		Query_PreProcessResult("000");
+		/* Query_PreProcessResult(out17, "000"); */
 		Query_GPRSStatus();
-		//待實做Log紀錄停止GPRS 回傳結果 desc
+		// 待實做Log紀錄停止GPRS 回傳結果 desc
 	}
 	
 	public void Check_Type_Code_87_MAP_VALUE(String sServiceCode)
@@ -78,10 +105,13 @@ public class suspendGPRS {
 	public void Process_SyncFile(String sSFStatus) throws SQLException,
 			Exception {
 		logger.info("Process_SyncFile...");
+		
+		String sMNOSubCode="950";
+		
 		// 格式為YYYYMMDDXXX
-		sDATE = dateFormat.format(new Date());
+		sDATE = dFormat1.format(new Date());
 		c910SEQ = sDATE + sCount;
-		cFileName = "S2TCI" + c910SEQ + ".000";
+		cFileName = "S2TCI" + c910SEQ + "."+sMNOSubCode;
 		cFileID = "";
 		Temprs = null;
 		sSql = "select S2T_SQ_FILE_CNTRL.NEXTVAL as ab from dual";
@@ -89,23 +119,25 @@ public class suspendGPRS {
 		while (Temprs.next()) {
 			cFileID = Temprs.getString("ab");
 		}
-		sSql = "INSERT INTO S2T_TB_TYPEB_WO_SYNC_FILE (FILE_ID,"
-				+ "FILE_NAME,FILE_SEND_DATE,FILE_SEQ,CMCC_BRANCH_ID,"
-				+ "FILE_CREATE_DATE,STATUS) VALUES (" + cFileID + ",'"
-				// + cFileName + "','" + dReqDate.substring(0, 8) + "','"
-				+ cFileName + "','" + "" + "','" + c910SEQ.substring(8, 11)
-				+ "','000',sysdate,'" + sSFStatus + "')";
+		//dReqDate 要求時間，訂為即時
+		dReqDate = dFormat1.format(new Date());
+		sSql = "INSERT INTO S2T_TB_TYPEB_WO_SYNC_FILE "
+				+ "(FILE_ID,FILE_NAME,FILE_SEND_DATE,FILE_SEQ,CMCC_BRANCH_ID,FILE_CREATE_DATE,STATUS) "
+				+ "VALUES "
+				+ "(" + cFileID + ",'"
+				+ cFileName + "','" + dReqDate.substring(0, 8) + "','"
+				+ c910SEQ.substring(8, 11) + "','"+sMNOSubCode+"',sysdate,'" + sSFStatus
+				+ "')";
 		logger.debug("Process_SyncFile:" + sSql);
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
 	}
 
 
 	public void Process_SyncFileDtl(String sSFDStatus) throws SQLException,
 			IOException {
 		logger.info("Process_SyncFileDtl...");
-		int iv, ix = 0;
-		String sVl = "", sC, sH;
+		Sdate = dFormat2.format(new Date());
+
 		cWorkOrderNBR = "";
 		Temprs = conn.createStatement().executeQuery(
 				"select S2T_SQ_WORK_ORDER.nextval as ab from dual");
@@ -123,30 +155,13 @@ public class suspendGPRS {
 				+ "WORK_TYPE, FILE_ID, SEQ_NO, CMCC_OPERATIONDATE, ORIGINAL_CMCC_IMSI,"
 				+ "ORIGINAL_CMCC_MSISDN, S2T_IMSI, S2T_MSISDN, FORWARD_TO_HOME_NO, "
 				+ "FORWARD_TO_S2T_NO_1, IMSI_FLAG, STATUS, SERVICE_ORDER_NBR, SUBSCR_ID)"
-				+ " VALUES ("+ cWorkOrderNBR+ ",'"+ cReqStatus+ "',"+ cFileID+ ",'"+ c910SEQ+ "',to_date('"
-				+ Sdate	+ "','MM/dd/yyyy HH24:mi:ss'),'"+ cTWNLDIMSI+ "','+"+ cTWNLDMSISDN+ "','"+ cS2TIMSI
-				+ "','"+ cS2TMSISDN	+ "','+"+ cTWNLDMSISDN+ "','"+ cTWNLDMSISDN+ "', '2', '"+ sSFDStatus
-				+ "','"	+ cServiceOrderNBR	+ "','"	+ cTicketNumber	+ "')";
-		
+				+ " VALUES ("+ cWorkOrderNBR+ ",'"+ cReqStatus+ "',"+ cFileID+ ",'"+ c910SEQ
+				+ "',to_date('"+ Sdate+ "','MM/dd/yyyy HH24:mi:ss'),'"+ cTWNLDIMSI+ "','+"+ cTWNLDMSISDN
+				+ "','"+ cS2TIMSI+ "','"+ cS2TMSISDN+ "','+"+ cTWNLDMSISDN+ "','"+ cTWNLDMSISDN+ "', '2', '"
+				+ sSFDStatus+ "','"+ cServiceOrderNBR+ "','"+ cTicketNumber+ "')";
 		logger.debug("Process_SyncFileDtl:" + sSql);
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
-		if (vln.size() > 0) {
-			vln.firstElement();
-			for (iv = 0; iv < vln.size(); iv++) {
-				sVl = vln.get(iv);
-				ix = sVl.indexOf(",");
-				sC = sVl.substring(0, ix);
-				sVl = sVl.substring(ix + 1, sVl.length());
-				ix = sVl.indexOf(",");
-				sH = sVl.substring(0, ix);
-				sSql = "update S2T_TB_TYPB_WO_SYNC_FILE_DTL set VLN_" + sC
-						+ "='" + sH + "' where WORK_ORDER_NBR=" + cWorkOrderNBR
-						+ " and SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
-				conn.createStatement().executeUpdate(sSql);
-				conn.commit();
-			}
-		}
+      
 	}
 
 	public void Process_ServiceOrder() throws SQLException, IOException {
@@ -158,9 +173,8 @@ public class suspendGPRS {
 				+ cWorkOrderNBR + ", '', sysdate)";
 
 		logger.info("Process_ServiceOrder[1]:" + sSql);
-		Temprs = conn.createStatement().executeQuery(sSql);
+
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
 		Temprs = null;
 
 		sSql = "Select MNO_NAME from S2T_TB_MNO_COMPANY "
@@ -182,9 +196,11 @@ public class suspendGPRS {
 		Temprs = null;
 		String cMd = "", Ssvrid = "";
 		sSql = "select nvl(serviceid,'0') as ab from imsi " + " where imsi = '"
-				+ S2TImsiB + "' and homeimsi='" + TWNImsiB + "'";
-		logger.info("Get_Serviceid:" + sSql);
-		Temprs = conn.createStatement().executeQuery(sSql);
+		//20141103 decide need not to check homeimsi is TWNimsi , or not.
+				+ S2TImsiB + "'";// +" and homeimsi='" + TWNImsiB + "'";
+		
+		 logger.info("Get_Serviceid:"+sSql);
+		 Temprs = conn.createStatement().executeQuery(sSql);
 		while (Temprs.next()) {
 			Ssvrid = Temprs.getString("ab");
 		}
@@ -192,8 +208,9 @@ public class suspendGPRS {
 			Temprs = null;
 			sSql = "select count(serviceid) as ab from serviceparameter where "
 					+ "parameterid=3792 and serviceid='" + Ssvrid + "'";
-			logger.info("Check_Follow_Me_To_Home(有1表示有申請, 0表示未申請):" + sSql);
-			Temprs = conn.createStatement().executeQuery(sSql);
+			
+			 logger.info("Check_Follow_Me_To_Home(有1表示有申請, 0表示未申請):"+sSql);
+			 Temprs = conn.createStatement().executeQuery(sSql);
 			while (Temprs.next()) { // (有1表示有申請, 0表示未申請)
 				sFMTH = Temprs.getString("ab");
 			}
@@ -203,9 +220,11 @@ public class suspendGPRS {
 				sSql = "select nvl(value,'2') as ab From parametervalue where "
 						+ "parametervalueid=3793 and serviceid='" + Ssvrid
 						+ "'";
-				logger.info("Check_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, 若未申請, 則2):"
-						+ sSql);
-				Temprs = conn.createStatement().executeQuery(sSql);
+				
+				 logger.info(
+				 "Check_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, 若未申請, 則2):"
+				 +sSql);
+				 Temprs = conn.createStatement().executeQuery(sSql);
 				while (Temprs.next()) { // (Value=1: active, Value=0: inactive,
 										// 若未申請, 則NULL)
 					sFMTHa = Temprs.getString("ab");
@@ -214,8 +233,9 @@ public class suspendGPRS {
 			Temprs = null;
 			sSql = "select count(serviceid) as ab from serviceparameter where "
 					+ "parameterid=3748 and serviceid='" + Ssvrid + "'";
-			logger.info("Check_SMS_Follow_Me_To_Home(有1表示有申請, 0表示未申請):" + sSql);
-			Temprs = conn.createStatement().executeQuery(sSql);
+			
+			 logger.info("Check_SMS_Follow_Me_To_Home(有1表示有申請, 0表示未申請):"+sSql);
+			 Temprs = conn.createStatement().executeQuery(sSql);
 			while (Temprs.next()) { // (有1表示有申請, 0表示未申請)
 				sSFMTH = Temprs.getString("ab");
 			}
@@ -225,9 +245,11 @@ public class suspendGPRS {
 				sSql = "select nvl(value,'2') as ab From parametervalue where "
 						+ "parametervalueid=3752 and serviceid='" + Ssvrid
 						+ "'";
-				logger.info("Check_SMS_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, 若未申請, 則2):"
-						+ sSql);
-				Temprs = conn.createStatement().executeQuery(sSql);
+				
+				 logger.info(
+				 "Check_SMS_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, 若未申請, 則2):"
+				 +sSql);
+				 Temprs = conn.createStatement().executeQuery(sSql);
 				while (Temprs.next()) { // (Value=1: active, Value=0: inactive,
 										// 若未申請, 則NULL)
 					sSFMTHa = Temprs.getString("ab");
@@ -237,23 +259,25 @@ public class suspendGPRS {
 				Temprs = null;
 				sSql = "select nvl(value,'0') as ab from parametervalue where parametervalueid=3792 "
 						+ "and serviceid='" + Ssvrid + "'";
-				logger.info("Check_FORWARD_TO_HOME_NO:" + sSql);
-				Temprs = conn.createStatement().executeQuery(sSql);
+				
+				 logger.info("Check_FORWARD_TO_HOME_NO:"+sSql);
+				 Temprs = conn.createStatement().executeQuery(sSql);
 				while (Temprs.next()) {
 					sFORWARD_TO_HOME_NO = Temprs.getString("ab");
 				}
-				if (sFORWARD_TO_HOME_NO.equals('0')) {
+				if (sFORWARD_TO_HOME_NO != null && sFORWARD_TO_HOME_NO.equals('0')) {
 					sFORWARD_TO_HOME_NO = null;
 				}
 				Temprs = null;
 				sSql = "select nvl(value,'0') as ab from parametervalue where parametervalueid=3748 "
 						+ "and serviceid='" + Ssvrid + "'";
-				logger.info("Check_S_FORWARD_TO_HOME_NO:" + sSql);
-				Temprs = conn.createStatement().executeQuery(sSql);
+				
+				 logger.info("Check_S_FORWARD_TO_HOME_NO:"+sSql);
+				 Temprs = conn.createStatement().executeQuery(sSql);
 				while (Temprs.next()) {
 					sS_FORWARD_TO_HOME_NO = Temprs.getString("ab");
 				}
-				if (sS_FORWARD_TO_HOME_NO.equals('0')) {
+				if (sS_FORWARD_TO_HOME_NO != null && sS_FORWARD_TO_HOME_NO.equals('0')) {
 					sS_FORWARD_TO_HOME_NO = null;
 				}
 			} else {
@@ -268,8 +292,9 @@ public class suspendGPRS {
 				+ "' And work_type='"
 				+ cReqStatus
 				+ "' Order by step_no";
-		logger.debug("Process_WorkSubcode_05_17:" + sSql);
-		Temprs = conn.createStatement().executeQuery(sSql);
+		
+		 logger.debug("Process_WorkSubcode_05_17:"+sSql);
+		 Temprs = conn.createStatement().executeQuery(sSql);
 		while (Temprs.next()) {
 			sSubCode = Temprs.getString("subcode");
 			sStepNo = Temprs.getString("step_no");
@@ -277,10 +302,13 @@ public class suspendGPRS {
 			Process_DefValue();
 			Process_MapValue();
 		}
-		sSql = "update PROVLOG " + "set STEP='" + sStepNo + "' "
-				+ " where LOGID=" + sCMHKLOGID;
-		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
+
+		// 不需要更新provLog
+		/*
+		 * sSql="update PROVLOG " + "set STEP='"+sStepNo+"' "+
+		 * " where LOGID="+sCMHKLOGID;
+		 * conn.createStatement().executeUpdate(sSql);
+		 */
 	}
 
 	public void Process_ServiceOrderItem() throws SQLException, IOException {
@@ -292,7 +320,6 @@ public class suspendGPRS {
 				+ " S2T_SQ_SERVICE_ORDER_ITEM.nextval, 'N', sysdate)";
 		logger.debug("Process_ServiceOrderItem:" + sSql);
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
 	}
 
 	public void Process_ServiceOrderItemDtl() throws SQLException, IOException {
@@ -303,7 +330,6 @@ public class suspendGPRS {
 				+ sTypeCode + "," + sDataType + ",'" + sValue + "')";
 		logger.debug("Process_ServiceOrderItemDtl:" + sSql);
 		conn.createStatement().executeUpdate(sSql);
-		conn.commit();
 	}
 
 	public void Process_DefValue() throws SQLException, IOException {
@@ -387,13 +413,13 @@ public class suspendGPRS {
 					+ sStepNo + ",DataType:" + sDataType + ",TypeCode:"
 					+ sTypeCode);
 
-			if (sTypeCode.equals("1909") && (sValue.equals("0"))) {
+			if (sTypeCode.equals("1909") && ("0".equals(sValue))) {
 				logger.debug("Follow Me To Home did not work");
-			} else if (sTypeCode.equals("1911") && (sValue.equals(""))) {
+			} else if (sTypeCode.equals("1911") && ("".equals(sValue))) {
 				logger.debug("Follow Me To Home did not Active");
-			} else if (sTypeCode.equals("1942") && (sValue.equals("0"))) {
+			} else if (sTypeCode.equals("1942") && ("0".equals(sValue))) {
 				logger.debug("SMS Follow Me To Home did not work");
-			} else if (sTypeCode.equals("1944") && (sValue.equals(""))) {
+			} else if (sTypeCode.equals("1944") && ("".equals(sValue))) {
 				logger.debug("SMS Follow Me To Home did not Active");
 			} else {
 				Process_ServiceOrderItemDtl();
@@ -402,7 +428,7 @@ public class suspendGPRS {
 	}
 
 
-	public void Query_PreProcessResult(String rcode)
+/*	public void Query_PreProcessResult(String rcode)
 			throws SQLException, InterruptedException, Exception {
 		logger.info("Query_PreProcessResult...");
 		cRCode = "";
@@ -435,7 +461,7 @@ public class suspendGPRS {
 		conn.commit();
 
 		desc = Load_ResultDescription(rcode);
-	}
+	}*/
 
 	public String Load_ResultDescription(String sDecs) throws SQLException {
 		logger.info("Load_ResultDescription...");

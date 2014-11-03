@@ -22,5 +22,5 @@ export CLASSPATH=$temp:.:../:$programdir
 #export LANG=zh_CN 
 #nohup java -classpath $CLASSPATH    program.hello #&
 echo "$CLASSPATH"
-java -classpath $CLASSPATH    program.RFPmain
+java -classpath $CLASSPATH    program.DVRSmain
 echo "finished"

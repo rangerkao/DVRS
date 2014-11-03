@@ -143,4 +143,12 @@ public interface IJatool {
 	 * @throws IOException 
 	 */
 	String HttpPost(String url,String param,String charset) throws IOException;
+
+	/**
+	 * 用DecimalFormat 對 Double格式化
+	 * @param value
+	 * @param form
+	 * @return
+	 */
+	Double FormatDouble(Double value, String form);
 }
