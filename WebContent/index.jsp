@@ -15,8 +15,8 @@
 </style>
 </head>
 <body>
-
-	<s:if test="%{tag==null||tag==''}">
+<div align="center">
+		<s:if test="%{tag==null||tag==''}">
 		<s:label>Please login to continue</s:label>
 		<br />
 	</s:if>
@@ -32,5 +32,6 @@
 		<s:password name="psw" label="±K½X" placeholder="Password"></s:password>
 		<s:submit></s:submit>
 	</s:form>
+</div>
 </body>
 </html>

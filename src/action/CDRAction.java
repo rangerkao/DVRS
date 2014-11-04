@@ -25,16 +25,26 @@ public class CDRAction extends BaseAction {
 	
 	private CDRControl cdrControl =new CDRControl();
 	
-	public String queryCDR() throws SQLException, ParseException{
-		System.out.println("from:"+from+" to:"+to);
-		if(from==null||"".equals(from)||to==null||"".endsWith(to)){
-				CDRlist=cdrControl.queryCDR();
-		}else{
-				CDRlist=cdrControl.queryCDR(tool.DateFormat(from, "yyyy-MM-dd"), tool.DateFormat(to, "yyyy-MM-dd"));
+	public String queryCDR(){
+		try {
+			System.out.println("from:"+from+" to:"+to);
+			if(from==null||"".equals(from)||to==null||"".endsWith(to)){
+					CDRlist=cdrControl.queryCDR();
+			}else{
+					CDRlist=cdrControl.queryCDR(tool.DateFormat(from, "yyyy-MM-dd"), tool.DateFormat(to, "yyyy-MM-dd"));
+			}
+			
+			result=beanToJSONArray(CDRlist);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "CDR", "query","", SUCCESS);
+		} catch (SQLException  e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
-		
-		result=beanToJSONArray(CDRlist);
-		actionLogControl.loggerAction(super.getUser().getAccount(), "CDR", "query","", result);
 		return SUCCESS;
 	}
 

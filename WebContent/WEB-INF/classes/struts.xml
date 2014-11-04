@@ -36,6 +36,7 @@
 			<result name="smsSetting" type="tiles">smsSetting</result>
 			<result name="program" type="tiles">program</result>
 			<result name="cdr" type="tiles">cdr</result>
+			<result name="limitSetting" type="tiles">limitSetting</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -61,8 +62,15 @@
 		
 		<default-interceptor-ref name="default"></default-interceptor-ref>
 		
-	<!-- Aamin -->
+	<!-- authentication  -->
 		<action name="queryAdmin" method="queryAdmin" class="action.AdminAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+	<!-- Aamin -->
+		<action name="queryAuth" method="queryAuthentication" class="action.MenuAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>
@@ -94,6 +102,25 @@
 	        </result>
         </action>
         <action name="updateSMSSetting" method="updateSMSSetting" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    <!-- GPRSLIMIT -->
+        <action name="queryAlertLimit" method="queryAlertLimit" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="updateAlertLimit" method="updateAlertLimit" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="queryIMSI" method="queryIMSI" class="action.SMSAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>

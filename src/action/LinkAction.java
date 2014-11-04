@@ -32,6 +32,7 @@ public class LinkAction extends BaseAction{
 	private String SmsSetting="smsSetting";
 	private String Progrma="program";
 	private String CDR="cdr";
+	private String LimitSetting="limitSetting";
 	
 	Map<String, Object> session;
 	
@@ -73,6 +74,10 @@ public class LinkAction extends BaseAction{
 	public String cdr()  
 	{  
 	   return CDR;        
+	} 
+	public String limitSetting()  
+	{  
+	   return LimitSetting;        
 	} 
 	
 	public String logout()  

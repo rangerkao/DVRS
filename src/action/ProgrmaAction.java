@@ -24,6 +24,7 @@ public class ProgrmaAction extends BaseAction {
 	public String execute() throws SQLException {
 		try {
 			result = programControl.execute(filename);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

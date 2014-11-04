@@ -44,6 +44,10 @@
 	<definition name="cdr" extends="web_base">
 		<put-attribute name="main" value="/web/cdr.jsp" />
 	</definition>
+	
+	<definition name="limitSetting" extends="web_base">
+		<put-attribute name="main" value="/web/limitSetting.jsp" />
+	</definition>
 
 
 </tiles-definitions>

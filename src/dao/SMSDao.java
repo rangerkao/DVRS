@@ -7,13 +7,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import bean.GPRSThreshold;
 import bean.SMSLog;
 import bean.SMSSetting;
 
 public class SMSDao extends BaseDao{
-
-	
 	
 	public SMSDao() throws Exception {
 		super();
@@ -72,14 +72,18 @@ public class SMSDao extends BaseDao{
 				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
 				list.add(log);
 			}
+			rs.close();
+			st.close();
+			
 
 		return list;
 	}
 	
 	public List<SMSSetting> querySMSSetting() throws SQLException{
+		logger.info("querySMSSetting...");
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET,A.MEG,A.SUSPEND "
+				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND "
 				+ "FROM HUR_SMS_SETTING A "
 				+ "ORDER BY A.ID ";
 		
@@ -90,7 +94,7 @@ public class SMSDao extends BaseDao{
 				SMSSetting log = new SMSSetting();
 				log.setId(rs.getString("ID"));
 				log.setBracket(rs.getDouble("BRACKET"));
-				log.setMsg(rs.getString("MEG"));
+				log.setMsg(rs.getString("MEGID"));
 	
 				String s=rs.getString("SUSPEND");
 				if("0".equals(s))
@@ -100,12 +104,14 @@ public class SMSDao extends BaseDao{
 					
 				list.add(log);
 			}
+			rs.close();
+			st.close();
 
 		return list;
 	}
 	
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
-		
+		logger.info("updateSMSSetting...");
 			//移除所有資料
 			sql=
 					"TRUNCATE  TABLE  HUR_SMS_SETTING";
@@ -135,6 +141,117 @@ public class SMSDao extends BaseDao{
 			
 
 		return list;
+	}
+	
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
+		logger.info("queryAlertLimit...");
+		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
+		sql=
+				"SELECT A.IMSI,A.THRESHOLD,C.SERVICECODE "
+				+ "FROM HUR_GPRS_THRESHOLD A,IMSI B,SERVICE C "
+				+ "WHERE A.IMSI=B.IMSI AND B.SERVICEID = c.SERVICEID ";
+		
+		Statement st = conn.createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		
+		while(rs.next()){
+			GPRSThreshold g = new GPRSThreshold();
+			g.setImsi(rs.getString("IMSI"));
+			g.setMsisdn(rs.getString("SERVICECODE"));
+			g.setThreshold(rs.getDouble("THRESHOLD"));
+			list.add(g);
+		}
+		
+		st.close();
+		rs.close();
+		
+		conn.close();
+		
+		return list;
+	}
+	
+	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
+
+		logger.info("insertAlertLimit...");
+
+		sql=
+				"INSERT INTO HUR_GPRS_THRESHOLD (IMSI,THRESHOLD) "
+				+ "VALUES(?,?)";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, imsi);
+		pst.setDouble(2, limit);
+		
+		int result=pst.executeUpdate();
+		
+		pst.close();
+		conn.close();
+
+		return result;
+	}
+	
+	public int updateAlertLimit(String imsi,Double limit) throws SQLException{
+
+		logger.info("updateAlertLimit...");
+		
+		sql=
+				"UPDATE HUR_GPRS_THRESHOLD A "
+				+ "SET A.THRESHOLD = ? "
+				+ "WHERE A.IMSI=? ";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		pst.setDouble(1, limit);
+		pst.setString(2, imsi);
+		
+		int result=pst.executeUpdate();
+		
+		pst.close();
+		conn.close();
+
+		return result;
+	}
+	
+	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
+		logger.info("deleteAlertLimit...");
+		
+		sql=
+				"DELETE HUR_GPRS_THRESHOLD A "
+				+ "WHERE A.IMSI=? ";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, imsi);
+		
+		int result=pst.executeUpdate();
+		
+		pst.close();
+		conn.close();
+
+		return result;
+	}
+	
+	public String queryIMSI(String msisdn) throws SQLException{
+		logger.info("queryIMSI...");
+		String imsi = null;
+		sql=
+				"SELECT B.IMSI,C.SERVICECODE "
+				+ "FROM IMSI B,SERVICE C "
+				+ "WHERE B.SERVICEID = C.SERVICEID "
+				+ "AND C.SERVICECODE = ?";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, msisdn);
+		ResultSet rs = pst.executeQuery();
+	
+		while(rs.next()){
+			imsi=rs.getString("IMSI");
+		}
+		rs.close();
+		pst.close();
+		
+		return imsi;
 	}
 	
 }

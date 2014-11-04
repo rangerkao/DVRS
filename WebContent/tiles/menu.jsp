@@ -57,40 +57,62 @@ var count=logOutTime/checkPeriod;
 			document.getElementById('logoutLink').click();
 		}
 	}
+/*
+ *權限查詢
+ */
+ 
+ function queryAuth(){
+		$("#menuAuth").html("正在查尋，請稍待...");
+		  $.ajax({
+		      url: '<s:url action="queryAuth"/>',
+		      data: {}, //parameters go here in object literal form
+		      type: 'POST',
+		      datatype: 'json',
+		      success: function(json) {  
+		    	  //jQuery.parseJSON,JSON.parse(json)
+		    	  //alert(json);
+		    	  var list=$.parseJSON(json);
+		    	     $.each(list,function(i,Auth){
+		    	   
+		    	    	 $('#'+Auth.belong).append('<li><a id='+Auth.action+' href="<s:url action="'+Auth.action+'"/>">'+Auth.name+'</a><br></li>');
+		    	     }); 
+		    	  },
+		      error: function() { $("#menuAuth").html('something bad happened');}
+		    }); 
+		 $("#menuAuth").html("&nbsp;");
+	}
+	
+	$(document).ready(function(){
+		//$("li").css("display","none");
+		queryAuth();
+	});
+
 </script>
 </head>
 <body>
 	<div class="wapper" >
 	<label id="x">x.index</label>
 	<label id="y">y.index</label>
+	<label id="menuAuth"></label>
 		<ul id="menu">
 			<li>
 				使用者管理
-				<ul>
-					<li><a href="<s:url action="adminLink"/>">使用者管理</a><br></li>
-					<li><a href="<s:url action="programLink"/>">程式管理</a><br></li>
+				<ul id="adminList">
 				</ul>
 			</li>
 			<li>
 				查詢相關
-				<ul>
-					<li><a href="<s:url action="actionQueryLink"/>">使用者操作紀錄查詢</a><br></li>
-					<li><a href="<s:url action="smsQueryLink"/>">簡訊發送查詢</a><br></li>
-					<li><a href="<s:url action="dataRateLink"/>">資費管理</a><br></li>
-					<li><a href="<s:url action="cdrLink"/>">CDR查詢</a><br></li>
+				<ul id="searchList">
 				</ul>
 			</li>
 			<li>
 				設定相關
-				<ul>
-					<li><a href="<s:url action="smsSettingLink"/>">簡訊設定</a><br></li>
+				<ul id="settingList">
 				</ul>
 			</li>
 			<li>
 				其他
-				<ul>
-					<li><a href="<s:url action="billLink"/>">帳單匯出</a><br></li>
-					<li><a id='logoutLink' href="<s:url action="logoutLink"/>" >登出</a><br></li>
+				<ul id="elseList">
 				</ul>
 			</li>
 		</ul>

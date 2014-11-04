@@ -28,17 +28,23 @@ public class ActionLogAction extends BaseAction {
 	List<ActionLog> actionLoglist = new ArrayList<ActionLog>();
 	
 	public String queryActionLog() throws ParseException, SQLException{
-		System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo);
-		if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo))){
-			actionLoglist=actionLogControl.queryActionLog();
-		}
-		else{
-			actionLoglist=actionLogControl.queryActionLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
-					tool.DateFormat(dateTo, "yyyy-MM-dd"));		
-		}
-		result=beanToJSONArray(actionLoglist);
+		try {
+			System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo);
+			if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo))){
+				actionLoglist=actionLogControl.queryActionLog();
+			}
+			else{
+				actionLoglist=actionLogControl.queryActionLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
+						tool.DateFormat(dateTo, "yyyy-MM-dd"));		
+			}
+			result=beanToJSONArray(actionLoglist);
 
-		actionLogControl.loggerAction(super.getUser().getAccount(), "ActionLog", "query", "dateFrom:"+dateFrom+";dateTo:"+dateTo, result);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "ActionLog", "query", "dateFrom:"+dateFrom+";dateTo:"+dateTo, SUCCESS);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 		
 		return SUCCESS;
 	}

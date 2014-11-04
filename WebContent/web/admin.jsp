@@ -14,7 +14,7 @@
 		var adminList;
 		function queryAdmin(){
 			$("#Qmsg").html("正在查尋，請稍待...");
-			 $.ajax({
+			  $.ajax({
 			      url: '<s:url action="queryAdmin"/>',
 			      data: {}, //parameters go here in object literal form
 			      type: 'POST',
@@ -24,9 +24,9 @@
 			    	  //jQuery.parseJSON,JSON.parse(json)
 			    	  //alert(json);
 			    	  var list=$.parseJSON(json);
-			    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-			    	  	adminList=list;
-			    	    $.each(list,function(i,admin){  
+			    	   $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
+			    	  	adminList=list; 
+			    	     $.each(list,function(i,admin){  
 	                      var _tr = $(	"<tr>"+
 	                      					"<td align='center'>"+admin.userid+"</td>"+
 	                      					"<td align='center'>"+admin.account+"</td>"+
@@ -35,12 +35,12 @@
 	                      					"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
 	                      				"</tr>");  
 	                      
-	                    $("#table1").append(_tr); });
+	                    $("#table1").append(_tr); }); 
 			    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-			    	    $("#table1 tr:even").addClass("even_columm");
+			    	    $("#table1 tr:even").addClass("even_columm"); 
 			    	  },
 			      error: function() { $("#Qmsg").html('something bad happened');}
-			    });
+			    }); 
 			 $("#Qmsg").html("&nbsp;");
 		}
 		//將被選擇的table欄位放入編輯區

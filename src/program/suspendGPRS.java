@@ -3,6 +3,7 @@ package program;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -15,15 +16,20 @@ import org.apache.log4j.Logger;
 public class suspendGPRS {
 	
 	private static Connection conn;
+	private static Connection conn2; //mBoss
 	private static Logger logger;
-	public suspendGPRS(Connection con,Logger log){
+	public suspendGPRS(Connection con,Connection con2,Logger log){
 		conn=con;
+		conn2=con2;
 		logger=log;
 	}
 	
 	// TWN_IMSI、TWN_MSISDN先代空值，sMNOSubCode不重要，sCount忽略
 	private String cRCode,Process_Code,sCMHKLOGID,cMSISDNOLD,cM205OT,cMVLN,cGPRS,csta,bb;
-	private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,cTWNLDIMSI,cTWNLDMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
+	private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
+	//private String cTWNLDIMSI,cTWNLDMSISDN;
+	//TWNLDIMSI=>HOME IMSI,TWNLDMSISDN=>PARTNER MSISDN
+	private String sHOMEIMSI,PARTNERMSISDN;
 	private String sMNOSubCode,sMNOName,sWSFStatus,sWSFDStatus,cServiceOrderNBR;
 	private SimpleDateFormat dFormat1=new SimpleDateFormat("yyyyMMdd");
 	private SimpleDateFormat dFormat2=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -41,8 +47,9 @@ public class suspendGPRS {
 		cS2TIMSI=imsi;
 		cS2TMSISDN=msisdn;
 		
-		cTWNLDIMSI=imsi;
-		cTWNLDMSISDN=msisdn;
+		//20141104 add
+		setPartnerCode();
+		
 		cReqStatus="17";
 		dReqDate=dFormat3.format(new Date());
 		//20141103 set as TWNLD
@@ -74,8 +81,8 @@ public class suspendGPRS {
 		Process_SyncFileDtl(sWSFDStatus);
 		Process_ServiceOrder();
 		// Process_WorkSubcode();
-		Process_WorkSubcode_05_17(cS2TIMSI, cTWNLDIMSI, cReqStatus,
-				cTWNLDMSISDN);
+		Process_WorkSubcode_05_17(cS2TIMSI, sHOMEIMSI, cReqStatus,
+				PARTNERMSISDN);
 		sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
 				+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
 		conn.createStatement().executeUpdate(sSql);
@@ -83,7 +90,79 @@ public class suspendGPRS {
 		/* Query_PreProcessResult(out17, "000"); */
 		Query_GPRSStatus();
 		// 待實做Log紀錄停止GPRS 回傳結果 desc
+		
+		conn.close();
+		conn2.close();
 	}
+	
+	//20141104 add
+		public void setPartnerCode() throws Exception{
+			logger.debug("setPartnerCode");
+			
+			
+			//From AVAILABLEMSISDN
+			sSql=
+					"SELECT HOMEIMSI , PARTNERMSISDN "
+					+ "FROM AVAILABLEMSISDN A, IMSI B, SERVICE C "
+					+ "WHERE A.S2TMSISDN=C.SERVICECODE AND B.SERVICEID=C.SERVICEID "
+					+ "AND B.IMSI='"+cS2TIMSI+"'";
+					
+			logger.info("Get HOMEIMSI,PARTNERMSISDN from AVAILABLEMSISDN :" + sSql);
+			Temprs = null;
+			Temprs = conn.createStatement().executeQuery(sSql);
+			while(Temprs.next()){
+				sHOMEIMSI = Temprs.getString("HOMEIMSI");
+				PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+			}
+			
+			if(sHOMEIMSI!=null && !"".equals(sHOMEIMSI) && PARTNERMSISDN!=null && !"".equals(PARTNERMSISDN))
+				return;
+			
+			// mBOSS From TWNLD record
+			sSql=
+					"SELECT HOMEIMSI, PARTNERMSISDN "
+					+ "FROM ( 	SELECT '"+cS2TIMSI+"' IMSI,VALUE PARTNERMSISDN "
+					+ "			FROM NEWSERVICEORDERPARAMETERVALUE "
+					+ "			WHERE PARAMETERVALUEID=3792 AND SERVICEID= (SELECT MAX(SERVICEID) "
+					+ "														FROM NEWSERVICEORDERINFO "
+					+ "														WHERE FIELDVALUE='"+cS2TIMSI+"') ) A, "
+					+ "IMSI B "
+					+ "WHERE A.IMSI=B.IMSI";
+			
+			logger.info("Get HOMEIMSI,PARTNERMSISDN mBOSS From TWNLD record :" + sSql);
+			Temprs = null;
+			Temprs = conn2.createStatement().executeQuery(sSql);
+			while(Temprs.next()){
+				sHOMEIMSI = Temprs.getString("HOMEIMSI");
+				PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+			}
+			
+			if(sHOMEIMSI!=null && !"".equals(sHOMEIMSI) && PARTNERMSISDN!=null && !"".equals(PARTNERMSISDN))
+				return;
+			
+			//mBOSS From change sim card record  
+			
+			sSql=
+					"SELECT HOMEIMSI , PARTNERMSISDN "
+					+ "FROM ( 	SELECT '"+cS2TIMSI+"' IMSI, VALUE PARTNERMSISDN "
+					+ "			FROM NEWSERVICEORDERPARAMETERVALUE A,(	SELECT MAX(A.ORDERID), B.SERVICEID "
+					+ "													FROM SERVICEINFOCHANGEORDER A, SERVICEORDER B "
+					+ "													WHERE A.ORDERID=B.ORDERID AND A.FIELDID=3713 AND A.OLDVALUE<>A.NEWVALUE AND A.NEWVALUE='"+cS2TIMSI+"' "
+					+ "													GROUP BY B.SERVICEID) B "
+					+ "			WHERE PARAMETERVALUEID=3792 AND A.SERVICEID=B.SERVICEID  ) A,IMSI B "
+					+ "WHERE A.IMSI=B.IMSI ";
+
+			logger.info("Get HOMEIMSI,PARTNERMSISDN mBOSS From change sim card record  :" + sSql);
+			Temprs = null;
+			Temprs = conn2.createStatement().executeQuery(sSql);
+			while(Temprs.next()){
+				sHOMEIMSI = Temprs.getString("HOMEIMSI");
+				PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+			}
+			if(sHOMEIMSI==null || "".equals(sHOMEIMSI) || PARTNERMSISDN==null || "".equals(PARTNERMSISDN))
+				throw new Exception("Can't find HOMEIMSI,PARTNERMSISDN");
+			
+		}
 	
 	public void Check_Type_Code_87_MAP_VALUE(String sServiceCode)
 			throws SQLException {
@@ -156,8 +235,8 @@ public class suspendGPRS {
 				+ "ORIGINAL_CMCC_MSISDN, S2T_IMSI, S2T_MSISDN, FORWARD_TO_HOME_NO, "
 				+ "FORWARD_TO_S2T_NO_1, IMSI_FLAG, STATUS, SERVICE_ORDER_NBR, SUBSCR_ID)"
 				+ " VALUES ("+ cWorkOrderNBR+ ",'"+ cReqStatus+ "',"+ cFileID+ ",'"+ c910SEQ
-				+ "',to_date('"+ Sdate+ "','MM/dd/yyyy HH24:mi:ss'),'"+ cTWNLDIMSI+ "','+"+ cTWNLDMSISDN
-				+ "','"+ cS2TIMSI+ "','"+ cS2TMSISDN+ "','+"+ cTWNLDMSISDN+ "','"+ cTWNLDMSISDN+ "', '2', '"
+				+ "',to_date('"+ Sdate+ "','MM/dd/yyyy HH24:mi:ss'),'"+ sHOMEIMSI+ "','+"+ PARTNERMSISDN
+				+ "','"+ cS2TIMSI+ "','"+ cS2TMSISDN+ "','+"+ PARTNERMSISDN+ "','"+ PARTNERMSISDN+ "', '2', '"
 				+ sSFDStatus+ "','"+ cServiceOrderNBR+ "','"+ cTicketNumber+ "')";
 		logger.debug("Process_SyncFileDtl:" + sSql);
 		conn.createStatement().executeUpdate(sSql);

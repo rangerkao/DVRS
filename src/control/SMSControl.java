@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import bean.GPRSThreshold;
 import bean.SMSLog;
 import bean.SMSSetting;
 import dao.SMSDao;
@@ -28,4 +29,20 @@ public class SMSControl {
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
 		return smsDao.updateSMSSetting(list);
 	}
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
+		return smsDao.queryAlertLimit();
+	}
+	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
+		return smsDao.insertAlertLimit(imsi,limit);
+	}
+	public int updateAlertLimit(String imsi,Double limit) throws SQLException{
+		return smsDao.updateAlertLimit(imsi, limit);
+	}
+	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
+		return smsDao.deleteAlertLimit(imsi, limit);
+	}
+	public String queryIMSI(String msisdn) throws SQLException{
+		return smsDao.queryIMSI(msisdn);
+	}
+
 }

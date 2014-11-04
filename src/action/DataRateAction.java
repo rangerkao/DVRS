@@ -22,10 +22,16 @@ public class DataRateAction extends BaseAction{
 	List<DataRate> dataRateList=new ArrayList<DataRate>();
 	DataRateControl dataRateControl = new DataRateControl();
 	
-	public String queryDataRate() throws SQLException{
-		dataRateList=dataRateControl.queryDataRateList();
-		result=beanToJSONArray(dataRateList);
-		actionLogControl.loggerAction(super.getUser().getAccount(), "DataRate", "query","", result);
+	public String queryDataRate(){
+		try {
+			dataRateList=dataRateControl.queryDataRateList();
+			result=beanToJSONArray(dataRateList);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "DataRate", "query","", SUCCESS);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 		return SUCCESS;
 	}
 }

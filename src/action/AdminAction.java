@@ -44,7 +44,7 @@ public class AdminAction extends BaseAction{
 		adminList=adminControl.queryAdminList();
 		System.out.println( beanToJSONArray(adminList));
 		result=beanToJSONArray(adminList);
-		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", result);
+		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", SUCCESS);
 		return SUCCESS;
 	}
 	

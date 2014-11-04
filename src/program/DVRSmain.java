@@ -1171,6 +1171,11 @@ public class DVRSmain implements Job{
 	private void sendAlertSMS(){
 		logger.info("sendAlertSMS...");
 
+		//沒有當月資料，不發送
+		if(!currentMap.containsKey(sYearmonth))
+			return;
+		
+		
 		List<Integer> times=new ArrayList<Integer>();
 		List<Double> bracket=new ArrayList<Double>();
 		List<String> msg=new ArrayList<String>();
@@ -1475,7 +1480,7 @@ public class DVRSmain implements Job{
 	}
 	
 	private void suspend(String imsi,String msisdn){
-		suspendGPRS sus=new suspendGPRS(conn,logger);
+		suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
 		try {
 			sus.ReqStatus_17_Act(imsi, msisdn);
 		} catch (SQLException e) {
@@ -1641,12 +1646,9 @@ public class DVRSmain implements Job{
 				logger.debug("connect success!");
 				startTime = System.currentTimeMillis();
 				
-				//TODO 測試中斷服務
-				suspend("454120200106312","886568912624");
-				
-				/*//取消自動Commit
+				//取消自動Commit
 				cancelAutoCommit();
-				//設定日期區間
+				//設定日期
 				setDayDate();
 				//取得最後更新的FileID
 				subStartTime = System.currentTimeMillis();
@@ -1719,9 +1721,8 @@ public class DVRSmain implements Job{
 					sendMail("At updateCurrentMapU occur SQLException error!");
 					errorMsg=e.getMessage();
 				}
-				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));*/
+				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
 
-				
 				//show();
 				// 程式執行完成
 				endTime = System.currentTimeMillis();
