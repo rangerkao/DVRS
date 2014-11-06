@@ -135,8 +135,8 @@ public class BillReport{
 			map.put("Billing Period", "04/01/2014~04/30/2014");
 			map.put("Currency", "HKD");
 			
-			map.put("Previous Balance", new Float("779.27"));
-			map.put("Payment Received", new Float("779.27"));
+			/*map.put("Previous Balance", new Float("779.27"));
+			map.put("Payment Received", new Float("779.27"));*/
 			
 			map.put("Monthly Service Charges", new Float("688.00"));
 			map.put("Usage Charges", new Float("76.72"));
@@ -150,9 +150,18 @@ public class BillReport{
 			
 			List list=new ArrayList();
 			
+			Map map2= new HashMap();
+			map2.put("name", "Previous Balance");
+			map2.put("value", new Float("779.27"));
+			list.add(map2);
+			
+			Map map3= new HashMap();
+			map3.put("name","Payment Received");
+			map3.put("value", new Float("779.27"));
+			list.add(map3);
 			
 			System.out.println("jasperFile convert to jrprintFile!");
-			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JREmptyDataSource());
+			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(list));
 			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,null,new JREmptyDataSource());
 			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(data.getD()));
 			System.out.println("convert to jrprintFile finished!");

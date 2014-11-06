@@ -90,9 +90,6 @@ public class suspendGPRS {
 		/* Query_PreProcessResult(out17, "000"); */
 		Query_GPRSStatus();
 		// 待實做Log紀錄停止GPRS 回傳結果 desc
-		
-		conn.close();
-		conn2.close();
 	}
 	
 	//20141104 add

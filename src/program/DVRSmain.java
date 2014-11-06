@@ -76,7 +76,7 @@ public class DVRSmain implements Job{
 	//Hur Data conf
 	private  int dataThreshold=500;
 	private  int lastfileID=0;
-	private final int exchangeRate=4; //港幣對台幣匯率，暫訂為4
+	private final double exchangeRate=4; //港幣對台幣匯率，暫訂為4
 	private final double kByte=1/1024D;//RATE單位KB，USAGE單位B
 	
 
@@ -88,7 +88,7 @@ public class DVRSmain implements Job{
 	
 	//預設值
 	private String DEFAULT_MCCMNC="default";
-	private Double DEFAULT_THRESHOLD=5000D;
+	private Double DEFAULT_THRESHOLD=10D;
 
 	
 	Map<String,Map<String,Map<String,Object>>> currentMap = new HashMap<String,Map<String,Map<String,Object>>>();
@@ -241,7 +241,7 @@ public class DVRSmain implements Job{
 		try {
 			//設定HUR_CURRENT計費，抓出這個月與下個月
 			sql=
-					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND "
+					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD "
 					+ "FROM HUR_CURRENT A "
 					+ "WHERE A.MONTH IN (?,?) ";
 			
@@ -270,6 +270,7 @@ public class DVRSmain implements Job{
 				map.put("CHARGE", rs.getDouble("CHARGE"));
 				map.put("VOLUME", rs.getDouble("VOLUME"));
 				map.put("EVER_SUSPEND", rs.getString("EVER_SUSPEND"));
+				map.put("LAST_ALERN_THRESHOLD", rs.getDouble("LAST_ALERN_THRESHOLD"));
 
 				map2.put(imsi, map);
 				currentMap.put(month,map2);
@@ -624,7 +625,7 @@ public class DVRSmain implements Job{
 			logger.debug("Execute SQL : "+sql);
 			
 			//批次Query 避免ram空間不足
-			for(int i=1;(i-1)*dataThreshold+1<count ;i++){
+			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
 				logger.debug("Round "+i+" Procsess ...");
 				PreparedStatement pst = conn.prepareStatement(sql);
 				pst.setInt(1, lastfileID+1);
@@ -634,9 +635,7 @@ public class DVRSmain implements Job{
 			
 				ResultSet rs = pst.executeQuery();
 
-				while(rs.next()){
-					/*System.out.println(j+"\t:\t"+rs.getString("USAGEID"));*/
-					
+				while(rs.next()){					
 					String imsi= rs.getString("IMSI");
 					String mccmnc=rs.getString("MCCMNC");
 					String usageId=rs.getString("USAGEID");
@@ -646,7 +645,7 @@ public class DVRSmain implements Job{
 					String cDay=tool.DateFormat(callTime, DAY_FORMATE);
 					Double charge=0D;
 					Double oldCharge=0D;
-					Double dayCap=null;
+					Double dayCap=300D;
 					
 					String pricplanID=null;
 					if(msisdnMap.containsKey(imsi))
@@ -679,8 +678,13 @@ public class DVRSmain implements Job{
 					//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
-						charge=volume*kByte*(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE");
+						
+						double ec=1;
+						if("HKD".equalsIgnoreCase((String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY")))
+							ec=exchangeRate;
+						charge=volume*kByte*(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE")*ec;
 						dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
+						
 					}else{
 						//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
 						//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
@@ -742,7 +746,7 @@ public class DVRSmain implements Job{
 					if(dayCap!=null && charge>dayCap) charge=dayCap;
 					
 					//將結果記錄到currentDayMap
-					map3.put("CHARGE", oldCharge+charge);
+					map3.put("CHARGE", charge);
 					map3.put("LAST_FILEID",fileID);
 					map3.put("LAST_DATA_TIME",callTime);
 					map3.put("VOLUME",volume);
@@ -949,7 +953,7 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"UPDATE HUR_CURRENT A "
-				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.UPDATE_DATE=SYSDATE "
+				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.LAST_ALERN_THRESHOLD=?,A.UPDATE_DATE=SYSDATE "
 				+ "WHERE A.MONTH=? AND A.IMSI=? ";
 		
 		logger.info("Execute SQL :"+sql);
@@ -967,8 +971,9 @@ public class DVRSmain implements Job{
 						pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(mon).get(imsi).get("LAST_DATA_TIME")));
 						pst.setDouble(5,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(6,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
-						pst.setString(7, mon);
-						pst.setString(8, imsi);//具有mccmnc
+						pst.setDouble(7,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
+						pst.setString(8, mon);
+						pst.setString(9, imsi);//具有mccmnc
 						pst.addBatch();
 						count++;
 						
@@ -1063,8 +1068,8 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"INSERT INTO HUR_CURRENT "
-				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,MONTH,CREATE_DATE) "
-				+ "VALUES(?,?,?,?,?,?,?,?,SYSDATE)";
+				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_THRESHOLD,MONTH,CREATE_DATE) "
+				+ "VALUES(?,?,?,?,?,?,?,?,?,SYSDATE)";
 		
 		logger.info("Execute SQL :"+sql);
 		
@@ -1080,7 +1085,8 @@ public class DVRSmain implements Job{
 						pst.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(mon).get(imsi).get("LAST_DATA_TIME")));
 						pst.setDouble(6,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(7,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
-						pst.setString(8, mon);
+						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
+						pst.setString(9, mon);
 						pst.addBatch();
 						count++;
 					if(count==dataThreshold){
@@ -1281,32 +1287,35 @@ public class DVRSmain implements Job{
 				Double charge=(Double) currentMap.get(sYearmonth).get(imsi).get("CHARGE");
 				int smsTimes=(Integer) currentMap.get(sYearmonth).get(imsi).get("SMS_TIMES");
 				String everSuspend =(String) currentMap.get(sYearmonth).get(imsi).get("EVER_SUSPEND");
+				Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(imsi).get("LAST_ALERN_THRESHOLD");
 				Double threshold=thresholdMap.get(imsi);
 				if(threshold==null || threshold==0D)
 					threshold=DEFAULT_THRESHOLD;
-				
+				if(lastAlernThreshold==null)
+					lastAlernThreshold=0D;
 				
 				for(int i=0;i<times.size();i++){
-					if((smsTimes==times.get(i)-1)&&(charge>=bracket.get(i)*threshold)){
+					if((charge>=bracket.get(i)*threshold)&&lastAlernThreshold<bracket.get(i)*threshold){
+						lastAlernThreshold=bracket.get(i)*threshold;
 						smsTimes++;
 						//寄送簡訊
 						logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
 						for(String s:msg.get(i).split(",")){
 							if(s!=null){
-								String cont =processMag(content.get(s).get("COMTENT"),bracket.get(i));
+								String cont =processMag(content.get(s).get("COMTENT"),bracket.get(i)*threshold);
 								//TODO
 								//WSDL方式呼叫 WebServer
 								//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
 								//WSDL方式呼叫 WebServer
 								res=setSMSPostParam(cont,phone);
-								
+								currentMap.get(sYearmonth).get(imsi).put("LAST_ALERN_THRESHOLD", lastAlernThreshold);
 								logger.debug("send message result : "+res);						
 								currentMap.get(sYearmonth).get(imsi).put("SMS_TIMES", smsTimes);
 								smsCount++;
 								//中斷GPRS服務
 								if("1".equals(suspend.get(i))&&"0".equals(everSuspend)){
 									logger.debug("Suspend GPRS ... ");		
-									//suspend(imsi,phone);
+									suspend(imsi,phone);
 									currentMap.get(sYearmonth).get(imsi).put("EVER_SUSPEND", "1");
 								}
 
@@ -1445,7 +1454,7 @@ public class DVRSmain implements Job{
 		sql=
 				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID "
 				+ "FROM SERVICE A,IMSI B "
-				+ "WHERE A.SERVICEID=B.SERVICEID ";
+				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL ";
 		
 		try {
 			/*String a="(";
@@ -1518,7 +1527,7 @@ public class DVRSmain implements Job{
 				+ "SQL : "+sql+"<br>\n"
 				+ "Error Msg : "+errorMsg;
 
-		/*try {
+		try {
 			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
 		} catch (AddressException e) {
 			e.printStackTrace();
@@ -1538,7 +1547,7 @@ public class DVRSmain implements Job{
 			//sendMail
 			//sendMail("At sendMail occur IOException error!");
 			//errorMsg=e.getMessage();
-		}*/
+		}
 	}
 	
 	@SuppressWarnings("unused")
@@ -1573,7 +1582,7 @@ public class DVRSmain implements Job{
 		}
 	}
 	@SuppressWarnings("unused")
-	private void showMsisdnMap(){
+	private void showDataRate(){
 		for(String priceplanid : dataRate.keySet()){
 			for(String mccmnc:dataRate.get(priceplanid).keySet() ){
 				System.out.print(" priceplanid"+" : "+priceplanid);
@@ -1609,6 +1618,21 @@ public class DVRSmain implements Job{
 			System.out.println();
 		}
 	}
+	private void showThresHold(){
+		for(String imsi : thresholdMap.keySet()){
+			System.out.print("IMSI"+" : "+imsi);
+			System.out.print(", threshold"+" : "+thresholdMap.get(imsi));
+			System.out.println();
+		}
+	}
+	private void showMsisdnMap(){
+		for(String imsi : msisdnMap.keySet()){
+			System.out.print("IMSI"+" : "+imsi);
+			System.out.print(", MSISDN"+" : "+msisdnMap.get(imsi).get("MSISDN"));
+			System.out.print(", PRICEPLANID"+" : "+msisdnMap.get(imsi).get("PRICEPLANID"));
+			System.out.println();
+		}
+	}
 	
 	private void show(){
 		//System.out.println("Show lastfileID"+" : ");
@@ -1619,12 +1643,16 @@ public class DVRSmain implements Job{
 		//showCurrentDay();
 		//System.out.println("Show MsisdnMap"+" : ");
 		//showMsisdnMap();
-		System.out.println("Show IMSItoVLN"+" : ");
-		showIMSItoVLN();
-		System.out.println("Show TADIGtoMCCMNC"+" : ");
-		showTADIGtoMCCMNC();
-		System.out.println("Show VLNtoTADIG"+" : ");
-		showVLNtoTADIG();
+		//System.out.println("Show IMSItoVLN"+" : ");
+		//showIMSItoVLN();
+		//System.out.println("Show TADIGtoMCCMNC"+" : ");
+		//showTADIGtoMCCMNC();
+		//System.out.println("Show VLNtoTADIG"+" : ");
+		//showVLNtoTADIG();
+		//System.out.println("Show ThresHold"+" : ");
+		//showThresHold();
+		//System.out.println("Show DataRate"+" : ");
+		//showDataRate();
 		
 	}
 	
@@ -1642,14 +1670,17 @@ public class DVRSmain implements Job{
 			logger.info("RFP Program Start! "+new Date());
 			
 			if (conn != null && conn2!=null) {
-
+				
 				logger.debug("connect success!");
+				
 				startTime = System.currentTimeMillis();
 				
 				//取消自動Commit
 				cancelAutoCommit();
+				
 				//設定日期
 				setDayDate();
+				
 				//取得最後更新的FileID
 				subStartTime = System.currentTimeMillis();
 				setLastFileID();
@@ -1696,7 +1727,6 @@ public class DVRSmain implements Job{
 				subStartTime = System.currentTimeMillis();
 				charge();
 				logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
-				//showCurrent();
 
 				//發送警示簡訊
 				subStartTime = System.currentTimeMillis();
@@ -1723,7 +1753,7 @@ public class DVRSmain implements Job{
 				}
 				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
 
-				//show();
+				show();
 				// 程式執行完成
 				endTime = System.currentTimeMillis();
 				logger.info("Program execute time :" + (endTime - startTime));
@@ -1735,6 +1765,7 @@ public class DVRSmain implements Job{
 			}
 		}
 	
+		private int i=0;
 	@Override
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
 		process();
@@ -1794,7 +1825,7 @@ public class DVRSmain implements Job{
 		DVRSmain rf =new DVRSmain();
 		rf.process();
 
-		//regularTimeRun();
+		/*regularTimeRun();*/
 		
 		
 	}

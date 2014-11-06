@@ -3,6 +3,7 @@
 	<name>DVRS</name>
 	<comment></comment>
 	<projects>
+		<project>StressClient</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

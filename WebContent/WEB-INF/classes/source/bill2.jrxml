@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isTitleNewPage="true" uuid="07bfbe66-bfa3-4f16-9e59-80cd39e231a5">
 	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="48"/>
+	<property name="ireport.y" value="0"/>
 	<parameter name="address for" class="java.lang.String"/>
 	<parameter name="Statement for" class="java.lang.String"/>
 	<parameter name="Account Number" class="java.lang.String"/>
@@ -21,6 +21,10 @@
 		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="applied date" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Balance" class="java.util.List"/>
 	<variable name="Balance" class="java.lang.Float" resetType="None">
 		<variableExpression><![CDATA[$P{Previous Balance}-$P{Payment Received}]]></variableExpression>
 		<initialValueExpression><![CDATA[]]></initialValueExpression>
@@ -40,10 +44,6 @@
 	</background>
 	<title>
 		<band height="802" splitType="Stretch">
-			<image>
-				<reportElement x="0" y="0" width="189" height="64" uuid="dcd3de95-d7a1-4c7d-8734-a3510839188f"/>
-				<imageExpression><![CDATA["C:\\Users\\ranger.kao\\Desktop\\BillReport\\sim2travel.jpg"]]></imageExpression>
-			</image>
 			<staticText>
 				<reportElement x="461" y="-4" width="94" height="83" uuid="4601d761-25fd-418b-8e53-f2ef07acdde6"/>
 				<textElement>
@@ -208,20 +208,6 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 
 ]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="454" y="362" width="100" height="15" uuid="da9693c2-f1c2-4b0d-87b5-c9266f54757b"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Usage Charges}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="290" y="347" width="128" height="15" uuid="0fa87a09-5f56-4599-abdf-1e0b1be62593"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Monthly Service Charges]]></text>
-			</staticText>
 			<line>
 				<reportElement x="291" y="330" width="265" height="1" uuid="e0a1f33b-005f-455e-a6a8-41b451b9ccc3"/>
 			</line>
@@ -259,26 +245,12 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 			<line>
 				<reportElement x="291" y="422" width="265" height="1" uuid="6096413e-7807-45b1-befb-1527bd1e8466"/>
 			</line>
-			<staticText>
-				<reportElement x="290" y="362" width="100" height="15" uuid="8d0b77f3-32d3-4658-ba75-2098e8a801d9"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Usage Charges]]></text>
-			</staticText>
 			<line>
 				<reportElement x="290" y="279" width="1" height="192" uuid="dc33ab00-a43a-4231-adf1-6060e033c080"/>
 			</line>
 			<line>
 				<reportElement x="555" y="280" width="1" height="191" uuid="a9bd9b0e-b766-4cff-9c1a-f821bcdaac8a"/>
 			</line>
-			<textField>
-				<reportElement x="454" y="347" width="100" height="15" uuid="6a293526-9664-4f76-9ba3-0d39953555f4"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{Monthly Service Charges}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement x="454" y="471" width="100" height="15" uuid="4f756181-2209-4f46-b07a-d329efaa472f"/>
 				<textElement textAlignment="Right">
@@ -324,6 +296,16 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PageCount}]]></textFieldExpression>
 			</textField>
+			<subreport>
+				<reportElement x="291" y="347" width="262" height="75" uuid="293b2988-a1ca-4be4-94a2-9b97ec9c7da0"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{Balance})]]></dataSourceExpression>
+				<returnValue subreportVariable="Balance" toVariable="Balance"/>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_Balance.jasper"]]></subreportExpression>
+			</subreport>
+			<image>
+				<reportElement x="0" y="0" width="189" height="64" uuid="e21b2f85-3767-407a-a478-7653be3390ac"/>
+				<imageExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\sim2travel.jpg"]]></imageExpression>
+			</image>
 		</band>
 	</title>
 	<pageHeader>
