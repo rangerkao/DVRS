@@ -3,7 +3,9 @@ package action;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -187,7 +189,9 @@ public class SMSAction extends BaseAction {
 	public String queryIMSI(){
 		
 		try {
-			result=smsControl.queryIMSI(msisdn);
+			Map<String,String> map =new HashMap<String,String>();
+			map=smsControl.queryIMSI(msisdn);
+			result=beanToJSONObject(map);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -231,11 +232,13 @@ public class SMSDao extends BaseDao{
 		return result;
 	}
 	
-	public String queryIMSI(String msisdn) throws SQLException{
+	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
 		logger.info("queryIMSI...");
+		Map<String,String> map =new HashMap<String,String>();
 		String imsi = null;
+		String pricaplainid = null;
 		sql=
-				"SELECT B.IMSI,C.SERVICECODE "
+				"SELECT B.IMSI,C.SERVICECODE,C.PRICEPLANID "
 				+ "FROM IMSI B,SERVICE C "
 				+ "WHERE B.SERVICEID = C.SERVICEID "
 				+ "AND C.SERVICECODE = ?";
@@ -247,11 +250,14 @@ public class SMSDao extends BaseDao{
 	
 		while(rs.next()){
 			imsi=rs.getString("IMSI");
+			pricaplainid=rs.getString("PRICEPLANID");
 		}
 		rs.close();
 		pst.close();
 		
-		return imsi;
+		map.put("imsi", imsi);
+		map.put("pricaplainid", pricaplainid);
+		return map;
 	}
 	
 }

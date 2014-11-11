@@ -18,6 +18,8 @@ import java.util.Map;
 
 
 
+import java.util.regex.Pattern;
+
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -43,7 +45,7 @@ public class BillReport{
 		
 		FileName=fileName;
 		
-		FileName="85266400998.txt";
+		//FileName="85266400998.txt";
 		
 		System.out.println("filePath:"+filePath+FileName);
 		
@@ -123,45 +125,79 @@ public class BillReport{
 			System.out.println("");
 			
 			//參數設置
-			Map map=new HashMap();
+			Map<String,Object> map=new HashMap<String,Object>();
+			//地址
 			map.put("address for",
-					"114\n"+
-					"台北市內湖區\n"+
-					"民權東路六段296巷90號15樓\n"+
-					"Jason T. Wang\n先生/小姐");
+					data.getI().getPostalCode()+"\n"
+					+data.getI().getBillingAddressLine1()+"\n"
+					+data.getI().getBillingAddressLine2()+"\n"
+					+"\n"
+					+data.getI().getAddressee()+"  先生/小姐");
 			
-			map.put("Statement for", " Jason T. Wang");
-			map.put("Account Number", "InfoF1285*****");
-			map.put("Billing Period", "04/01/2014~04/30/2014");
+			map.put("address for1", data.getI().getPostalCode());
+			map.put("address for2", data.getI().getBillingAddressLine1());
+			map.put("address for3", data.getI().getBillingAddressLine2());
+			map.put("address for4", data.getI().getAddressee()+"  先生/小姐");
+			
+			//資料
+			map.put("Statement for", data.getI().getCustomerName());
+			map.put("Account Number", data.getI().getAccountName());
+			map.put("Billing Period", data.getI().getCycleBeginDate()+"~"+data.getI().getCycleEndDate());
 			map.put("Currency", "HKD");
 			
-			/*map.put("Previous Balance", new Float("779.27"));
-			map.put("Payment Received", new Float("779.27"));*/
+			//封面項目
+			map.put("Previous Balance", new Double(data.getI().getAccountBalance()));
+			map.put("Payment Received", new Double(data.getI().getPaymentPosted()));
+			map.put("Balance", data.getJ());
+			map.put("applied date", data.getI().getDueDate());
 			
-			map.put("Monthly Service Charges", new Float("688.00"));
-			map.put("Usage Charges", new Float("76.72"));
-			
-			map.put("applied date", "May 15, 2014");
+			//無法利用subreport回傳，在java中計算
+			Double currentTotal=0D;
+			for(InvoiceDetail j:data.getJ()){
+				if(Pattern.matches("^\\d+(.\\d+)?", j.getAmount()))//判對是否為浮點數型態
+					currentTotal=currentTotal+Double.parseDouble(j.getAmount());
+			}
+			map.put("currentTotal", currentTotal);
+	
 			
 			map.put("D", data.getD());
 			map.put("R", data.getR());
 
+			List<UsageDetail> R1=new ArrayList<UsageDetail>();	
+			List<UsageDetail> R2=new ArrayList<UsageDetail>();
+			List<UsageDetail> R3=new ArrayList<UsageDetail>();
+			
+			Double tR1=0D;
+			Double tR2=0D;
+			Double tR3=0D;
+			
+			for(UsageDetail u : data.getR()){
+				if("Voice Usage Charges".equalsIgnoreCase(u.getChargeItemName())){
+					R1.add(u);	
+					tR1=Double.parseDouble(u.getSubTotalCharges());
+				}else if("SMS Charges".equalsIgnoreCase(u.getChargeItemName())){
+					R2.add(u);
+					tR2=Double.parseDouble(u.getSubTotalCharges());
+				}else if("GPRS Usage Charges".equalsIgnoreCase(u.getChargeItemName())){
+					R3.add(u);
+					tR3=Double.parseDouble(u.getSubTotalCharges());
+				}
+			}
+			map.put("R1", data.getR());
+			map.put("R2", data.getR());
+			map.put("R3", data.getR());
+			
+			map.put("Total Usage Charges",tR1+tR2+tR3 );
+			
+			
+			map.put("SUBREPORT_DIR", filePath);
 			float a=new java.lang.Float(0.00);
 			
-			List list=new ArrayList();
 			
-			Map map2= new HashMap();
-			map2.put("name", "Previous Balance");
-			map2.put("value", new Float("779.27"));
-			list.add(map2);
-			
-			Map map3= new HashMap();
-			map3.put("name","Payment Received");
-			map3.put("value", new Float("779.27"));
-			list.add(map3);
+			List list=new ArrayList();			
 			
 			System.out.println("jasperFile convert to jrprintFile!");
-			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(list));
+			String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JREmptyDataSource());
 			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,null,new JREmptyDataSource());
 			//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(data.getD()));
 			System.out.println("convert to jrprintFile finished!");

@@ -42,24 +42,6 @@ import org.apache.log4j.Logger;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //199
 import com.iglomo.SMPPServicesStub;
 import com.iglomo.SMPPServicesStub.SendSMPP;
@@ -389,5 +371,21 @@ public class Jatool implements IJatool{
 		return Double.valueOf(str);
 	}
 	
+	@Override
+	public String FormatNumString(Double value){
+		return FormatNumString(value,null);
+	}
+	
+	@Override
+	public String FormatNumString(Double value,String form){
+		if(form==null || "".equals(form)){
+			form="#,##0.00";
+		}
+			
+		DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);
+		
+		return str;
+	}
 	
 }

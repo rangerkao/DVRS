@@ -8,7 +8,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
@@ -19,28 +21,17 @@ public class hello {
 		System.out.println("Hello!");
 		
 		Jatool tool =new Jatool();
-		try {
-			tool.DateFormat("2014/10/06 08:56:55", "yyyy/MM/dd HH:mm:ss");
-			SimpleDateFormat dFormat2=new SimpleDateFormat("yyMMddHHmm");
-
-			System.out.println(dFormat2.format(new Date()));
+		
+		Date d =new Date(new Date().getTime()-1000*60*60);
 			
-		 	System.out.println(tool.getDayLastDate(new Date()));
-		 	 
-		 	Connection conn =getConnection();
-		 	System.out.println(msg);
-		 	try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		 	
-		 	
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-6);
+		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
+		
+		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
+		
+		System.out.println(tool.FormatNumString(500000D, "NT#,##0.00"));
+		
 	}
 
 	

@@ -1,43 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isTitleNewPage="true" uuid="07bfbe66-bfa3-4f16-9e59-80cd39e231a5">
-	<property name="ireport.zoom" value="1.4641000000000006"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill2" pageWidth="595" pageHeight="842" columnWidth="530" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isTitleNewPage="true" uuid="07bfbe66-bfa3-4f16-9e59-80cd39e231a5">
+	<property name="ireport.zoom" value="1.6105100000000019"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="534"/>
 	<parameter name="address for" class="java.lang.String"/>
 	<parameter name="Statement for" class="java.lang.String"/>
 	<parameter name="Account Number" class="java.lang.String"/>
 	<parameter name="Billing Period" class="java.lang.String"/>
 	<parameter name="Currency" class="java.lang.String"/>
-	<parameter name="Previous Balance" class="java.lang.Float">
-		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	<parameter name="Previous Balance" class="java.lang.Double">
+		<defaultValueExpression><![CDATA[Double.valueOf("0.00")]]></defaultValueExpression>
 	</parameter>
-	<parameter name="Payment Received" class="java.lang.Float">
-		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
-	</parameter>
-	<parameter name="Usage Charges" class="java.lang.Float">
-		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
-	</parameter>
-	<parameter name="Monthly Service Charges" class="java.lang.Float">
-		<defaultValueExpression><![CDATA[Float.valueOf("0.00")]]></defaultValueExpression>
+	<parameter name="Payment Received" class="java.lang.Double">
+		<defaultValueExpression><![CDATA[Double.valueOf("0.00")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="applied date" class="java.lang.String"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Balance" class="java.util.List"/>
-	<variable name="Balance" class="java.lang.Float" resetType="None">
+	<parameter name="D" class="java.util.List"/>
+	<parameter name="R" class="java.util.List"/>
+	<parameter name="currentTotal" class="java.lang.Double"/>
+	<parameter name="R1" class="java.util.List"/>
+	<parameter name="R2" class="java.util.List"/>
+	<parameter name="R3" class="java.util.List"/>
+	<parameter name="Total Usage Charges" class="java.lang.Double"/>
+	<parameter name="address for1" class="java.lang.String"/>
+	<parameter name="address for2" class="java.lang.String"/>
+	<parameter name="address for3" class="java.lang.String"/>
+	<parameter name="address for4" class="java.lang.String"/>
+	<variable name="Balance" class="java.lang.Double" resetType="None">
 		<variableExpression><![CDATA[$P{Previous Balance}-$P{Payment Received}]]></variableExpression>
 		<initialValueExpression><![CDATA[]]></initialValueExpression>
 	</variable>
-	<variable name="Total Current Charges" class="java.lang.Float" resetType="None">
-		<variableExpression><![CDATA[$P{Monthly Service Charges}+$P{Usage Charges}]]></variableExpression>
-	</variable>
-	<variable name="Total Amount Due" class="java.lang.Float" resetType="None">
-		<variableExpression><![CDATA[$V{Balance}+$V{Total Current Charges}]]></variableExpression>
+	<variable name="Total Amount Due" class="java.lang.Double" resetType="None">
+		<variableExpression><![CDATA[$V{Balance}+$V{currentTotal1}]]></variableExpression>
 		<initialValueExpression><![CDATA[]]></initialValueExpression>
 	</variable>
 	<variable name="PageCount" class="java.lang.Integer" resetType="None">
 		<variableExpression><![CDATA[$V{PAGE_COUNT}+1]]></variableExpression>
+	</variable>
+	<variable name="currentTotal1" class="java.lang.Double">
+		<variableExpression><![CDATA[$P{currentTotal}]]></variableExpression>
+	</variable>
+	<variable name="currentTotal2" class="java.lang.Double">
+		<variableExpression><![CDATA[$P{currentTotal}]]></variableExpression>
+	</variable>
+	<variable name="totalAmount" class="java.lang.Double">
+		<variableExpression><![CDATA[$V{Balance}+$V{currentTotal1}]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -45,7 +56,7 @@
 	<title>
 		<band height="802" splitType="Stretch">
 			<staticText>
-				<reportElement x="461" y="-4" width="94" height="83" uuid="4601d761-25fd-418b-8e53-f2ef07acdde6"/>
+				<reportElement x="397" y="0" width="94" height="83" uuid="4601d761-25fd-418b-8e53-f2ef07acdde6"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -59,7 +70,7 @@ Taiwan R.O.C.
 ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="618" width="555" height="184" uuid="de3e5e8e-aca9-4dac-9893-d7ccfee42c13"/>
+				<reportElement x="0" y="618" width="528" height="184" uuid="de3e5e8e-aca9-4dac-9893-d7ccfee42c13"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -71,131 +82,131 @@ For derail rate plan please visit:
 http://www.sim2travel.com/tariff/rateplan.asp	]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="339" y="154" width="15" height="15" uuid="eec7bf65-0d30-46f4-a386-9a939dd40790"/>
+				<reportElement x="336" y="128" width="15" height="15" uuid="eec7bf65-0d30-46f4-a386-9a939dd40790"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[of]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="293" y="169" width="55" height="15" uuid="2a9639d5-ca01-4de0-8228-918bac62c89a"/>
+				<reportElement x="290" y="143" width="65" height="15" uuid="2a9639d5-ca01-4de0-8228-918bac62c89a"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Statement for:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="358" y="184" width="100" height="15" uuid="7a7aa35e-8006-4dd7-bf73-cef989f0dd6c"/>
+				<reportElement x="365" y="158" width="100" height="15" uuid="7a7aa35e-8006-4dd7-bf73-cef989f0dd6c"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Account Number}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="293" y="199" width="55" height="15" uuid="3a5ee25b-4f6a-4627-b199-95c3d885435d"/>
+				<reportElement x="290" y="173" width="61" height="15" uuid="3a5ee25b-4f6a-4627-b199-95c3d885435d"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Billing Period: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="293" y="184" width="65" height="15" uuid="19669341-21a7-4661-9f8b-e227ea0eac1f"/>
+				<reportElement x="290" y="158" width="75" height="15" uuid="19669341-21a7-4661-9f8b-e227ea0eac1f"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Account Number: ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="348" y="199" width="100" height="15" uuid="ae2349dd-7aa6-4aa0-83be-a43c79ca73ae"/>
+				<reportElement x="351" y="173" width="114" height="15" uuid="ae2349dd-7aa6-4aa0-83be-a43c79ca73ae"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="321" y="154" width="18" height="15" uuid="835d0a57-5b1f-4c5a-8113-1a2800e32450"/>
+				<reportElement x="318" y="128" width="18" height="15" uuid="835d0a57-5b1f-4c5a-8113-1a2800e32450"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="293" y="154" width="28" height="15" uuid="e1fd63ca-80e8-4cc2-88ae-9269742628f2"/>
+				<reportElement x="290" y="128" width="28" height="15" uuid="e1fd63ca-80e8-4cc2-88ae-9269742628f2"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Page]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="331" y="214" width="100" height="15" uuid="6a8decdb-bb02-4714-bba2-a855f5e08850"/>
+				<reportElement x="336" y="188" width="129" height="15" uuid="6a8decdb-bb02-4714-bba2-a855f5e08850"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="293" y="214" width="38" height="15" uuid="2c55ee17-0834-4bfe-9a34-af46af6ef1e9"/>
+				<reportElement x="290" y="188" width="46" height="15" uuid="2c55ee17-0834-4bfe-9a34-af46af6ef1e9"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Currency: ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="348" y="169" width="100" height="15" uuid="f427637f-fec3-48a9-9511-2b1c32abffb7"/>
+				<reportElement x="356" y="143" width="109" height="15" uuid="f427637f-fec3-48a9-9511-2b1c32abffb7"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="290" y="423" width="265" height="15" backcolor="#999999" uuid="d132c1e6-8445-4987-aff8-3e229c54674c"/>
+				<reportElement mode="Opaque" x="266" y="425" width="265" height="15" backcolor="#999999" uuid="d132c1e6-8445-4987-aff8-3e229c54674c"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total Current Charges (B)]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="454" y="315" width="100" height="15" uuid="4f47984f-ab4e-4d85-9d46-4f8008b2d784"/>
+				<reportElement x="430" y="317" width="100" height="15" uuid="4f47984f-ab4e-4d85-9d46-4f8008b2d784"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Payment Received}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="291" y="438" width="265" height="1" uuid="fdcc8c8a-35e4-454b-9a4d-bf6180114e9f"/>
+				<reportElement x="267" y="440" width="265" height="1" uuid="fdcc8c8a-35e4-454b-9a4d-bf6180114e9f"/>
 			</line>
 			<staticText>
-				<reportElement x="291" y="300" width="100" height="15" uuid="d7abd465-0191-4ac5-a1eb-d167c5670b1a"/>
+				<reportElement x="267" y="302" width="100" height="15" uuid="d7abd465-0191-4ac5-a1eb-d167c5670b1a"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Previous Balance]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="291" y="315" width="146" height="15" uuid="43c8c626-c239-4dda-8ae4-aabbcce3d0f1"/>
+				<reportElement x="267" y="317" width="146" height="15" uuid="43c8c626-c239-4dda-8ae4-aabbcce3d0f1"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Payment Received - Thank You]]></text>
 			</staticText>
 			<line>
-				<reportElement x="290" y="454" width="265" height="1" uuid="628d67f5-e81f-48e6-96fd-0e39a8a56aec"/>
+				<reportElement x="266" y="456" width="265" height="1" uuid="628d67f5-e81f-48e6-96fd-0e39a8a56aec"/>
 			</line>
 			<line>
-				<reportElement x="290" y="470" width="266" height="1" uuid="720d8435-30a8-4288-b7ef-0ba11eb03188"/>
+				<reportElement x="266" y="472" width="266" height="1" uuid="720d8435-30a8-4288-b7ef-0ba11eb03188"/>
 			</line>
 			<staticText>
-				<reportElement mode="Opaque" x="290" y="455" width="265" height="15" backcolor="#999999" uuid="4c92e5d2-63bc-4a83-aa10-612eff864cf2"/>
+				<reportElement mode="Opaque" x="266" y="457" width="265" height="15" backcolor="#999999" uuid="4c92e5d2-63bc-4a83-aa10-612eff864cf2"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total Amount Due=(A)+(B)]]></text>
 			</staticText>
 			<line>
-				<reportElement x="290" y="279" width="265" height="1" uuid="2d260498-1d25-48d4-86df-21d311c9b968"/>
+				<reportElement x="266" y="281" width="265" height="1" uuid="2d260498-1d25-48d4-86df-21d311c9b968"/>
 			</line>
 			<staticText>
-				<reportElement x="290" y="512" width="265" height="54" uuid="5368c2ff-2de8-4b87-afac-958530922f2e"/>
+				<reportElement x="267" y="512" width="261" height="54" uuid="5368c2ff-2de8-4b87-afac-958530922f2e"/>
 				<textElement>
 					<font size="7"/>
 				</textElement>
@@ -209,113 +220,287 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 ]]></text>
 			</staticText>
 			<line>
-				<reportElement x="291" y="330" width="265" height="1" uuid="e0a1f33b-005f-455e-a6a8-41b451b9ccc3"/>
+				<reportElement x="267" y="332" width="265" height="1" uuid="e0a1f33b-005f-455e-a6a8-41b451b9ccc3"/>
 			</line>
 			<staticText>
-				<reportElement x="291" y="471" width="186" height="15" uuid="2e0bdb48-4148-4767-ab48-2b9dde88ef52"/>
+				<reportElement x="267" y="473" width="186" height="15" uuid="2e0bdb48-4148-4767-ab48-2b9dde88ef52"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[To be applied to your credit card on/after ]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="454" y="300" width="100" height="15" uuid="5b06254e-c98a-4a3d-9841-572b7bc1277a"/>
+				<reportElement x="430" y="302" width="100" height="15" uuid="5b06254e-c98a-4a3d-9841-572b7bc1277a"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Previous Balance}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="291" y="331" width="265" height="15" backcolor="#999999" uuid="81fb683a-0964-41d7-ab94-2f41f241eff5"/>
+				<reportElement mode="Opaque" x="267" y="333" width="265" height="15" backcolor="#999999" uuid="81fb683a-0964-41d7-ab94-2f41f241eff5"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Balance (A)]]></text>
 			</staticText>
 			<line>
-				<reportElement x="290" y="300" width="265" height="1" uuid="1251d97f-80e0-4b78-ba22-1c2c72c20407"/>
+				<reportElement x="266" y="302" width="265" height="1" uuid="1251d97f-80e0-4b78-ba22-1c2c72c20407"/>
 			</line>
 			<staticText>
-				<reportElement mode="Opaque" x="290" y="280" width="265" height="20" forecolor="#000000" backcolor="#999999" uuid="2d2b6778-9377-4d54-924d-bbcafa7c9019"/>
+				<reportElement mode="Opaque" x="266" y="282" width="265" height="20" forecolor="#000000" backcolor="#999999" uuid="2d2b6778-9377-4d54-924d-bbcafa7c9019"/>
 				<textElement textAlignment="Center">
 					<font size="11" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Summary of Charges]]></text>
 			</staticText>
 			<line>
-				<reportElement x="291" y="422" width="265" height="1" uuid="6096413e-7807-45b1-befb-1527bd1e8466"/>
+				<reportElement x="267" y="424" width="265" height="1" uuid="6096413e-7807-45b1-befb-1527bd1e8466"/>
 			</line>
 			<line>
-				<reportElement x="290" y="279" width="1" height="192" uuid="dc33ab00-a43a-4231-adf1-6060e033c080"/>
+				<reportElement x="266" y="281" width="1" height="192" uuid="dc33ab00-a43a-4231-adf1-6060e033c080"/>
 			</line>
 			<line>
-				<reportElement x="555" y="280" width="1" height="191" uuid="a9bd9b0e-b766-4cff-9c1a-f821bcdaac8a"/>
+				<reportElement x="531" y="282" width="1" height="191" uuid="a9bd9b0e-b766-4cff-9c1a-f821bcdaac8a"/>
 			</line>
 			<textField>
-				<reportElement x="454" y="471" width="100" height="15" uuid="4f756181-2209-4f46-b07a-d329efaa472f"/>
+				<reportElement x="430" y="473" width="100" height="15" uuid="4f756181-2209-4f46-b07a-d329efaa472f"/>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{applied date}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="290" y="346" width="265" height="1" uuid="bb6ed4f9-9404-4dea-9b38-94e9f6f8b364"/>
+				<reportElement x="266" y="348" width="265" height="1" uuid="bb6ed4f9-9404-4dea-9b38-94e9f6f8b364"/>
 			</line>
-			<textField>
-				<reportElement x="0" y="79" width="189" height="75" uuid="7003925e-b88c-47df-b95f-55d4f0308bd3"/>
-				<textElement>
-					<font fontName="SansSerif" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{address for}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="453" y="455" width="100" height="15" uuid="4af59821-fdd7-4f2a-aac4-156c40625596"/>
+			<textField evaluationTime="Report">
+				<reportElement x="429" y="457" width="100" height="15" uuid="4af59821-fdd7-4f2a-aac4-156c40625596"/>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Total Amount Due}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="453" y="331" width="100" height="15" uuid="7a462e0b-d640-4909-a7df-cde30b87be7c"/>
+				<reportElement x="429" y="333" width="100" height="15" uuid="7a462e0b-d640-4909-a7df-cde30b87be7c"/>
 				<textElement textAlignment="Right">
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Balance}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="453" y="424" width="100" height="15" uuid="2c1d934b-6817-400d-9460-ab66c2e7da58"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{Total Current Charges}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="354" y="154" width="18" height="15" uuid="0611cbf1-cedd-4211-b4d9-2bf5d9f782a4"/>
+			<textField evaluationTime="Report">
+				<reportElement x="351" y="128" width="18" height="15" uuid="0611cbf1-cedd-4211-b4d9-2bf5d9f782a4"/>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PageCount}]]></textFieldExpression>
 			</textField>
+			<image>
+				<reportElement x="1" y="0" width="150" height="50" uuid="e21b2f85-3767-407a-a478-7653be3390ac"/>
+				<imageExpression><![CDATA[$P{SUBREPORT_DIR}+ "sim2travel.jpg"]]></imageExpression>
+			</image>
 			<subreport>
-				<reportElement x="291" y="347" width="262" height="75" uuid="293b2988-a1ca-4be4-94a2-9b97ec9c7da0"/>
+				<reportElement x="267" y="349" width="262" height="75" uuid="293b2988-a1ca-4be4-94a2-9b97ec9c7da0"/>
+				<subreportParameter name="Total Current Charges">
+					<subreportParameterExpression><![CDATA[]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{Balance})]]></dataSourceExpression>
-				<returnValue subreportVariable="Balance" toVariable="Balance"/>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_Balance.jasper"]]></subreportExpression>
 			</subreport>
-			<image>
-				<reportElement x="0" y="0" width="189" height="64" uuid="e21b2f85-3767-407a-a478-7653be3390ac"/>
-				<imageExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\sim2travel.jpg"]]></imageExpression>
-			</image>
+			<textField evaluationTime="Auto">
+				<reportElement x="432" y="424" width="100" height="16" uuid="6f452e94-a6dd-4af6-a79f-079898e6e441"/>
+				<textElement textAlignment="Right">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{currentTotal1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="68" width="149" height="15" uuid="bb0c38fe-97bd-4150-9e8b-bbba196b1c9b"/>
+				<textElement>
+					<font fontName="kaiu" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{address for1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="83" width="149" height="15" uuid="bd76e70c-eb63-4dc6-ad16-6cbcac6e71b1"/>
+				<textElement>
+					<font fontName="kaiu" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{address for2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="98" width="149" height="15" uuid="2a937d39-90f1-4ae9-b2b1-d56723a04c2c"/>
+				<textElement>
+					<font fontName="kaiu" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{address for3}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="128" width="149" height="15" uuid="1111d209-9239-4ec5-8d6d-44db6dd7f294"/>
+				<textElement>
+					<font fontName="kaiu" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{address for4}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="113" width="149" height="15" uuid="a120f850-82b5-49ee-8d5d-f062cb021873"/>
+				<textElement>
+					<font fontName="kaiu" size="8" isBold="true"/>
+				</textElement>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
-		<band height="35" splitType="Stretch"/>
+		<band height="86" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="150" height="50" uuid="43c97d60-e91c-4736-9e5d-13f525d44d60"/>
+				<imageExpression><![CDATA[$P{SUBREPORT_DIR}+ "sim2travel.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="0" y="50" width="215" height="15" uuid="aefe4dfb-284b-4311-becc-77884b7c7ac3"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Customer Service Number: +886-960-840-112]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="358" y="45" width="55" height="15" uuid="9a524bfc-3825-435e-815e-82a216103250"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Billing Period: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="358" y="15" width="57" height="15" uuid="fc76e159-503f-4e26-b7d5-c47470124483"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Statement for:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="358" y="0" width="28" height="15" uuid="4aa1408a-fe2d-4f61-9859-3abd8b6ee850"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Page]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="386" y="0" width="18" height="15" uuid="1c10a1cc-3643-4da9-927d-dcbdb598f186"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="413" y="45" width="115" height="15" uuid="bed66fd0-1373-4e4b-a0fd-aa1339321eb8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="428" y="30" width="100" height="15" uuid="acf6b11b-27cf-4930-a0de-36b0f39121e0"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Account Number}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="358" y="30" width="70" height="15" uuid="7895a884-f575-48dd-8e47-449084fca20e"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Account Number: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="358" y="60" width="39" height="15" uuid="4f2f2bdb-fc4e-4967-af02-09b206e87a70"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Currency: ]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="419" y="0" width="18" height="15" uuid="8c0575bd-131d-4a87-a620-a896e71bab5d"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PageCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="397" y="60" width="131" height="15" uuid="7e41f572-f303-4ff5-a719-47fbe52ab29f"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="415" y="15" width="113" height="15" uuid="abf19200-a686-435d-b168-420ef31bfb90"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="404" y="0" width="15" height="15" uuid="928c75d8-1552-42fb-8d05-ee721b718234"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[of]]></text>
+			</staticText>
+		</band>
 	</pageHeader>
-	<columnHeader>
-		<band height="61" splitType="Stretch"/>
-	</columnHeader>
 	<detail>
-		<band height="125" splitType="Stretch"/>
+		<band height="617" splitType="Stretch">
+			<subreport>
+				<reportElement x="0" y="0" width="530" height="31" uuid="263558f4-47fe-4b95-9395-c7005cb94ba1"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{D})]]></dataSourceExpression>
+				<returnValue subreportVariable="PAGE_COUNT" toVariable="PageCount" calculation="Sum"/>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_charge.jasper"]]></subreportExpression>
+			</subreport>
+			<staticText>
+				<reportElement mode="Opaque" x="1" y="597" width="530" height="20" backcolor="#999999" uuid="932df795-8f89-4892-9361-037a4a80581d"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Current Charges]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="429" y="597" width="100" height="20" uuid="6779891e-9b19-4bda-874f-4123a8951158"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{currentTotal2}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="339" y="597" width="100" height="20" uuid="a45ac41b-f0af-47d5-941c-653954632728"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="39">
+			<subreport>
+				<reportElement x="1" y="0" width="530" height="39" uuid="f119e041-6ce6-4b8c-a6e2-065f86aae710"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{R1})]]></dataSourceExpression>
+				<returnValue subreportVariable="PAGE_COUNT" toVariable="PageCount" calculation="Sum"/>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_usage_voice.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<subreport>
+				<reportElement x="1" y="0" width="530" height="50" uuid="54c72bc7-0733-4b2b-8194-2e7b7b12fe20"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{R2})]]></dataSourceExpression>
+				<returnValue subreportVariable="PAGE_COUNT" toVariable="PageCount" calculation="Sum"/>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_usage_sms.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<subreport>
+				<reportElement x="1" y="0" width="530" height="50" uuid="2a06011a-5159-40af-bb08-6541d1413370"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{R3})]]></dataSourceExpression>
+				<returnValue subreportVariable="PAGE_COUNT" toVariable="PageCount" calculation="Sum"/>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "bill2_usage_gprs.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</detail>
 	<columnFooter>
 		<band height="45" splitType="Stretch"/>
@@ -323,6 +508,31 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 	<pageFooter>
 		<band height="54" splitType="Stretch"/>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="21">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="530" height="20" backcolor="#999999" uuid="2a3b3b43-45d2-4eb8-ae0c-9abd0881de3d"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Usage Charges]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="430" y="1" width="100" height="20" uuid="3403a630-2c8f-4d30-8249-54bc728c619a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Total Usage Charges}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="337" y="0" width="100" height="20" uuid="9fe53619-bc49-4e7a-bf29-c5516c584cd4"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
 	<summary>
 		<band height="42" splitType="Stretch"/>
 	</summary>

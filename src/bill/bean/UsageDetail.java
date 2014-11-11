@@ -23,6 +23,11 @@ public class UsageDetail {
 	private String charge;//費用
 	private String eventCount;//次數
 	private String chargeItemAbbName;//費用項簡碼
+	//待確認，文件沒有定義的欄位
+	private String endDate;//結束日期
+	private String endTime;//結束時間
+	private String packages;//使用封包量
+	private String subTotalPackages;//詳單類型次數小計
 	
 	private String Data; //Bean 內容資料
 
@@ -33,9 +38,13 @@ public class UsageDetail {
 	public UsageDetail(List<String> list){
 		int n=0;
 		if(list!=null) n=list.size();
-		if(n>=20)n=20;
+		if(n>=24)n=24;
 		
 		switch(n){
+		case 24:subTotalPackages=list.get(23);
+		case 23:packages=list.get(22);
+		case 22:endTime=list.get(21);
+		case 21:endDate=list.get(20);
 		case 20:chargeItemAbbName=list.get(19);
 		case 19:eventCount=list.get(18);
 		case 18:charge=list.get(17);
@@ -62,6 +71,8 @@ public class UsageDetail {
 		setData();
 	}
 	
+	
+
 	public UsageDetail(String recordFlag, String accountNum,
 			String serviceCode, String typeSequence, String usageType,
 			String chargeItemName, String subTotalDuration,
@@ -69,7 +80,8 @@ public class UsageDetail {
 			String callee, String callerDestination, String calleeDestination,
 			String startDate, String startTime, String callType,
 			String duration, String charge, String eventCount,
-			String chargeItemAbbName) {
+			String chargeItemAbbName, String endDate, String endTime,
+			String packages, String subTotalPackages) {
 		super();
 		this.recordFlag = recordFlag;
 		this.accountNum = accountNum;
@@ -91,6 +103,10 @@ public class UsageDetail {
 		this.charge = charge;
 		this.eventCount = eventCount;
 		this.chargeItemAbbName = chargeItemAbbName;
+		this.endDate = endDate;
+		this.endTime = endTime;
+		this.packages = packages;
+		this.subTotalPackages = subTotalPackages;
 	}
 
 	public String getRecordFlag() {
@@ -280,8 +296,44 @@ public class UsageDetail {
 				"Duration : " + duration + lineEnd +
 				"Charge : " + charge + lineEnd +
 				"EventCount : " + eventCount + lineEnd +
-				"ChargeItemAbbName : " + chargeItemAbbName + lineEnd ;
+				"ChargeItemAbbName : " + chargeItemAbbName + lineEnd +
+				"endDate : " + endDate + lineEnd +
+				"endTime : " + endTime + lineEnd +
+				"Packages : " + packages + lineEnd +
+				"subTotalPackages : " + subTotalPackages + lineEnd ;
 
+	}
+
+	public String getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+
+	public String getPackages() {
+		return packages;
+	}
+
+	public void setPackages(String packages) {
+		this.packages = packages;
+	}
+
+	public String getSubTotalPackages() {
+		return subTotalPackages;
+	}
+
+	public void setSubTotalPackages(String subTotalPackages) {
+		this.subTotalPackages = subTotalPackages;
 	}
 	
 	

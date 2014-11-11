@@ -151,4 +151,15 @@ public interface IJatool {
 	 * @return
 	 */
 	Double FormatDouble(Double value, String form);
+
+	/**
+	 * 用DecimalFormat 對 數值格式化成字串
+	 * @param value
+	 * @param form
+	 * @return
+	 */
+	String FormatNumString(Double value);
+	String FormatNumString(Double value, String form);
+
+	
 }

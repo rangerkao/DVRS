@@ -3,6 +3,7 @@ package control;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import bean.GPRSThreshold;
 import bean.SMSLog;
@@ -41,7 +42,7 @@ public class SMSControl {
 	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
 		return smsDao.deleteAlertLimit(imsi, limit);
 	}
-	public String queryIMSI(String msisdn) throws SQLException{
+	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
 		return smsDao.queryIMSI(msisdn);
 	}
 
