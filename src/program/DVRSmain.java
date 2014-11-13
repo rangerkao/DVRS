@@ -93,6 +93,10 @@ public class DVRSmain implements Job{
 	private Double DEFAULT_THRESHOLD=5000D;//預設月警示量
 	private Double DEFAULT_DAY_THRESHOLD=15D;//預設日警示量
 	private Double DEFAULT_DAYCAP=300D;
+	private Double DEFAULT_VOLUME_THRESHOLD=1.5*1024*1024D;//預設流量警示(降速)，1.5GB;
+	private Double DEFAULT_VOLUME_THRESHOLD2=2.0*1024*1024D;//預設流量警示(降速)，15GB;
+	private String DEFAULT_PHONE=null;
+	private Boolean TEST_MODE=true;
 	
 	Map<String,Map<String,Map<String,Object>>> currentMap = new HashMap<String,Map<String,Map<String,Object>>>();
 	Map<String,Map<String,Map<String,Map<String,Object>>>> currentDayMap = new HashMap<String,Map<String,Map<String,Map<String,Object>>>>();
@@ -136,6 +140,10 @@ public class DVRSmain implements Job{
 			PropertyConfigurator.configure(props);
 			logger =Logger.getLogger(DVRSmain.class);
 			logger.info("Logger Load Success!");
+			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("test.mode"))?true:false);
+			DEFAULT_PHONE=props.getProperty("test.phone");
+			logger.info("TEST_MODE : "+TEST_MODE);
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.out.println("File Not Found : "+e.getMessage());
@@ -238,14 +246,14 @@ public class DVRSmain implements Job{
 	 * 取出 HUR_CURRENTE table資料
 	 * 建立成
 	 * Map 
-	 * Key:MONTH,Value:Map(IMSI,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND)))
+	 * Key:MONTH,Value:Map(IMSI,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,EVER_ALERT_VOLUME)))
 	 */
 	private void setCurrentMap(){
 		logger.info("setCurrentMap...");
 		try {
 			//設定HUR_CURRENT計費，抓出這個月與下個月
 			sql=
-					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD "
+					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.EVER_ALERT_VOLUME "
 					+ "FROM HUR_CURRENT A "
 					+ "WHERE A.MONTH IN (?,?) ";
 			
@@ -275,6 +283,7 @@ public class DVRSmain implements Job{
 				map.put("VOLUME", rs.getDouble("VOLUME"));
 				map.put("EVER_SUSPEND", rs.getString("EVER_SUSPEND"));
 				map.put("LAST_ALERN_THRESHOLD", rs.getDouble("LAST_ALERN_THRESHOLD"));
+				map.put("EVER_ALERT_VOLUME", rs.getString("EVER_ALERT_VOLUME"));
 
 				map2.put(imsi, map);
 				currentMap.put(month,map2);
@@ -305,7 +314,7 @@ public class DVRSmain implements Job{
 	 * Key:day , value:Map(IMSI,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
 	 */
 	private void setCurrentMapDay(){
-		//設定HUR_CURRENT_DAY計費
+		//設定HUR_CURRENT_DAY計費,目前不做刪除動作，之後考慮是否留2個月資料
 		logger.info("setCurrentMapDay...");
 		try {
 			sql=
@@ -709,6 +718,7 @@ public class DVRSmain implements Job{
 					String cDay=tool.DateFormat(callTime, DAY_FORMATE);
 					Double charge=0D;
 					Double oldCharge=0D;
+					Double oldvolume=0D;
 					Double dayCap=null;
 					String alert="0";					
 					
@@ -777,7 +787,7 @@ public class DVRSmain implements Job{
 						oldCharge=(Double)map3.get("CHARGE");
 						charge=oldCharge+charge;
 						alert=(String)map3.get("ALERT");
-						
+						oldvolume=(Double)map3.get("VOLUME");
 						if(updateMapD.containsKey(cDay)){
 							smd= updateMapD.get(cDay);
 							if(smd.containsKey(imsi)){
@@ -807,7 +817,7 @@ public class DVRSmain implements Job{
 					map3.put("CHARGE", charge);
 					map3.put("LAST_FILEID",fileID);
 					map3.put("LAST_DATA_TIME",callTime);
-					map3.put("VOLUME",volume);
+					map3.put("VOLUME",volume+oldvolume);
 					map3.put("ALERT",alert);
 					map2.put(mccmnc, map3);
 					map.put(imsi, map2);
@@ -819,6 +829,7 @@ public class DVRSmain implements Job{
 					String suspend="0";
 					String cMonth=cDay.substring(0,6);
 					Double lastAlertThreshold=0D;
+					String volumeAlert="0";
 					
 					Map<String,Object> map4=new HashMap<String,Object>();
 					Map<String,Map<String,Object>> map5=new HashMap<String,Map<String,Object>>();
@@ -836,6 +847,7 @@ public class DVRSmain implements Job{
 						suspend=(String) map4.get("EVER_SUSPEND");
 						volume=(Double)map4.get("VOLUME")+volume;
 						lastAlertThreshold=(Double) map4.get("LAST_ALERN_THRESHOLD");
+						volumeAlert=(String) map4.get("EVER_ALERT_VOLUME");
 						if(updateMap.containsKey(cMonth)){
 							se=updateMap.get(cMonth);
 						}
@@ -856,6 +868,7 @@ public class DVRSmain implements Job{
 					map4.put("VOLUME", volume);
 					map4.put("EVER_SUSPEND", suspend);
 					map4.put("LAST_ALERN_THRESHOLD", lastAlertThreshold);
+					map4.put("EVER_ALERT_VOLUME", volumeAlert);
 					map5.put(imsi, map4);
 					currentMap.put(cMonth, map5);
 				}
@@ -1013,7 +1026,7 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"UPDATE HUR_CURRENT A "
-				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.LAST_ALERN_THRESHOLD=?,A.UPDATE_DATE=SYSDATE "
+				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.LAST_ALERN_THRESHOLD=?,A.EVER_ALERT_VOLUME=?,A.UPDATE_DATE=SYSDATE "
 				+ "WHERE A.MONTH=? AND A.IMSI=? ";
 		
 		logger.info("Execute SQL :"+sql);
@@ -1032,8 +1045,9 @@ public class DVRSmain implements Job{
 						pst.setDouble(5,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(6,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
 						pst.setDouble(7,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
-						pst.setString(8, mon);
-						pst.setString(9, imsi);//具有mccmnc
+						pst.setString(8,(String) currentMap.get(mon).get(imsi).get("EVER_ALERT_VOLUME"));
+						pst.setString(9, mon);
+						pst.setString(10, imsi);//具有mccmnc
 						pst.addBatch();
 						count++;
 						
@@ -1129,8 +1143,8 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"INSERT INTO HUR_CURRENT "
-				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_THRESHOLD,MONTH,CREATE_DATE) "
-				+ "VALUES(?,?,?,?,?,?,?,?,?,SYSDATE)";
+				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_THRESHOLD,EVER_ALERT_VOLUME,MONTH,CREATE_DATE) "
+				+ "VALUES(?,?,?,?,?,?,?,?,?,?,SYSDATE)";
 		
 		logger.info("Execute SQL :"+sql);
 		
@@ -1147,7 +1161,8 @@ public class DVRSmain implements Job{
 						pst.setDouble(6,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(7,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
 						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
-						pst.setString(9, mon);
+						pst.setString(9,(String) currentMap.get(mon).get(imsi).get("EVER_ALERT_VOLUME"));
+						pst.setString(10, mon);
 						pst.addBatch();
 						count++;
 					if(count==dataThreshold){
@@ -1323,7 +1338,7 @@ public class DVRSmain implements Job{
 				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
 				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,?,?,SYSDATE)";
 		
-		
+		//月金額警示*************************************
 		//沒有當月資料，不檢查
 		if(currentMap.containsKey(sYearmonth)){
 			smsCount=0;
@@ -1364,9 +1379,14 @@ public class DVRSmain implements Job{
 					int smsTimes=(Integer) currentMap.get(sYearmonth).get(imsi).get("SMS_TIMES");
 					String everSuspend =(String) currentMap.get(sYearmonth).get(imsi).get("EVER_SUSPEND");
 					Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(imsi).get("LAST_ALERN_THRESHOLD");
+					boolean isCustomized=false;
 					Double threshold=thresholdMap.get(imsi);
-					if(threshold==null || threshold==0D)
+					
+					
+					if(threshold==null || threshold==0D){
 						threshold=DEFAULT_THRESHOLD;
+						isCustomized=true;
+					}
 					if(lastAlernThreshold==null)
 						lastAlernThreshold=0D;
 					
@@ -1408,7 +1428,8 @@ public class DVRSmain implements Job{
 								currentMap.get(sYearmonth).get(imsi).put("SMS_TIMES", smsTimes);
 								smsCount++;
 								//中斷GPRS服務
-								if("1".equals(suspend.get(i))&&"0".equals(everSuspend)){
+								//20141113 新增客制定上限不執行斷網
+								if("1".equals(suspend.get(i))&&"0".equals(everSuspend)&&!isCustomized){
 									logger.debug("Suspend GPRS ... ");		
 									suspend(imsi,phone);
 									currentMap.get(sYearmonth).get(imsi).put("EVER_SUSPEND", "1");
@@ -1455,7 +1476,7 @@ public class DVRSmain implements Job{
 		}
 		
 		
-		//實做日警示部分，有今日資料才警示
+		//實做日警示部分，有今日資料才警示*************************************
 		if(currentDayMap.containsKey(sYearmonthday)){
 			smsCount=0;
 			try {
@@ -1496,6 +1517,7 @@ public class DVRSmain implements Job{
 						String cont =processMag(content.get("99").get("COMTENT"),DEFAULT_DAY_THRESHOLD,cPhone);
 						//發送簡訊
 						String res = setSMSPostParam(cont,phone);
+						logger.debug("send message result : "+res);	
 						smsCount++;
 						//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 						for(String mccmnc : currentDayMap.get(sYearmonthday).get(imsi).keySet()){
@@ -1544,8 +1566,166 @@ public class DVRSmain implements Job{
 		}
 		
 		
+		//降速提醒簡訊判斷*************************************
 		
+		//暫存數據用量資料 Key:IMSI,Value:Volume
+		Map<String,Double> tempMap = new HashMap<String,Double>();
+		//是否需要計算的pricePlanid
+		Set<String> checkedPriceplanid =new HashSet<String>();
+		checkedPriceplanid.add("155");
+		checkedPriceplanid.add("156");
+		checkedPriceplanid.add("157");
+		checkedPriceplanid.add("158");
+		checkedPriceplanid.add("159");
+		checkedPriceplanid.add("160");
 		
+		Set<String> checkedMCCMNC =new HashSet<String>();
+		checkedMCCMNC.add("46001");
+		checkedMCCMNC.add("46007");
+		checkedMCCMNC.add("46002");
+		checkedMCCMNC.add("460000");
+		checkedMCCMNC.add("46000");
+		checkedMCCMNC.add("45412");
+		
+		//是否為Data Only 客戶
+		Set<String> checkedPriceplanid2 =new HashSet<String>();
+		checkedPriceplanid2.add("158");
+		checkedPriceplanid2.add("159");
+		checkedPriceplanid2.add("160");
+		
+		for(String day : currentDayMap.keySet()){
+			//這個月的月資料
+			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
+				for(String imsi:currentDayMap.get(day).keySet()){
+					//確認priceplanid 與 subsidiaryid
+					String priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
+					String subsidiaryid = msisdnMap.get(imsi).get("SUBSIDIARYID");
+					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
+						for(String mccmnc:currentDayMap.get(day).get(imsi).keySet()){
+							//確認Mccmnc
+							if(checkedMCCMNC.contains(mccmnc)){
+								//進行累計
+								Double oldVolume=0D;
+								Double volume=(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME");
+								if(tempMap.containsKey(imsi)){
+									oldVolume=tempMap.get(imsi);
+								}
+								tempMap.put(imsi, oldVolume+volume);
+							}
+						}
+					}	
+				}
+			}
+		}
+		
+		try {
+			smsCount=0;
+			PreparedStatement pst = conn.prepareStatement(sql);
+			for(String imsi:tempMap.keySet()){
+				Double volume=tempMap.get(imsi);
+				String everAlertVolume = (String) currentMap.get(sYearmonth).get(imsi).get("EVER_ALERT_VOLUME");
+				//超過發簡訊，另外確認是否已通知過
+				boolean sendmsg=false;
+				Integer msgid=0;
+				
+				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && "0".equalsIgnoreCase(everAlertVolume)){
+					//2.0 GB 簡訊中文102，英文103
+					msgid=102;
+					sendmsg=true;
+				}
+				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && "0".equalsIgnoreCase(everAlertVolume)){
+					//2.0 GB 簡訊中文100，英文101
+					msgid=100;
+					sendmsg=true;
+				}
+				
+				if(sendmsg){
+					String priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
+					//是否為Data only 方案
+					if(checkedPriceplanid2.contains(priceplanid)){
+						//以設定通知號通知
+						phone=msisdnMap.get(imsi).get("NCODE");
+						phone=msisdnMap.get(imsi).get("MSISDN");
+					}else{
+						//以門號通知
+						phone=msisdnMap.get(imsi).get("MSISDN");
+					}
+					
+					//查詢所在國家的客服電話
+					String cPhone = null;
+					String nMccmnc=searchMccmncByIMSI(imsi);
+					Map<String,String> map=null;
+					
+					if(nMccmnc!=null && !"".equals(nMccmnc))
+						map = codeMap.get(nMccmnc.substring(0,3));
+					if(map!=null)
+						cPhone=map.get("PHONE");
+					
+					//確認號碼
+					if(phone==null ||"".equals(phone)){
+						//sendMail
+						sendMail("At sendAlertSMS occur error!<br>\n "
+								+ "The IMSI:"+imsi+" can't find msisdn to send! ");
+						logger.debug("The IMSI:"+imsi+" can't find msisdn to send! ");
+						continue;
+					}
+					//發送簡訊
+					logger.info("For "+imsi+" send 2GB decrease speed  message !");
+					
+					//中文
+					//處理字串
+					String cont =processMag(content.get(msgid.toString()).get("COMTENT"),null,cPhone);
+					//發送簡訊
+					String res = setSMSPostParam(cont,phone);
+					logger.debug("send chinese message result : "+res);	
+					smsCount++;
+					
+					//英文
+					msgid+=1;
+					//處理字串
+					cont =processMag(content.get(msgid.toString()).get("COMTENT"),null,cPhone);
+					//發送簡訊
+					res = setSMSPostParam(cont,phone);
+					logger.debug("send english message result : "+res);	
+					smsCount++;
+					
+					//寫入資料庫
+					pst.setString(1, phone);
+					pst.setString(2, msgid.toString());
+					pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
+					pst.setString(4, res);
+					pst.addBatch();
+					
+					//更新CurrentMap
+					currentMap.get(sYearmonth).get(imsi).put("EVER_ALERT_VOLUME","1");
+					
+					//如果是新資料，insertList會已有資料，直接註記update
+					if(!updateMap.containsKey(sYearmonth)){
+						Set<String> se=new HashSet<String>();
+						se.add(imsi);
+						updateMap.put(sYearmonth, se);
+					}else{
+						updateMap.get(sYearmonth).add(imsi);
+					}
+				}
+				
+			}
+			logger.debug("Total send volume alert SMS "+smsCount+" ...");
+			pst.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Error at sendDayAlertSMS : "+e.getMessage());
+			//sendMail
+			sendMail("At sendDayAlertSMS occur SQLException error!");
+			errorMsg=e.getMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.error("Error at sendDayAlertSMS : "+e.getMessage());
+			//sendMail
+			sendMail("At sendDayAlertSMS occur SQLException error!");
+			errorMsg=e.getMessage();
+		}
 	}
 	
 	/**
@@ -1557,11 +1737,12 @@ public class DVRSmain implements Job{
 	 */
 	private String processMag(String msg,Double bracket,String cPhone){
 		
+		//金額
 		if(bracket==null)
 			bracket=0D;
 		msg=msg.replace("{{bracket}}", tool.FormatNumString(bracket,"NT#,##0.00"));
 		
-		
+		//客服電話
 		if(cPhone==null)
 			cPhone="";
 		msg=msg.replace("{{customerService}}", "+"+cPhone);
@@ -1608,9 +1789,11 @@ public class DVRSmain implements Job{
 	@SuppressWarnings("unused")
 	private String setSMSPostParam(String msg,String phone) throws IOException{
 		StringBuffer sb=new StringBuffer ();
+		if(TEST_MODE){
+			phone=DEFAULT_PHONE;
+		}
 		
 		String PhoneNumber=phone,Text=msg,charset="big5",InfoCharCounter=null,PID=null,DCS=null;
-		PhoneNumber="886989235253";
 		String param =
 				"PhoneNumber=+{{PhoneNumber}}&"
 				+ "Text={{Text}}&"
@@ -1641,14 +1824,19 @@ public class DVRSmain implements Job{
 	/**
 	 * 取出msisdn
 	 * 建立msisdnMap
-	 * Key:imsi,Value:Map(MSISDN,PRICEPLANID)
+	 * Key:imsi,Value:Map(MSISDN,PRICEPLANID,SUBSIDIARYID,NCODE)
 	 */
 	private void setMsisdnMap(){
 		logger.info("setMsisdnMap...");
 		sql=
-				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID "
+				/*"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID "
 				+ "FROM SERVICE A,IMSI B "
-				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL ";
+				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL ";*/
+				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,"
+				+ "(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
+				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
+				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
+				+ "AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748";
 		
 		try {
 			/*String a="(";
@@ -1669,6 +1857,8 @@ public class DVRSmain implements Job{
 				Map<String,String> map =new HashMap<String,String>();
 				map.put("MSISDN", rs.getString("SERVICECODE"));
 				map.put("PRICEPLANID", rs.getString("PRICEPLANID"));
+				map.put("SUBSIDIARYID", rs.getString("SUBSIDIARYID"));
+				map.put("NCODE", rs.getString("NCODE"));
 				msisdnMap.put(rs.getString("IMSI"), map);
 			}
 			rs.close();

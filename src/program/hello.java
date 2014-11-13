@@ -3,12 +3,16 @@ package program;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -28,6 +32,20 @@ public class hello {
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-6);
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
 		
+		/*Connection conn=getConnection();
+		
+		if(conn==null){
+			System.out.println("connection is null");
+			
+		}*/
+		Integer id=100;
+		Map<String,String> map =new HashMap<String,String>();
+		map.put("100","asdff");
+		map.put("101","asdffBBBBBBBBBBBBBBBBB");
+		System.out.println(map.get(id));
+		id+=1;
+		System.out.println(map.get(id.toString()));
+		
 		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
 		
 		System.out.println(tool.FormatNumString(500000D, "NT#,##0.00"));
@@ -41,7 +59,8 @@ public class hello {
 		
 		try
 	    {
-	      Class.forName("org.postgresql.Driver");
+	      //Class.forName("org.postgresql.Driver");
+			Class.forName("oracle.jdbc.driver.OracleDriver");
 	    }
 	    catch (Exception localException)
 	    {
@@ -54,7 +73,8 @@ public class hello {
 	    try
 	    {
 	      DriverManager.setLoginTimeout(10);
-	      localConnection = DriverManager.getConnection("jdbc:postgresql://192.168.10.197:5432/smppdb", "smpper", "SmIpp3r");
+	      //localConnection = DriverManager.getConnection("jdbc:postgresql://192.168.10.197:5432/smppdb", "smpper", "SmIpp3r");
+	      localConnection = DriverManager.getConnection("jdbc:oracle:thin:@10.42.1.101:1521:S2TBSDEV", "foyadev", "foyadev");
 	    }
 	    catch (Exception localException)
 	    {
