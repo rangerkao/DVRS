@@ -1645,10 +1645,17 @@ public class DVRSmain implements Job{
 					if(checkedPriceplanid2.contains(priceplanid)){
 						//以設定通知號通知
 						phone=msisdnMap.get(imsi).get("NCODE");
-						phone=msisdnMap.get(imsi).get("MSISDN");
 					}else{
 						//以門號通知
 						phone=msisdnMap.get(imsi).get("MSISDN");
+					}
+					//確認號碼
+					if(phone==null ||"".equals(phone)){
+						//sendMail
+						sendMail("At sendAlertSMS occur error!<br>\n "
+								+ "The IMSI:"+imsi+" can't find msisdn to send! ");
+						logger.debug("The IMSI:"+imsi+" can't find msisdn to send! ");
+						continue;
 					}
 					
 					//查詢所在國家的客服電話
@@ -1661,16 +1668,11 @@ public class DVRSmain implements Job{
 					if(map!=null)
 						cPhone=map.get("PHONE");
 					
-					//確認號碼
-					if(phone==null ||"".equals(phone)){
-						//sendMail
-						sendMail("At sendAlertSMS occur error!<br>\n "
-								+ "The IMSI:"+imsi+" can't find msisdn to send! ");
-						logger.debug("The IMSI:"+imsi+" can't find msisdn to send! ");
-						continue;
-					}
 					//發送簡訊
-					logger.info("For "+imsi+" send 2GB decrease speed  message !");
+					if(msgid==100)
+						logger.info("For "+imsi+" send 1.5GB decrease speed  message !");
+					if(msgid==102)
+						logger.info("For "+imsi+" send 2.0GB decrease speed  message !");
 					
 					//中文
 					//處理字串
