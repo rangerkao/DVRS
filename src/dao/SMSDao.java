@@ -122,7 +122,7 @@ public class SMSDao extends BaseDao{
 			st.close();
 			//重新匯入資料
 			sql=
-					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEG,SUSPEND) "
+					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
 					+ "VALUES(?,?,?,?)";
 			PreparedStatement pst = conn.prepareStatement(sql);
 			for(SMSSetting s : list){

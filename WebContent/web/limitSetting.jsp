@@ -13,7 +13,6 @@ $(function(){
 })
 var limitList;
 function query(){
-	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="queryAlertLimit"/>',
 	      data: {},//parameters go here in object literal form
@@ -38,7 +37,15 @@ function query(){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened');  }
+	      error: function() { $("#Qmsg").html('something bad happened');  
+	      },
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在查尋，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+          }
 	    });
 }
 //將被選擇的table欄位放入編輯區
@@ -62,7 +69,7 @@ function updateLimit(mod,txt){
 	
 	
 	if (!validat(mod,txt)) return false;
-	$("#Qmsg").html("正在更新，請稍待...");
+	
 	$.ajax({
 	      url: '<s:url action="updateAlertLimit"/>',
 	      data: {
@@ -77,18 +84,35 @@ function updateLimit(mod,txt){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	 query();
-	    	  },
-	      error: function(json) { $("#Qmsg").html('something bad happened'); }
+    	  },
+	      error: function(json) { $("#Qmsg").html('something bad happened'); 
+	      },
+	      error: function(json) {
+	    	  $("#Qmsg").html('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在更新，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+          }
 	    });
 }
+function disableButton(){
+	$(':button').attr('disabled', 'disabled');
+}
+function enableButton(){
+	$(':button').removeAttr('disabled'); //.attr('disabled', '');
+}
+
 function queryIMSI(){
 	
 	if($("#Msisdn").val()==null || $("#Msisdn").val()==""){
 		$("#LMsisdn").html('此欄位不可為空');
 		return
 	}
-	
-	$("#Qmsg").html("正在查詢，請稍待...");
+
 	$.ajax({
 	      url: '<s:url action="queryIMSI"/>',
 	      data: {
@@ -100,15 +124,25 @@ function queryIMSI(){
 	    	  
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
-	    	  
-	    	  if(json==null || json==""){
+	    	  var v=JSON.parse(json);
+	    	  if(json=="" || v.imsi==null || v.imsi==""){
 	    		  $("#Qmsg").html("查無IMSI");
 	    	  }else{
-	    		  $("#IMSI").val(json);
+	    		  $("#IMSI").val(v.imsi);
 	    		  $("#Qmsg").html("Success");
 	    	  }
-	    	  },
-	      error: function(json) { $("#Qmsg").html('something bad happened'); }
+    	  },
+	      error: function(json) {
+	    	  $("#Qmsg").html('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+    			$("#IMSI").val("");
+          },
+          complete:function(){
+        	  enableButton();
+          }
 	    });
 }
 function validat(mod,txt){
@@ -124,10 +158,12 @@ function validat(mod,txt){
 		validate = false;
 	}
 	
-	if(volidateNum($("#Msisdn").val())){
+	if(!volidateNum($("#Msisdn").val())){
+		$("#LMsisdn").html('格式錯誤，必須為純數字');
 		validate = false;
 	}
-	if(volidateNum($("#Limit").val())){
+	if(!volidateNum($("#Limit").val())){
+		$("#LLimit").html('格式錯誤，必須為純數字');
 		validate = false;
 	}
 	
@@ -146,10 +182,10 @@ function validat(mod,txt){
 				 if(limit.msisdn==$("#Msisdn").val()){
 					 validate = true;
 				 }
-				 if(!validate){
-					 alert("此門號未曾設定過，無法刪除,修改！");
-				 }
 			 });
+			if(!validate){
+				 alert("此門號未曾設定過，無法刪除,修改！");
+			}
 		}else{
 			validate = false;
 		}

@@ -74,8 +74,14 @@ function validat(mod,txt){
 		$("#LMsg").html("此欄位不可為空!");
 		validation=false;
 	}
-	if(!isNaN($('#Bracket').val())){
-		$("#LBracket").html("此欄位必須為數字!");
+	
+	if($('#Bracket').val()>1){
+		$("#LBracket").html("此欄位不可大於1!");
+		validation=false;
+	}
+	
+	if(!volidateNum($('#Bracket').val())){
+		$("#LBracket").html("此欄位必須為小數數字!");
 		validation=false;
 	}
 	
@@ -115,10 +121,19 @@ function validat(mod,txt){
 	}
 	return validation;
 }
+function disableButton(){
+	$(':button').attr('disabled', 'disabled');
+}
+function enableButton(){
+	$(':button').removeAttr('disabled'); //.attr('disabled', '');
+}
+function volidateNum(val){
+	var   reg=/^\d+(\.\d+)?$/g;
+	return reg.test(val);
+}
 
 function updateSetting(mod,txt){
 	if (!validat(mod,txt)) return false;
-	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="updateSMSSetting"/>',
 	      data: {
@@ -152,14 +167,22 @@ function updateSetting(mod,txt){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+          }
 	    });
 }
 function clearText(txt){
 	$("#L"+txt).html("");
 }
 function replacetxt(txt){
-	$("#Msg").val($("#Msg").val()+txt);
+	//$("#Msg").val($("#Msg").val()+txt);
 }
 
 </script>
@@ -167,10 +190,6 @@ function replacetxt(txt){
 <body>
 <div align="center" >
 	<h3>簡訊設定頁面</h3>
-	<div>
-		<label>參數帶入:</label>
-		<input type="button" onclick="replacetxt('{{bracket}}')" value="警示額度">
-	</div>
 	<div>
 		<form>
 		<table >
@@ -185,8 +204,8 @@ function replacetxt(txt){
 				<td><label id="LBracket" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
 			</tr>
 			<tr>
-				<td class="label" align="right" valign="top"><label>MSG:</label></td>
-				<td><textarea rows="10" cols="60" id="Msg" onkeyup="clearText('Msg')" style="resize: none;"></textarea> </td>
+				<td class="label" align="right" valign="top"><label>MSGID:</label></td>
+				<td><input type="text" id="Msg"  onkeyup="clearText('Msg')" /></td>
 				<td><label id="LMsg" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
 			</tr>
 			<tr>
@@ -210,13 +229,17 @@ function replacetxt(txt){
 	<div>
 		<table class="datatable" align="center" style="width: 80%" id="table1">
 			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="5%">ID</td>
-				<td class="columnLabel" align="center" width="10%">BRACKET</td>
-				<td class="columnLabel" align="center" width="70%">MSG</td>
-				<td class="columnLabel" align="center" width="5%">SUSPEND</td>
-				<td width="10%"></td>
+				<td class="columnLabel" align="center" width="20%">ID</td>
+				<td class="columnLabel" align="center" width="20%">BRACKET</td>
+				<td class="columnLabel" align="center" width="25%">MSG</td>
+				<td class="columnLabel" align="center" width="20%">SUSPEND</td>
+				<td width="15%"></td>
 			</tr>
 		</table>
+	</div>
+	<div>
+		<label>參數帶入:</label>
+		<input type="button" onclick="replacetxt('{{bracket}}')" value="警示額度">
 	</div>
 </div>
 </body>

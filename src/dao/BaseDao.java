@@ -44,14 +44,15 @@ public class BaseDao {
 
 	}
 	protected void connectDB() throws Exception{
-
-			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), 
-					props.getProperty("Oracle.URL")
-					.replace("{{Host}}", props.getProperty("Oracle.Host"))
-					.replace("{{Port}}", props.getProperty("Oracle.Port"))
-					.replace("{{ServiceName}}", props.getProperty("Oracle.ServiceName")), 
-					props.getProperty("Oracle.UserName"), 
-					props.getProperty("Oracle.PassWord"));
+		String url=props.getProperty("Oracle.URL")
+				.replace("{{Host}}", props.getProperty("Oracle.Host"))
+				.replace("{{Port}}", props.getProperty("Oracle.Port"))
+				.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
+				.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
+		conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), url, 
+				props.getProperty("Oracle.UserName"), 
+				props.getProperty("Oracle.PassWord")
+				);
 			if(conn==null){
 				throw new Exception("DB Connect null !");
 			}

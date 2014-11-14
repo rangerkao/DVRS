@@ -32,12 +32,34 @@ public class hello {
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-6);
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
 		
-		/*Connection conn=getConnection();
+		Connection conn=getConnection();
 		
 		if(conn==null){
 			System.out.println("connection is null");
 			
-		}*/
+		}else{
+			try {
+				String rss=null;
+				ResultSet rs=conn.createStatement().executeQuery("select A.comtent from HUR_SMS_COMTENT A WHERE A.id=100");
+			
+				while(rs.next()){
+					rss=rs.getString("comtent");
+					rss=new String(rss.getBytes("big5"),"UTF8");
+					System.out.println(rss);
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			
+		}
+		
+		
+		
+		
 		Integer id=100;
 		Map<String,String> map =new HashMap<String,String>();
 		map.put("100","asdff");

@@ -74,10 +74,10 @@ public class DVRSmain implements Job{
 	private String errorMsg="";
 	
 	//Hur Data conf
-	private  int dataThreshold=500;//CDR資料一批次取出數量
-	private  int lastfileID=0;//最後批價檔案號
-	private final double exchangeRate=4; //港幣對台幣匯率，暫訂為4
-	private final double kByte=1/1024D;//RATE單位KB，USAGE單位B
+	private Integer dataThreshold=null;//CDR資料一批次取出數量
+	private Integer lastfileID=null;//最後批價檔案號
+	private Double exchangeRate=null; //港幣對台幣匯率，暫訂為4
+	private Double kByte=null;//RATE單位KB，USAGE單位B
 
 	//日期設定
 	private String MONTH_FORMATE="yyyyMM";
@@ -89,12 +89,12 @@ public class DVRSmain implements Job{
 	private String DAY_FORMATE="yyyyMMdd";	
 	
 	//預設值
-	private String DEFAULT_MCCMNC="default";//預設mssmnc
-	private Double DEFAULT_THRESHOLD=5000D;//預設月警示量
-	private Double DEFAULT_DAY_THRESHOLD=15D;//預設日警示量
-	private Double DEFAULT_DAYCAP=300D;
-	private Double DEFAULT_VOLUME_THRESHOLD=1.5*1024*1024D;//預設流量警示(降速)，1.5GB;
-	private Double DEFAULT_VOLUME_THRESHOLD2=2.0*1024*1024D;//預設流量警示(降速)，15GB;
+	private String DEFAULT_MCCMNC=null;//預設mssmnc
+	private Double DEFAULT_THRESHOLD=null;//預設月警示量
+	private Double DEFAULT_DAY_THRESHOLD=null;//預設日警示量
+	private Double DEFAULT_DAYCAP=null;
+	private Double DEFAULT_VOLUME_THRESHOLD=null;//預設流量警示(降速)，1.5GB;
+	private Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
 	private String DEFAULT_PHONE=null;
 	private Boolean TEST_MODE=true;
 	
@@ -140,9 +140,34 @@ public class DVRSmain implements Job{
 			PropertyConfigurator.configure(props);
 			logger =Logger.getLogger(DVRSmain.class);
 			logger.info("Logger Load Success!");
-			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("test.mode"))?true:false);
-			DEFAULT_PHONE=props.getProperty("test.phone");
-			logger.info("TEST_MODE : "+TEST_MODE);
+
+			DEFAULT_MCCMNC=props.getProperty("progrma.DEFAULT_MCCMNC");//預設mssmnc
+			DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//預設月警示量
+			DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//預設日警示量
+			DEFAULT_DAYCAP=(props.getProperty("progrma.DEFAULT_DAYCAP")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAYCAP")):500D);
+			DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024D);//預設流量警示(降速)，1.5GB;
+			DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
+			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
+			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("progrma.TEST_MODE"))?true:false);
+			
+			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDR資料一批次取出數量
+			lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//最後批價檔案號
+			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):4); //港幣對台幣匯率，暫訂為4
+			kByte=(props.getProperty("progrma.kByte")!=null?Double.parseDouble(props.getProperty("progrma.kByte")):1/1024D);//RATE單位KB，USAGE單位B
+			
+			logger.info(
+					"DEFAULT_MCCMNC : "+DEFAULT_MCCMNC+"\n"
+					+ "DEFAULT_THRESHOLD : "+DEFAULT_THRESHOLD+"\n"
+					+ "DEFAULT_DAY_THRESHOLD : "+DEFAULT_DAY_THRESHOLD+"\n"
+					+ "DEFAULT_DAYCAP : "+DEFAULT_DAYCAP+"\n"
+					+ "DEFAULT_VOLUME_THRESHOLD : "+DEFAULT_VOLUME_THRESHOLD+"\n"
+					+ "DEFAULT_VOLUME_THRESHOLD2 : "+DEFAULT_VOLUME_THRESHOLD2+"\n"
+					+ "DEFAULT_PHONE : "+DEFAULT_PHONE+"\n"
+					+ "TEST_MODE : "+TEST_MODE+"\n"
+					+ "dataThreshold : "+dataThreshold+"\n"
+					+ "lastfileID : "+lastfileID+"\n"
+					+ "exchangeRate : "+exchangeRate+"\n"
+					+ "kByte : "+kByte+"\n");
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -965,13 +990,15 @@ public class DVRSmain implements Job{
 		// 進行DB連線
 		//conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
-			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), 
-					props.getProperty("Oracle.URL")
+			String url=props.getProperty("Oracle.URL")
 					.replace("{{Host}}", props.getProperty("Oracle.Host"))
 					.replace("{{Port}}", props.getProperty("Oracle.Port"))
-					.replace("{{ServiceName}}", props.getProperty("Oracle.ServiceName")), 
+					.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
+					.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
+			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), url, 
 					props.getProperty("Oracle.UserName"), 
-					props.getProperty("Oracle.PassWord"));
+					props.getProperty("Oracle.PassWord")
+					);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			logger.error("Error at connDB : "+e.getMessage());
@@ -995,7 +1022,8 @@ public class DVRSmain implements Job{
 					props.getProperty("mBOSS.URL")
 					.replace("{{Host}}", props.getProperty("mBOSS.Host"))
 					.replace("{{Port}}", props.getProperty("mBOSS.Port"))
-					.replace("{{ServiceName}}", props.getProperty("mBOSS.SID")), 
+					.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
+					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):"")), 
 					props.getProperty("mBOSS.UserName"), 
 					props.getProperty("mBOSS.PassWord"));
 		} catch (ClassNotFoundException e) {
@@ -1907,7 +1935,7 @@ public class DVRSmain implements Job{
 	
 	private void sendMail(String content){
 		mailReceiver=props.getProperty("mail.Receiver");
-		mailSubject="RFP Warnning Mail";
+		mailSubject="DVRS Warnning Mail";
 		mailContent="Error :"+content+"<br>\n"
 				+ "Error occurr time: "+tool.DateFormat()+"<br>\n"
 				+ "SQL : "+sql+"<br>\n"
@@ -2148,11 +2176,11 @@ public class DVRSmain implements Job{
 				}
 				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
 
-				show();
+				
 				// 程式執行完成
 				endTime = System.currentTimeMillis();
 				logger.info("Program execute time :" + (endTime - startTime));
-				
+				show();
 				closeConnect();
 
 			} else {

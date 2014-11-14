@@ -13,7 +13,7 @@
 	});
 		var adminList;
 		function queryAdmin(){
-			$("#Qmsg").html("正在查尋，請稍待...");
+		
 			  $.ajax({
 			      url: '<s:url action="queryAdmin"/>',
 			      data: {}, //parameters go here in object literal form
@@ -39,7 +39,15 @@
 			    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 			    	    $("#table1 tr:even").addClass("even_columm"); 
 			    	  },
-			      error: function() { $("#Qmsg").html('something bad happened');}
+			      error: function() { $("#Qmsg").html('something bad happened');
+			      },
+		    	  beforeSend:function(){
+		    			$("#Qmsg").html("正在查尋，請稍待...");
+		    			disableButton();
+		          },
+		          complete:function(){
+		        	  enableButton();
+		          }
 			    }); 
 			 $("#Qmsg").html("&nbsp;");
 		}
@@ -57,7 +65,6 @@
 			
 			if(confirm("確認要"+String+"資料？")){
 				if(!validateForm(mod)){return}
-				$("#Qmsg").html("正在查尋，請稍待...");
 				$.ajax({
 				      url: '<s:url action="updateAdmin"/>',
 				      data: { "admin.userid":$("#Userid").val(),
@@ -75,9 +82,23 @@
 				    	  	}else{
 				    	  		$("#Qmsg").html(json);
 				    	  		}},
-				      error: function(json) { $("#Qmsg").html('something bad happened');}
+				      error: function(json) { $("#Qmsg").html('something bad happened');
+				      },
+			    	  beforeSend:function(){
+			    		  $("#Qmsg").html("正在更新，請稍待...");
+			    			disableButton();
+			          },
+			          complete:function(){
+			        	  enableButton();
+			          }
 				    });
 			}
+		}
+		function disableButton(){
+			$(':button').attr('disabled', 'disabled');
+		}
+		function enableButton(){
+			$(':button').removeAttr('disabled'); //.attr('disabled', '');
 		}
 		
 		//驗證帳號是否已存在

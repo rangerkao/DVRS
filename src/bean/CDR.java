@@ -5,7 +5,7 @@ import java.util.Date;
 public class CDR {
 	String usageId;
 	String imsi;
-	Date calltime;
+	String calltime;
 	String mccmnc;
 	String sgsnAddress;
 	Double dataVolume;
@@ -13,7 +13,7 @@ public class CDR {
 	
 	public CDR(){}
 	
-	public CDR(String usageId, String imsi, Date calltime, String mccmnc,
+	public CDR(String usageId, String imsi, String calltime, String mccmnc,
 			String sgsnAddress, Double dataVolume, String fileId) {
 		super();
 		this.usageId = usageId;
@@ -41,11 +41,11 @@ public class CDR {
 		this.imsi = imsi;
 	}
 
-	public Date getCalltime() {
+	public String getCalltime() {
 		return calltime;
 	}
 
-	public void setCalltime(Date calltime) {
+	public void setCalltime(String calltime) {
 		this.calltime = calltime;
 	}
 

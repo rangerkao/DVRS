@@ -31,7 +31,7 @@ public class CDRAction extends BaseAction {
 			if(from==null||"".equals(from)||to==null||"".endsWith(to)){
 					CDRlist=cdrControl.queryCDR();
 			}else{
-					CDRlist=cdrControl.queryCDR(tool.DateFormat(from, "yyyy-MM-dd"), tool.DateFormat(to, "yyyy-MM-dd"));
+					CDRlist=cdrControl.queryCDR(from,to);
 			}
 			
 			result=beanToJSONArray(CDRlist);

@@ -38,18 +38,19 @@ var CDRList;
 	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
+	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  CDRList=list;
 	    	    $.each(list,function(i,CDR){  
                  var _tr = $(	"<tr>"+
-                 					"<td align='center' width='16%'>"+CDR.usageId+"</td>"+
-                 					"<td align='center' width='16%'>"+CDR.imsi+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.usageId+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.imsi+"</td>"+
                  					"<td align='center' width='16%'>"+CDR.calltime+"</td>"+
-                 					"<td align='center' width='16%'>"+CDR.mccmnc+"</td>"+
-                 					"<td align='center' width='16%'>"+CDR.sgsnAddress+"</td>"+
-                 					"<td align='center' width='16%'>"+CDR.dataVolume+"</td>"+
-                 					"<td align='center' width='16%'>"+CDR.fileId+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.mccmnc+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.sgsnAddress+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.dataVolume+"</td>"+
+                 					"<td align='center' width='14%'>"+CDR.fileId+"</td>"+
                  					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
                  				"</tr>");  
                  
@@ -92,22 +93,22 @@ var CDRList;
 		<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>	
 	</div>
 	<div>
-		<table class="datatable" align="center" style="width: 700px">
+		<table class="datatable" align="center" style="width: 800px">
 			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="16%">USAGEID</td>
-				<td class="columnLabel" align="center" width="16%">IMSI</td>
+				<td class="columnLabel" align="center" width="14%">USAGEID</td>
+				<td class="columnLabel" align="center" width="14%">IMSI</td>
 				<td class="columnLabel" align="center" width="16%">CALLTIME</td>
-				<td class="columnLabel" align="center" width="16%">MCCMNC</td>
-				<td class="columnLabel" align="center" width="16%">SGSNADDRESS</td>
-				<td class="columnLabel" align="center" width="16%">DATAVOLUME</td>
-				<td class="columnLabel" align="center" width="16%">FILEID</td>
+				<td class="columnLabel" align="center" width="14%">MCCMNC</td>
+				<td class="columnLabel" align="center" width="14%">SGSNADDRESS</td>
+				<td class="columnLabel" align="center" width="14%">DATAVOLUME</td>
+				<td class="columnLabel" align="center" width="14%">FILEID</td>
 				<td width="15px">&nbsp;</td>
 			</tr>
 			<tr>
-				<td colspan="6" >
+				<td colspan="8" >
 					<div style="height: 500px;overflow: auto; width: 100%;">
 					<table id="table1" class="wapper">
-						<tr><td colspan="20">&nbsp;</td></tr>
+						<tr><td colspan="20" height="1px">&nbsp;</td></tr>
 					</table>
 					</div>
 				</td>
