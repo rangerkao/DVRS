@@ -1,5 +1,6 @@
 package action;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class SMSAction extends BaseAction {
 	String imsi;
 	Double gprslimit;
 	private SMSControl smsControl = new SMSControl();
+	Boolean sendSMS;
 	
 	public String querySMSLog(){
 		try {
@@ -161,22 +163,33 @@ public class SMSAction extends BaseAction {
 	}
 	
 	public String updateAlertLimit(){
-		System.out.println("msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod);
+		System.out.println("msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS);
 		
 		
 		List<GPRSThreshold> list = new ArrayList<GPRSThreshold>();
 
+		if(sendSMS){
+			System.out.println("sendSMS is true");
+		}else{
+			System.out.println("sendSMS is false");
+		}
+		
 		int i=0;
 		try {
 			if("add".equals(mod)){
-				i=smsControl.insertAlertLimit(imsi, Double.valueOf(gprslimit));
+				i=smsControl.insertAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}else if("mod".equals(mod)){
-				i=smsControl.updateAlertLimit(imsi, Double.valueOf(gprslimit));
+				i=smsControl.updateAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}else if("del".equals(mod)){
-				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit));
+				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}
 				
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result=e.getMessage();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			result=e.getMessage();
@@ -307,6 +320,16 @@ public class SMSAction extends BaseAction {
 
 	public void setImsi(String imsi) {
 		this.imsi = imsi;
+	}
+
+
+	public Boolean getSendSMS() {
+		return sendSMS;
+	}
+
+
+	public void setSendSMS(Boolean sendSMS) {
+		this.sendSMS = sendSMS;
 	}
 	
 	

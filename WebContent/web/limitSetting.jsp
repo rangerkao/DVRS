@@ -70,12 +70,21 @@ function updateLimit(mod,txt){
 	
 	if (!validat(mod,txt)) return false;
 	
+	
+	var sendSMS=false;
+	if(confirm("需要發送通知簡訊給予客戶嗎？")){
+		sendSMS=true;
+	}
+	
+	
 	$.ajax({
 	      url: '<s:url action="updateAlertLimit"/>',
 	      data: {
 	    	  "imsi":$("#IMSI").val(),
 	    	  "gprslimit":$("#Limit").val(),
-	    	  "mod":mod
+	    	  "mod":mod,
+	    	  "sendSMS":sendSMS,
+	    	  "msisdn":$("#Msisdn").val()
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',

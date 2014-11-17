@@ -260,4 +260,24 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
+	public String getSMSContent(int id) throws SQLException{
+		
+		String result=null;
+		
+		sql="SELECT A.COMTENT FROM HUR_SMS_COMTENT A WHERE A.ID=? ";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setInt(1, id);
+		ResultSet rs = pst.executeQuery();
+	
+		while(rs.next()){
+			result=rs.getString("COMTENT");
+		}
+		rs.close();
+		pst.close();
+	
+		return result;
+	}
+	
 }

@@ -58,7 +58,7 @@ public class suspendGPRS {
 		//設定sCount 
 		
 		Temprs = null;
-		sSql = "select DVRS_SUSPEND_ID.NEXTVAL as ab from dual";
+		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
 		Temprs = conn.createStatement().executeQuery(sSql);
 		while (Temprs.next()) {
 			sCount = Temprs.getString("ab");
@@ -187,7 +187,7 @@ public class suspendGPRS {
 		// 格式為YYYYMMDDXXX
 		sDATE = dFormat1.format(new Date());
 		c910SEQ = sDATE + sCount;
-		cFileName = "S2TCI" + c910SEQ + "."+sMNOSubCode;
+		cFileName = "S2TDI" + c910SEQ + "."+sMNOSubCode;
 		cFileID = "";
 		Temprs = null;
 		sSql = "select S2T_SQ_FILE_CNTRL.NEXTVAL as ab from dual";

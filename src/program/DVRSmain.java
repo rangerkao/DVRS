@@ -271,14 +271,14 @@ public class DVRSmain implements Job{
 	 * 取出 HUR_CURRENTE table資料
 	 * 建立成
 	 * Map 
-	 * Key:MONTH,Value:Map(IMSI,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,EVER_ALERT_VOLUME)))
+	 * Key:MONTH,Value:Map(IMSI,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_VOLUME)))
 	 */
 	private void setCurrentMap(){
 		logger.info("setCurrentMap...");
 		try {
 			//設定HUR_CURRENT計費，抓出這個月與下個月
 			sql=
-					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.EVER_ALERT_VOLUME "
+					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
 					+ "FROM HUR_CURRENT A "
 					+ "WHERE A.MONTH IN (?,?) ";
 			
@@ -308,7 +308,7 @@ public class DVRSmain implements Job{
 				map.put("VOLUME", rs.getDouble("VOLUME"));
 				map.put("EVER_SUSPEND", rs.getString("EVER_SUSPEND"));
 				map.put("LAST_ALERN_THRESHOLD", rs.getDouble("LAST_ALERN_THRESHOLD"));
-				map.put("EVER_ALERT_VOLUME", rs.getString("EVER_ALERT_VOLUME"));
+				map.put("LAST_ALERN_VOLUME", rs.getDouble("LAST_ALERN_VOLUME"));
 
 				map2.put(imsi, map);
 				currentMap.put(month,map2);
@@ -854,7 +854,7 @@ public class DVRSmain implements Job{
 					String suspend="0";
 					String cMonth=cDay.substring(0,6);
 					Double lastAlertThreshold=0D;
-					String volumeAlert="0";
+					Double volumeAlert=0D;
 					
 					Map<String,Object> map4=new HashMap<String,Object>();
 					Map<String,Map<String,Object>> map5=new HashMap<String,Map<String,Object>>();
@@ -872,7 +872,7 @@ public class DVRSmain implements Job{
 						suspend=(String) map4.get("EVER_SUSPEND");
 						volume=(Double)map4.get("VOLUME")+volume;
 						lastAlertThreshold=(Double) map4.get("LAST_ALERN_THRESHOLD");
-						volumeAlert=(String) map4.get("EVER_ALERT_VOLUME");
+						volumeAlert=(Double) map4.get("LAST_ALERN_VOLUME");
 						if(updateMap.containsKey(cMonth)){
 							se=updateMap.get(cMonth);
 						}
@@ -893,7 +893,7 @@ public class DVRSmain implements Job{
 					map4.put("VOLUME", volume);
 					map4.put("EVER_SUSPEND", suspend);
 					map4.put("LAST_ALERN_THRESHOLD", lastAlertThreshold);
-					map4.put("EVER_ALERT_VOLUME", volumeAlert);
+					map4.put("LAST_ALERN_VOLUME", volumeAlert);
 					map5.put(imsi, map4);
 					currentMap.put(cMonth, map5);
 				}
@@ -995,10 +995,12 @@ public class DVRSmain implements Job{
 					.replace("{{Port}}", props.getProperty("Oracle.Port"))
 					.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
+			
 			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), url, 
 					props.getProperty("Oracle.UserName"), 
 					props.getProperty("Oracle.PassWord")
 					);
+			logger.info("Connrct to "+url);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			logger.error("Error at connDB : "+e.getMessage());
@@ -1018,14 +1020,17 @@ public class DVRSmain implements Job{
 		// 進行DB連線
 		//conn2=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
-			conn2=tool.connDB(logger, props.getProperty("mBOSS.DriverClass"), 
-					props.getProperty("mBOSS.URL")
+			String url=props.getProperty("mBOSS.URL")
 					.replace("{{Host}}", props.getProperty("mBOSS.Host"))
 					.replace("{{Port}}", props.getProperty("mBOSS.Port"))
 					.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
-					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):"")), 
+					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
+			
+			conn2=tool.connDB(logger, props.getProperty("mBOSS.DriverClass"),url, 
 					props.getProperty("mBOSS.UserName"), 
 					props.getProperty("mBOSS.PassWord"));
+			
+			logger.info("Connrct to "+url);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			logger.error("Error at connDB2 : "+e.getMessage());
@@ -1054,7 +1059,7 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"UPDATE HUR_CURRENT A "
-				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.LAST_ALERN_THRESHOLD=?,A.EVER_ALERT_VOLUME=?,A.UPDATE_DATE=SYSDATE "
+				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.SMS_TIMES=?,A.LAST_DATA_TIME=?,A.VOLUME=?,A.EVER_SUSPEND=?,A.LAST_ALERN_THRESHOLD=?,A.LAST_ALERN_VOLUME=?,A.UPDATE_DATE=SYSDATE "
 				+ "WHERE A.MONTH=? AND A.IMSI=? ";
 		
 		logger.info("Execute SQL :"+sql);
@@ -1073,7 +1078,7 @@ public class DVRSmain implements Job{
 						pst.setDouble(5,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(6,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
 						pst.setDouble(7,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
-						pst.setString(8,(String) currentMap.get(mon).get(imsi).get("EVER_ALERT_VOLUME"));
+						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_VOLUME"));
 						pst.setString(9, mon);
 						pst.setString(10, imsi);//具有mccmnc
 						pst.addBatch();
@@ -1171,7 +1176,7 @@ public class DVRSmain implements Job{
 		
 		sql=
 				"INSERT INTO HUR_CURRENT "
-				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_THRESHOLD,EVER_ALERT_VOLUME,MONTH,CREATE_DATE) "
+				+ "(IMSI,CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_THRESHOLD,LAST_ALERN_VOLUME,MONTH,CREATE_DATE) "
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,SYSDATE)";
 		
 		logger.info("Execute SQL :"+sql);
@@ -1189,7 +1194,7 @@ public class DVRSmain implements Job{
 						pst.setDouble(6,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
 						pst.setString(7,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
 						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
-						pst.setString(9,(String) currentMap.get(mon).get(imsi).get("EVER_ALERT_VOLUME"));
+						pst.setDouble(9,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_VOLUME"));
 						pst.setString(10, mon);
 						pst.addBatch();
 						count++;
@@ -1413,6 +1418,7 @@ public class DVRSmain implements Job{
 					
 					if(threshold==null || threshold==0D){
 						threshold=DEFAULT_THRESHOLD;
+					}else{
 						isCustomized=true;
 					}
 					if(lastAlernThreshold==null)
@@ -1651,17 +1657,17 @@ public class DVRSmain implements Job{
 			PreparedStatement pst = conn.prepareStatement(sql);
 			for(String imsi:tempMap.keySet()){
 				Double volume=tempMap.get(imsi);
-				String everAlertVolume = (String) currentMap.get(sYearmonth).get(imsi).get("EVER_ALERT_VOLUME");
+				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(imsi).get("LAST_ALERN_VOLUME");
 				//超過發簡訊，另外確認是否已通知過
 				boolean sendmsg=false;
 				Integer msgid=0;
 				
-				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && "0".equalsIgnoreCase(everAlertVolume)){
+				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<volume){
 					//2.0 GB 簡訊中文102，英文103
 					msgid=102;
 					sendmsg=true;
 				}
-				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && "0".equalsIgnoreCase(everAlertVolume)){
+				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<volume){
 					//2.0 GB 簡訊中文100，英文101
 					msgid=100;
 					sendmsg=true;
@@ -1727,7 +1733,7 @@ public class DVRSmain implements Job{
 					pst.addBatch();
 					
 					//更新CurrentMap
-					currentMap.get(sYearmonth).get(imsi).put("EVER_ALERT_VOLUME","1");
+					currentMap.get(sYearmonth).get(imsi).put("LAST_ALERN_VOLUME",volume);
 					
 					//如果是新資料，insertList會已有資料，直接註記update
 					if(!updateMap.containsKey(sYearmonth)){
@@ -2243,13 +2249,11 @@ public class DVRSmain implements Job{
 	}
 	
 	public static void main(String[] args) {
-		
-		DVRSmain rf =new DVRSmain();
-		rf.process();
+		/*DVRSmain rf =new DVRSmain();
+		rf.process();*/
 
-		/*regularTimeRun();*/
-		
-		
+		regularTimeRun();
+
 	}
 	
 	

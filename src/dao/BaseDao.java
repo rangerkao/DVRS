@@ -37,7 +37,7 @@ public class BaseDao {
 		connectDB();
 	}
 	protected void loadProperties() throws FileNotFoundException, IOException {
-		String path=classPath+ "/log4j.properties";
+		String path=classPath+ "/program/Log4j.properties";
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
 			logger = Logger.getLogger(DVRSmain.class);
