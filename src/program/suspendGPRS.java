@@ -2,6 +2,7 @@ package program;
 
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,8 +56,10 @@ public class suspendGPRS {
 		//20141103 set as TWNLD
 		sMNOSubCode="950";
 		
-		//設定sCount 
+		//20141117 add 必須指定將GPRS變更的狀態 0-Disabled,1 – Enabled
+		cGPRSStatus="0";
 		
+		//設定sCount 
 		Temprs = null;
 		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
 		Temprs = conn.createStatement().executeQuery(sSql);
@@ -73,8 +76,9 @@ public class suspendGPRS {
 		/*
 		 * logger.debug("ReqStatus_17_Act");
 		 */
-		// 確認台灣門號的 MAP VALUE，移除
-		/* Check_Type_Code_87_MAP_VALUE(cS2TMSISDN); */
+		
+		//20141117 新增 必須的檢查與賦予值
+		Check_Type_Code_87_MAP_VALUE(cS2TMSISDN); 
 		sWSFStatus = "V";
 		sWSFDStatus = "V";
 		Process_SyncFile(sWSFStatus);
@@ -90,6 +94,9 @@ public class suspendGPRS {
 		/* Query_PreProcessResult(out17, "000"); */
 		Query_GPRSStatus();
 		// 待實做Log紀錄停止GPRS 回傳結果 desc
+		
+		//20141118 add 確認狀態
+		System.out.println("rcode : "+Query_ServiceOrderStatus());
 	}
 	
 	//20141104 add
@@ -578,5 +585,55 @@ public class suspendGPRS {
 			cGPRS = "1";
 		}
 	}
+	public String Query_ServiceOrderStatus() throws SQLException, InterruptedException, IOException {
+	      String cMesg = "";
+	      
+	      for(int i = 0; i < 15; i++) {
+	         Thread.sleep(2000);
+	         
+	         Temprs = null;
+	         sSql="select STATUS from S2T_TB_SERVICE_ORDER Where SERVICE_ORDER_NBR ='"+
+	              cServiceOrderNBR+"'";
+	         
+	         //logger.info(sSql);
+	         Temprs = conn.createStatement().executeQuery(sSql);
+	         
+	        while(Temprs.next()) {
+	           cMesg = Temprs.getString("STATUS");
+	        }
+	        
+	        logger.info("Query_ServiceOrderStatus:"+Integer.toString(i)+" Times "+ cMesg);
+	        
+	        if(cMesg.equals("Y") || cMesg.equals("F")){
+	        	break;
+	        }
+	       }
+	      
+	      if(cMesg.equals("Y") || cMesg.equals("F")) {
+	            cMesg = Query_SyncFileDtlStatus();
+	            if (cMesg.equals("")) {
+	              cMesg="501";
+	            }
+	       }
+	     else {cMesg="501";
+	        }
+	      return cMesg;
+	  }
+	 public String Query_SyncFileDtlStatus() throws SQLException, InterruptedException, IOException{
+	      String cSt="";
+	     for (int i=0;i<5;i++){
+	        Thread.sleep(1000);
+	        Temprs=null;
+	        sSql="select result_flag from S2T_TB_TYPB_WO_SYNC_FILE_DTL Where " +
+	                "SERVICE_ORDER_NBR ='"+cServiceOrderNBR+"'";
+	        Temprs=conn.createStatement().executeQuery(sSql);
+	        while (Temprs.next()){
+	                cSt=Temprs.getString("result_flag");
+	        }
+	        logger.info("Query_SyncFileDtlStatus:"+Integer.toString(i)+" Times "+cSt);
+	            }
+
+	     return cSt;
+	    }
 
 }

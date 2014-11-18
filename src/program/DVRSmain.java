@@ -1413,10 +1413,11 @@ public class DVRSmain implements Job{
 					String everSuspend =(String) currentMap.get(sYearmonth).get(imsi).get("EVER_SUSPEND");
 					Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(imsi).get("LAST_ALERN_THRESHOLD");
 					boolean isCustomized=false;
+					
+					//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 					Double threshold=thresholdMap.get(imsi);
-					
-					
-					if(threshold==null || threshold==0D){
+
+					if(threshold==null){
 						threshold=DEFAULT_THRESHOLD;
 					}else{
 						isCustomized=true;
@@ -1426,32 +1427,59 @@ public class DVRSmain implements Job{
 					
 					int i=0;
 					boolean sendSMS=false;
-					//檢查月用量
-					for(;i<times.size();i++){
-						if(((charge>=bracket.get(i)*threshold))&&lastAlernThreshold<bracket.get(i)*threshold){
-							sendSMS=true;
-							break;
-						}
-					}	
+					boolean needSuspend=false;
+					Double alertBracket=0D;
+					String[] contentid=null;
 					
-					//檢查預測用量，如果之前判斷不用發簡訊，或是非發最上限簡訊
-					if(!sendSMS||(sendSMS && i!=0)){
-						if(charge+differenceCharge>=bracket.get(0)*threshold&&lastAlernThreshold<bracket.get(0)*threshold){
-							logger.info("For "+imsi+" ,System forecast the next hour will over charge limit");
+					//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
+					if(threshold!=0D){
+						//檢查月用量
+						for(;i<times.size();i++){
+							if(((charge>=bracket.get(i)*threshold))&&lastAlernThreshold<bracket.get(i)*threshold){
+								sendSMS=true;
+								alertBracket=bracket.get(i)*threshold;
+								contentid=msg.get(i).split(",");
+								if("1".equals(suspend.get(i)))
+									needSuspend=true;
+								break;
+							}
+						}	
+						
+						//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
+						if(!sendSMS||(sendSMS && i!=0)){
+							if(charge+differenceCharge>=bracket.get(0)*threshold&&lastAlernThreshold<bracket.get(0)*threshold){
+								logger.info("For "+imsi+" ,System forecast the next hour will over charge limit");
+								sendSMS=true;
+								alertBracket=bracket.get(0)*threshold;
+								contentid=msg.get(i).split(",");
+								if("1".equals(suspend.get(0))){
+									needSuspend=true;
+								}else{
+									needSuspend=false;
+								}
+								i=0;
+							}
+						}
+					}else{
+						int temp=(int) ((int)(charge/DEFAULT_THRESHOLD)*DEFAULT_THRESHOLD);
+						
+						if(temp>lastAlernThreshold){
+							alertBracket=(double) temp;
 							sendSMS=true;
-							i=0;
+							contentid=new String[]{"3"};
 						}
 					}
+					
 
 					//寄送簡訊
 					if(sendSMS){
-						for(String s:msg.get(i).split(",")){
+						for(String s:contentid){
 							if(s!=null){
 								//寄送簡訊
-								lastAlernThreshold=bracket.get(i)*threshold;
+								lastAlernThreshold=alertBracket;
 								smsTimes++;
 								logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
-								String cont =processMag(content.get(s).get("COMTENT"),bracket.get(i)*threshold,cPhone);
+								String cont =processMag(content.get(s).get("COMTENT"),alertBracket,cPhone);
 								//TODO
 								//WSDL方式呼叫 WebServer
 								//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
@@ -1463,7 +1491,7 @@ public class DVRSmain implements Job{
 								smsCount++;
 								//中斷GPRS服務
 								//20141113 新增客制定上限不執行斷網
-								if("1".equals(suspend.get(i))&&"0".equals(everSuspend)&&!isCustomized){
+								if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
 									logger.debug("Suspend GPRS ... ");		
 									suspend(imsi,phone);
 									currentMap.get(sYearmonth).get(imsi).put("EVER_SUSPEND", "1");
@@ -1781,7 +1809,7 @@ public class DVRSmain implements Job{
 		//客服電話
 		if(cPhone==null)
 			cPhone="";
-		msg=msg.replace("{{customerService}}", "+"+cPhone);
+		msg=msg.replace("{{customerService}}", cPhone);
 		
 		return msg;
 	}
