@@ -16,14 +16,15 @@ import program.DVRSmain;
 import program.IJatool;
 import program.Jatool;
 
-public class SMSControl {
+public class SMSControl extends BaseControl{
 
 	SMSDao smsDao = new SMSDao();
 	IJatool tool =new Jatool();
+	int smsId=5;
 	
-	Logger logger = Logger.getLogger(SMSControl.class);
 	public SMSControl() throws Exception {
 		super();
+		logger = Logger.getLogger(SMSControl.class);
 	}
 	
 	public List<SMSLog> querySMSLog() throws SQLException{
@@ -44,12 +45,13 @@ public class SMSControl {
 	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
 		
 		if(sendSMS){
-			String content=smsDao.getSMSContent(100);
+			String content=smsDao.getSMSContent(smsId);
 			if(content!=null && !"".equals(content)){
 				if(msisdn==null ||"".equals(msisdn)){
 					logger.error("Can't send SMS without msisdn number!");
 				}else{
-					setSMSPostParam(content,msisdn);
+					String cphone=queryCustmerServicePhone(imsi);
+					setSMSPostParam(content,msisdn,cphone);
 				}
 					
 			}
@@ -57,7 +59,7 @@ public class SMSControl {
 		return smsDao.insertAlertLimit(imsi,limit);
 	}
 	public int updateAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
-		if(sendSMS){
+		/*if(sendSMS){
 			String content=smsDao.getSMSContent(100);
 			if(content!=null && !"".equals(content)){
 				if(msisdn==null ||"".equals(msisdn)){
@@ -67,11 +69,11 @@ public class SMSControl {
 				}
 					
 			}
-		}
+		}*/
 		return smsDao.updateAlertLimit(imsi, limit);
 	}
 	public int deleteAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
-		if(sendSMS){
+		/*if(sendSMS){
 			String content=smsDao.getSMSContent(100);
 			if(content!=null && !"".equals(content)){
 				if(msisdn==null ||"".equals(msisdn)){
@@ -81,7 +83,7 @@ public class SMSControl {
 				}
 					
 			}
-		}
+		}*/
 		return smsDao.deleteAlertLimit(imsi, limit);
 	}
 	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
@@ -100,8 +102,17 @@ public class SMSControl {
 	 * @throws IOException
 	 */
 	@SuppressWarnings("unused")
-	private String setSMSPostParam(String msg,String phone) throws IOException{
+	private String setSMSPostParam(String msg,String phone,String cphone) throws IOException{
 		StringBuffer sb=new StringBuffer ();
+		if("true".equals(props.getProperty("progrma.TEST_MODE"))){
+			System.out.println("test mode");
+			phone=props.getProperty("progrma.DEFAULT_PHONE");
+		}
+		
+		if(cphone==null)
+			cphone="";
+		msg=msg.replace("{{customerService}}", cphone);
+		
 		
 		String PhoneNumber=phone,Text=msg,charset="big5",InfoCharCounter=null,PID=null,DCS=null;
 		String param =
@@ -129,5 +140,30 @@ public class SMSControl {
 		
 		
 		return tool.HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+	}
+	private String queryCustmerServicePhone(String imsi) throws SQLException{
+		String cphone=null;
+		String VLN=smsDao.queryVLR(imsi);
+		
+		if(VLN!=null && !"".equals(VLN)){
+			Map<String,String> tadigMap = smsDao.queryTADIG();
+			
+			if(tadigMap.size()>0){
+				String tadig=null;
+				for(int i=VLN.length();i>0;i--){
+					tadig=tadigMap.get(VLN.substring(0,i));
+					if(tadig!=null &&!"".equals(tadig)){
+						break;
+					}
+				}
+				if(tadig!=null &&!"".equals(tadig)){
+					String mccmnc=smsDao.queryMccmnc(tadig);
+					if(mccmnc!=null &&!"".equals(mccmnc)){
+						cphone=smsDao.queryCustomerServicePhone(mccmnc);
+					}
+				}
+			}
+		}
+		return cphone;
 	}
 }

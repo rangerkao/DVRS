@@ -27,6 +27,7 @@ public class BaseDao {
 	protected Properties props =new Properties();
 	protected Logger logger ;
 	protected Connection conn =null;
+	protected Connection conn2 =null;
 	protected IJatool tool=new Jatool();
 	protected String sql="";
 	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
@@ -35,12 +36,13 @@ public class BaseDao {
 		System.out.println("Base Dao InI...");
 		loadProperties();
 		connectDB();
+		connectDB2();
 	}
 	protected void loadProperties() throws FileNotFoundException, IOException {
 		String path=classPath+ "/program/Log4j.properties";
 			props.load(new FileInputStream(path));
 			PropertyConfigurator.configure(props);
-			logger = Logger.getLogger(DVRSmain.class);
+			
 
 	}
 	protected void connectDB() throws Exception{
@@ -59,13 +61,20 @@ public class BaseDao {
 
 	}
 	
-	protected void connectDB2() throws NamingException, SQLException{
-			 	DataSource dataSource;
-	            // Get DataSource
-	            Context initContext  = new InitialContext();
-	            Context envContext  = (Context)initContext.lookup("java:/comp/env");
-	            dataSource = (DataSource)envContext.lookup("jdbc/testdb");
-	            conn = dataSource.getConnection();
+	protected void connectDB2() throws Exception {
+		String url=props.getProperty("mBOSS.URL")
+				.replace("{{Host}}", props.getProperty("mBOSS.Host"))
+				.replace("{{Port}}", props.getProperty("mBOSS.Port"))
+				.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
+				.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
+		conn2=tool.connDB(logger, props.getProperty("mBOSS.DriverClass"), url, 
+				props.getProperty("mBOSS.UserName"), 
+				props.getProperty("mBOSS.PassWord")
+				);
+			if(conn==null){
+				throw new Exception("DB Connect null !");
+			}
+
 	}
 
 	

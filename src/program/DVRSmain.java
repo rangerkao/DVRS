@@ -115,6 +115,7 @@ public class DVRSmain implements Job{
 	Map <String,Map <String,Set<String>>> insertMapD = new HashMap<String,Map <String,Set<String>>>();
 	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
 	
+	Set<String> serviceOrderNBR = new HashSet<String>();
 	
 	/**
 	 * 初始化
@@ -766,24 +767,82 @@ public class DVRSmain implements Job{
 						mccmnc= DEFAULT_MCCMNC;
 					}
 					
-					//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
-					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
-							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
+					//20141118 排除華人上網包
+					Set<String> sSX001 = new HashSet<String>();
+					sSX001.add("45412");
+					
+					Set<String> sSX002 = new HashSet<String>();
+					sSX002.add("46001");
+					sSX002.add("46007");
+					sSX002.add("46002");
+					sSX002.add("460000");
+					sSX002.add("46000");
+					sSX002.add("45412");
+					
+					String serviceCode="";
+					
+					String sql2="SELECT COUNT(1) CD "
+							+ "FROM ADDONSERVICE_N A "
+							+ "WHERE A.S2TMSISDN=? AND A.S2TIMSI=? AND A.SERVICECODE=? and A.STARTDATE<=? AND (A.ENDDATE IS NULL OR A.ENDDATE>=?)";	
+					
+					PreparedStatement pst2 = null;
+					ResultSet rs2=null;
+					String msisdn=msisdnMap.get(imsi).get("MSISDN");
+					int cd=0;
+					//只有香港
+					if(cd==0 && sSX001.contains(mccmnc)){
+						pst2=conn.prepareStatement(sql2);
+						pst2.setString(1,msisdn );
+						pst2.setString(2,imsi );
+						pst2.setString(3,"SX001" );
+						pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+						pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+						logger.info("Execute SQL : "+sql2);
+						rs2=pst2.executeQuery();
 						
-						double ec=1;
-						if("HKD".equalsIgnoreCase((String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY")))
-							ec=exchangeRate;
-						charge=volume*kByte*(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE")*ec;
-						dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
-						
-					}else{
-						//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
-						//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
-						//以最大費率計費
-						sendMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
-						charge=volume*kByte*defaultRate;
+						while(rs2.next()){
+							cd=rs2.getInt("CD");
+						}
 					}
 					
+					//香港加中國大陸
+					if(cd==0 && sSX002.contains(mccmnc)){
+						pst2=conn.prepareStatement(sql2);
+						pst2.setString(1,msisdn );
+						pst2.setString(2,imsi );
+						pst2.setString(3,"SX002" );
+						pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+						pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+						logger.info("Execute SQL : "+sql2);
+						rs2=pst2.executeQuery();
+						while(rs2.next()){
+							cd=rs2.getInt("CD");
+						}
+					}
+
+					rs2.close();
+					pst2.close();
+					
+					if(cd==0){
+						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
+						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
+								dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
+							
+							double ec=1;
+							if("HKD".equalsIgnoreCase((String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY")))
+								ec=exchangeRate;
+							charge=volume*kByte*(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE")*ec;
+							dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
+							
+						}else{
+							//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
+							//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
+							//以最大費率計費
+							sendMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+							charge=volume*kByte*defaultRate;
+						}
+					}
+		
 					//格式化至小數點後四位
 					charge=tool.FormatDouble(charge, "0.0000");
 					
@@ -1937,9 +1996,29 @@ public class DVRSmain implements Job{
 	}
 	
 	private void suspend(String imsi,String msisdn){
+		logger.info("suspend...");
 		suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
 		try {
-			sus.ReqStatus_17_Act(imsi, msisdn);
+			//20141118 add 傳回suspend排程的 service order nbr
+			String orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
+			serviceOrderNBR.add(orderNBR);
+			
+			sql=
+					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
+					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN) "
+					+ "VALUES(?,?,SYSDATE,?)";
+			
+			PreparedStatement pst = conn.prepareStatement(sql);
+			pst.setString(1,orderNBR );
+			pst.setString(2,imsi );
+			pst.setString(3,msisdn );
+			logger.info("Execute SQL : "+sql);
+			
+			pst.executeUpdate();
+			
+			pst.close();
+			
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Error at suspend : "+e.getMessage());
@@ -1997,6 +2076,85 @@ public class DVRSmain implements Job{
 			//errorMsg=e.getMessage();
 		}
 	}
+
+	private void processSuspendNBR() {
+		for (String NBR : serviceOrderNBR) {
+			String cMesg = "";
+			try {
+				for (int i = 0; i < 15; i++) {
+
+					Thread.sleep(2000);
+
+					sql = "select STATUS from S2T_TB_SERVICE_ORDER Where SERVICE_ORDER_NBR ='"
+							+ NBR + "'";
+					logger.info(sql);
+					ResultSet rs = conn.createStatement().executeQuery(sql);
+
+					while (rs.next()) {
+						cMesg = rs.getString("STATUS");
+					}
+
+					logger.info("Query_ServiceOrderStatus:"
+							+ Integer.toString(i) + " Times " + cMesg);
+
+					if (cMesg.equals("Y") || cMesg.equals("F")) {
+						break;
+					}
+				}
+
+				if (cMesg.equals("Y") || cMesg.equals("F")) {
+					cMesg = Query_SyncFileDtlStatus(NBR);
+					if (cMesg.equals("")) {
+						cMesg = "501";
+					}
+				} else {
+					cMesg = "501";
+				}
+				
+				sql=
+						"UPDATE HUR_SUSPEND_GPRS_LOG A "
+						+ "SET A.RESULT='"+cMesg+"' "
+						+ "WHERE A.SERVICE_ORDER_NBR='"+NBR+"'";
+				
+				conn.createStatement().executeUpdate(sql);
+				
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				//sendMail
+				sendMail("At processSuspendNBR occur InterruptedException error!");
+				errorMsg=e.getMessage();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				//sendMail
+				sendMail("At processSuspendNBR occur SQLException error!");
+				errorMsg=e.getMessage();
+			} catch (IOException e) {
+				e.printStackTrace();
+				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				//sendMail
+				sendMail("At processSuspendNBR occur IOException error!");
+				errorMsg=e.getMessage();
+			}			
+		}
+	}
+	public String Query_SyncFileDtlStatus(String cServiceOrderNBR) throws SQLException, InterruptedException, IOException{
+		String cSt="";
+		for (int i=0;i<5;i++){
+			Thread.sleep(1000);
+			sql="select result_flag from S2T_TB_TYPB_WO_SYNC_FILE_DTL Where " +
+                "SERVICE_ORDER_NBR ='"+cServiceOrderNBR+"'";
+			 logger.info(sql);
+        ResultSet rs=conn.createStatement().executeQuery(sql);
+        while (rs.next()){
+                cSt=rs.getString("result_flag");
+        }
+        logger.info("Query_SyncFileDtlStatus:"+Integer.toString(i)+" Times "+cSt);
+            }
+     return cSt;
+    }
 	
 	@SuppressWarnings("unused")
 	private void showCurrent() {
@@ -2110,117 +2268,122 @@ public class DVRSmain implements Job{
 	}
 	
 	//TODO
-		private void process() {
-			// 程式開始時間
-			long startTime;
-			// 程式結束時間
-			long endTime;
-			// 副程式開始時間
-			long subStartTime;
+	private void process() {
+		// 程式開始時間
+		long startTime;
+		// 程式結束時間
+		long endTime;
+		// 副程式開始時間
+		long subStartTime;
 
-			IniProgram();
-			
-			logger.info("RFP Program Start! "+new Date());
-			
-			if (conn != null && conn2!=null) {
-				
-				logger.debug("connect success!");
-				
-				startTime = System.currentTimeMillis();
-				
-				//取消自動Commit
-				cancelAutoCommit();
-				
-				//設定日期
-				setDayDate();
-				
-				//取得最後更新的FileID
-				subStartTime = System.currentTimeMillis();
-				setLastFileID();
-				logger.info("setLastFileID execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//取出HUR_CURRENT
-				subStartTime = System.currentTimeMillis();
-				setCurrentMap();
-				setCurrentMapDay();
-				logger.info("setCurrentMap execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//取出HUR_THRESHOLD
-				subStartTime = System.currentTimeMillis();
-				setThreshold();
-				logger.info("setThreshold execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//取出HUR_DATARATE
-				subStartTime = System.currentTimeMillis();
-				setDataRate();
-				logger.info("setDataRate execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//取出msisdn資訊
-				subStartTime = System.currentTimeMillis();
-				setMsisdnMap();
-				logger.info("setMsisdnMap execute time :"+(System.currentTimeMillis()-subStartTime));
+		IniProgram();
 		
-				//IMSI 對應到 vln
-				subStartTime = System.currentTimeMillis();
-				setIMSItoVLN();
-				logger.info("setIMSItoVLN execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//vln 對應到 TADIG
-				subStartTime = System.currentTimeMillis();
-				setVLNtoTADIG();
-				logger.info("setVLNtoTADIG execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//TADIG 對應到 MCCMNC
-				subStartTime = System.currentTimeMillis();
-				setTADIGtoMCCMNC();
-				logger.info("setTADIGtoMCCMNC execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//國碼對應表(客服,國名)
-				subStartTime = System.currentTimeMillis();
-				setCostomerNumber();
-				logger.info("setCostomerNumber execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//開始批價 
-				subStartTime = System.currentTimeMillis();
-				charge();
-				logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
+		logger.info("RFP Program Start! "+new Date());
+		
+		if (conn != null && conn2!=null) {
+			
+			logger.debug("connect success!");
+			
+			startTime = System.currentTimeMillis();
+			
+			//取消自動Commit
+			cancelAutoCommit();
+			
+			//設定日期
+			setDayDate();
+			
+			//取得最後更新的FileID
+			subStartTime = System.currentTimeMillis();
+			setLastFileID();
+			logger.info("setLastFileID execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//取出HUR_CURRENT
+			subStartTime = System.currentTimeMillis();
+			setCurrentMap();
+			setCurrentMapDay();
+			logger.info("setCurrentMap execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//取出HUR_THRESHOLD
+			subStartTime = System.currentTimeMillis();
+			setThreshold();
+			logger.info("setThreshold execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//取出HUR_DATARATE
+			subStartTime = System.currentTimeMillis();
+			setDataRate();
+			logger.info("setDataRate execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//取出msisdn資訊
+			subStartTime = System.currentTimeMillis();
+			setMsisdnMap();
+			logger.info("setMsisdnMap execute time :"+(System.currentTimeMillis()-subStartTime));
+	
+			//IMSI 對應到 vln
+			subStartTime = System.currentTimeMillis();
+			setIMSItoVLN();
+			logger.info("setIMSItoVLN execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//vln 對應到 TADIG
+			subStartTime = System.currentTimeMillis();
+			setVLNtoTADIG();
+			logger.info("setVLNtoTADIG execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//TADIG 對應到 MCCMNC
+			subStartTime = System.currentTimeMillis();
+			setTADIGtoMCCMNC();
+			logger.info("setTADIGtoMCCMNC execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//國碼對應表(客服,國名)
+			subStartTime = System.currentTimeMillis();
+			setCostomerNumber();
+			logger.info("setCostomerNumber execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//開始批價 
+			subStartTime = System.currentTimeMillis();
+			charge();
+			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
 
-				//發送警示簡訊
-				subStartTime = System.currentTimeMillis();
-				sendAlertSMS();
-				logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
-				
-				//回寫批價結果
-				subStartTime = System.currentTimeMillis();
-				updateCdr();
-				
-				//避免資料異常，完全處理完之後在commit
-				try {
-					insertCurrentMap();
-					insertCurrentMapDay();
-					updateCurrentMap();
-					updateCurrentMapDay();
-					conn.commit();
-				} catch (SQLException e) {
-					e.printStackTrace();
-					logger.error("Error at commit : "+e.getMessage());
-					//sendMail
-					sendMail("At updateCurrentMapU occur SQLException error!");
-					errorMsg=e.getMessage();
-				}
-				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
-
-				
-				// 程式執行完成
-				endTime = System.currentTimeMillis();
-				logger.info("Program execute time :" + (endTime - startTime));
-				show();
-				closeConnect();
-
-			} else {
-				logger.error("connect is null!");
+			//發送警示簡訊
+			subStartTime = System.currentTimeMillis();
+			sendAlertSMS();
+			logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			//回寫批價結果
+			subStartTime = System.currentTimeMillis();
+			updateCdr();
+			
+			//避免資料異常，完全處理完之後在commit
+			try {
+				insertCurrentMap();
+				insertCurrentMapDay();
+				updateCurrentMap();
+				updateCurrentMapDay();
+				conn.commit();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				logger.error("Error at commit : "+e.getMessage());
+				//sendMail
+				sendMail("At updateCurrentMapU occur SQLException error!");
+				errorMsg=e.getMessage();
 			}
+			logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
+
+			//suspend的後續追蹤處理
+			subStartTime = System.currentTimeMillis();
+			processSuspendNBR();
+			logger.info("processSuspendNBR execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			
+			// 程式執行完成
+			endTime = System.currentTimeMillis();
+			logger.info("Program execute time :" + (endTime - startTime));
+			show();
+			closeConnect();
+
+		} else {
+			logger.error("connect is null!");
 		}
+	}
 	
 	@Override
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {

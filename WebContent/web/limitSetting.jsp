@@ -10,6 +10,7 @@
 <script type="text/javascript">
 $(function(){
 	query();
+	$("#Limit").val("0");
 })
 var limitList;
 function query(){
@@ -29,7 +30,7 @@ function query(){
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+limitSetting.imsi+"</td>"+
                					"<td align='center' >"+limitSetting.msisdn+"</td>"+
-               					"<td align='center' >"+limitSetting.threshold+"</td>"+
+               					"<td align='center' style='display: none;'>"+limitSetting.threshold+"</td>"+
                					"<td align='center' ><button onclick='chooseRow(this)'>選擇</button></td>"+
                				"</tr>");  
                
@@ -45,6 +46,10 @@ function query(){
           },
           complete:function(){
         	  enableButton();
+        	  $("#IMSI").val("");
+        		$("#LIMSI").html("");	
+        		$("#Msisdn").val("");
+        		$("#LMsisdn").html("");
           }
 	    });
 }
@@ -56,8 +61,8 @@ function chooseRow(bu){
 	$("#LIMSI").html("");	
 	$("#Msisdn").val(row.cells[1].innerText);
 	$("#LMsisdn").html("");
-	$("#Limit").val(row.cells[2].innerText);
-	$("#LLimit").html("");	
+	//$("#Limit").val(row.cells[2].innerText);
+	//$("#LLimit").html("");	
 }
 
 function updateLimit(mod,txt){
@@ -72,11 +77,12 @@ function updateLimit(mod,txt){
 	
 	
 	var sendSMS=false;
-	if(confirm("需要發送通知簡訊給予客戶嗎？")){
-		sendSMS=true;
+	if(mod=="add"){
+		if(confirm("需要發送通知簡訊給予客戶嗎？")){
+			sendSMS=true;
+		}
 	}
-	
-	
+
 	$.ajax({
 	      url: '<s:url action="updateAlertLimit"/>',
 	      data: {
@@ -230,8 +236,8 @@ function volidateNum(val){
 				<td><input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" /></td>
 				<td><label id="LMsisdn" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
 			</tr>
-			<tr>
-				<td class="label" align="right"><label>最大上限:</label></td>
+			<tr style="display: none; ">
+				<td class="label" align="right" ><label >最大上限:</label></td>
 				<td><input type="text" id="Limit"  onkeyup="clearText('Limit')" /></td>
 				<td><label id="LLimit" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
 			</tr>
@@ -240,7 +246,7 @@ function volidateNum(val){
 				<td>
 					<input type="button"  onclick="this.form.reset()" value="清除" id="BClear">
 					<input type="button" onclick="updateLimit('add','新增')" value="新增">
-					<input type="button" onclick="updateLimit('mod','修改')" value="修改">
+					<input type="button" onclick="updateLimit('mod','修改')" value="修改" style="display: none;">
 					<input type="button" onclick="updateLimit('del','刪除')" value="刪除">
 					<input type="button" onclick="queryIMSI()" value="查詢IMSI"> 
 					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
@@ -254,7 +260,7 @@ function volidateNum(val){
 			<tr class="even_columm" >
 				<td class="columnLabel" align="center" width="30%">IMSI</td>
 				<td class="columnLabel" align="center" width="30%">MSISDN</td>
-				<td class="columnLabel" align="center" width="20%">LIMITE</td>
+				<td class="columnLabel" align="center" width="20%" style="display: none;">LIMITE</td>
 				<td></td>
 				<td width="10%">&nbsp;</td>
 			</tr>

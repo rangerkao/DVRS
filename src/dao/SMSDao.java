@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import program.DVRSmain;
 import bean.GPRSThreshold;
 import bean.SMSLog;
 import bean.SMSSetting;
@@ -19,6 +22,7 @@ public class SMSDao extends BaseDao{
 	public SMSDao() throws Exception {
 		super();
 		// TODO Auto-generated constructor stub
+		logger = Logger.getLogger(SMSDao.class);
 	}
 
 	public List<SMSLog> querySMSLog(Date fromDate,Date toDate) throws SQLException{
@@ -37,8 +41,8 @@ public class SMSDao extends BaseDao{
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
 			pst.setDate(2, tool.convertJaveUtilDate_To_JavaSqlDate(toDate));
+			logger.debug("Execute sql: "+sql);
 			ResultSet rs=pst.executeQuery();
-			
 			while(rs.next()){
 				SMSLog log = new SMSLog();
 				log.setId(rs.getString("ID"));
@@ -61,8 +65,8 @@ public class SMSDao extends BaseDao{
 				+ "ORDER BY A.CREATE_DATE ";
 		
 			Statement st = conn.createStatement();
+			logger.debug("Execute sql: "+sql);
 			ResultSet rs=st.executeQuery(sql);
-			
 			while(rs.next()){
 				SMSLog log = new SMSLog();
 				log.setId(rs.getString("ID"));
@@ -75,8 +79,7 @@ public class SMSDao extends BaseDao{
 			}
 			rs.close();
 			st.close();
-			
-
+			closeConnect();
 		return list;
 	}
 	
@@ -89,8 +92,8 @@ public class SMSDao extends BaseDao{
 				+ "ORDER BY A.ID ";
 		
 			Statement st = conn.createStatement();
+			logger.debug("Execute sql: "+sql);
 			ResultSet rs=st.executeQuery(sql);
-			
 			while(rs.next()){
 				SMSSetting log = new SMSSetting();
 				log.setId(rs.getString("ID"));
@@ -107,7 +110,7 @@ public class SMSDao extends BaseDao{
 			}
 			rs.close();
 			st.close();
-
+			closeConnect();
 		return list;
 	}
 	
@@ -135,12 +138,10 @@ public class SMSDao extends BaseDao{
 					pst.setString(4, "0");
 				pst.addBatch();
 			}
+			logger.debug("Execute sql: "+sql);
 			pst.executeBatch();
-			
-			pst.close();
-			conn.close();
-			
-
+			pst.close();			
+			closeConnect();
 		return list;
 	}
 	
@@ -153,8 +154,8 @@ public class SMSDao extends BaseDao{
 				+ "WHERE A.IMSI=B.IMSI AND B.SERVICEID = c.SERVICEID ";
 		
 		Statement st = conn.createStatement();
+		logger.debug("Execute sql: "+sql);
 		ResultSet rs = st.executeQuery(sql);
-		
 		while(rs.next()){
 			GPRSThreshold g = new GPRSThreshold();
 			g.setImsi(rs.getString("IMSI"));
@@ -165,9 +166,7 @@ public class SMSDao extends BaseDao{
 		
 		st.close();
 		rs.close();
-		
-		conn.close();
-		
+		closeConnect();
 		return list;
 	}
 	
@@ -183,12 +182,10 @@ public class SMSDao extends BaseDao{
 		
 		pst.setString(1, imsi);
 		pst.setDouble(2, limit);
-		
+		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
-		
 		pst.close();
-		conn.close();
-
+		closeConnect();
 		return result;
 	}
 	
@@ -204,12 +201,10 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		pst.setDouble(1, limit);
 		pst.setString(2, imsi);
-		
+		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
-		
 		pst.close();
-		conn.close();
-
+		closeConnect();
 		return result;
 	}
 	
@@ -223,12 +218,10 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, imsi);
-		
+		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
-		
 		pst.close();
-		conn.close();
-
+		closeConnect();
 		return result;
 	}
 	
@@ -246,17 +239,17 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, msisdn);
+		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
-	
 		while(rs.next()){
 			imsi=rs.getString("IMSI");
 			pricaplainid=rs.getString("PRICEPLANID");
 		}
 		rs.close();
 		pst.close();
-		
 		map.put("imsi", imsi);
 		map.put("pricaplainid", pricaplainid);
+		closeConnect();
 		return map;
 	}
 	
@@ -269,8 +262,9 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setInt(1, id);
+		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
-	
+		
 		while(rs.next()){
 			result=rs.getString("COMTENT");
 		}
@@ -278,6 +272,83 @@ public class SMSDao extends BaseDao{
 		pst.close();
 	
 		return result;
+	}
+	
+	public String queryVLR(String imsi) throws SQLException{
+		String VLN=null;
+		
+		sql="SELECT VLR_NUMBER FROM UTCN.BASICPROFILE WHERE IMSI='"+imsi+"'";
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs=conn2.createStatement().executeQuery(sql);
+		
+		while(rs.next()){
+			VLN=rs.getString("VLR_NUMBER");
+		}
+		rs.close();
+		
+		return VLN;
+	}
+	
+	public Map<String,String> queryTADIG() throws SQLException{
+		Map<String,String> map = new HashMap<String,String>();
+		
+		sql=" SELECT B.REALMNAME TADIG, A.CHARGEAREACODE VLR FROM CHARGEAREACONFIG A, REALM B "
+				+ "WHERE A.AREAREFERENCE=B.AREAREFERENCE ";
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs=conn2.createStatement().executeQuery(sql);
+		
+		while(rs.next()){
+			map.put(rs.getString("VLR"), rs.getString("TADIG"));
+		}
+		rs.close();
+		return map;
+	}
+	public String queryMccmnc(String tadig) throws SQLException{
+		String mccmnc=null;
+				
+		sql=" SELECT MCCMNC FROM HUR_MCCMNC WHERE TADIG='"+tadig+"'";
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs=conn.createStatement().executeQuery(sql);
+
+		while(rs.next()){
+			mccmnc=rs.getString("MCCMNC");
+		}		
+				
+		rs.close();
+
+		return mccmnc;		
+	}
+	
+	public String queryCustomerServicePhone(String mccmnc) throws SQLException{
+		String cPhone=null;
+		String subcode=mccmnc.substring(0,3);
+		sql=" SELECT PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs=conn.createStatement().executeQuery(sql);
+		
+		while(rs.next()){
+			cPhone=rs.getString("PHONE");
+		}		
+		rs.close();
+		return cPhone;		
+	}
+	public void closeConnect() {
+		if(conn!=null){
+			try {
+				super.conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(conn2!=null){
+			try {
+				super.conn2.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 }

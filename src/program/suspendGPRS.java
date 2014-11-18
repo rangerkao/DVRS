@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -35,13 +37,14 @@ public class suspendGPRS {
 	private SimpleDateFormat dFormat1=new SimpleDateFormat("yyyyMMdd");
 	private SimpleDateFormat dFormat2=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	private SimpleDateFormat dFormat3=new SimpleDateFormat("yyMMddHHmm");
+	private SimpleDateFormat dFormat4=new SimpleDateFormat("yyMMddHHmmss");
 	private String cFileID,cFileName,c910SEQ,sCount,cWorkOrderNBR,sDATE,Sdate,sDataType,sValue,sSubCode,sStepNo,sTypeCode,sMap,sM_CTYPE,cGPRSStatus;
 	private String sFMTH,sFMTHa,sSFMTH,sSFMTHa;
 	static Vector<String> vln=new Vector<String>();
 	private ResultSet Temprs;
-	private String sSql;
-
-	public void ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
+	private String sSql;	
+	
+	public String ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
 		logger.debug("ReqStatus_17_Act");
 		
@@ -95,8 +98,32 @@ public class suspendGPRS {
 		Query_GPRSStatus();
 		// 待實做Log紀錄停止GPRS 回傳結果 desc
 		
-		//20141118 add 確認狀態
-		System.out.println("rcode : "+Query_ServiceOrderStatus());
+		//20141118 add 確認狀態，實做在Main後面持續監測
+		//System.out.println("rcode : "+Query_ServiceOrderStatus());
+		/*sSql="update S2T_TB_TYPB_WO_SYNC_FILE_DTL set s2t_operationdate="+
+	              "to_date('"+dFormat4.format(new Date())+
+	              "','YYYYMMDDHH24MISS')"+
+	              " where WORK_ORDER_NBR='"+cWorkOrderNBR+"'";
+	         
+	         logger.debug("update S2T_TB_TYPB_WO_SYNC_FILE_DTL:"+sSql);
+	         conn.createStatement().executeUpdate(sSql);
+	         
+	         sSql="update S2T_TB_SERVICE_ORDER_ITEM set timestamp="+
+	              "to_date('"+dFormat4.format(new Date())+
+	              "','YYYYMMDDHH24MISS')"+
+	              " where Service_Order_NBR='"+cServiceOrderNBR+"'";
+	                
+	         logger.debug("Update S2T_TB_SERVICE_ORDER_ITEM:"+sSql);
+	         conn.createStatement().executeUpdate(sSql);
+	                
+	         sSql="update S2T_TB_SERVICE_ORDER set timestamp="+
+	              "to_date('"+dFormat4.format(new Date())+
+	              "','YYYYMMDDHH24MISS')"+
+	              " where SERVICE_ORDER_NBR='"+cServiceOrderNBR+"'";
+	                
+	         logger.debug("Update S2T_TB_SERVICE_ORDER:"+sSql);
+	         conn.createStatement().executeUpdate(sSql);*/
+		return cServiceOrderNBR;
 	}
 	
 	//20141104 add
@@ -595,7 +622,7 @@ public class suspendGPRS {
 	         sSql="select STATUS from S2T_TB_SERVICE_ORDER Where SERVICE_ORDER_NBR ='"+
 	              cServiceOrderNBR+"'";
 	         
-	         //logger.info(sSql);
+	         logger.info(sSql);
 	         Temprs = conn.createStatement().executeQuery(sSql);
 	         
 	        while(Temprs.next()) {
