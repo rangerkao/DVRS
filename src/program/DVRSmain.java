@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -115,7 +116,7 @@ public class DVRSmain implements Job{
 	Map <String,Map <String,Set<String>>> insertMapD = new HashMap<String,Map <String,Set<String>>>();
 	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
 	
-	Set<String> serviceOrderNBR = new HashSet<String>();
+	Set<Map<String,String>> serviceOrderNBR = new HashSet<Map<String,String>>();
 	
 	/**
 	 * 初始化
@@ -2000,7 +2001,7 @@ public class DVRSmain implements Job{
 		suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
 		try {
 			//20141118 add 傳回suspend排程的 service order nbr
-			String orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
+			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
 			serviceOrderNBR.add(orderNBR);
 			
 			sql=
@@ -2009,7 +2010,7 @@ public class DVRSmain implements Job{
 					+ "VALUES(?,?,SYSDATE,?)";
 			
 			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setString(1,orderNBR );
+			pst.setString(1,orderNBR.get("cServiceOrderNBR") );
 			pst.setString(2,imsi );
 			pst.setString(3,msisdn );
 			logger.info("Execute SQL : "+sql);
@@ -2078,7 +2079,7 @@ public class DVRSmain implements Job{
 	}
 
 	private void processSuspendNBR() {
-		for (String NBR : serviceOrderNBR) {
+		for (Map<String,String> NBR : serviceOrderNBR) {
 			String cMesg = "";
 			try {
 				for (int i = 0; i < 15; i++) {
@@ -2086,7 +2087,7 @@ public class DVRSmain implements Job{
 					Thread.sleep(2000);
 
 					sql = "select STATUS from S2T_TB_SERVICE_ORDER Where SERVICE_ORDER_NBR ='"
-							+ NBR + "'";
+							+ NBR.get("cServiceOrderNBR") + "'";
 					logger.info(sql);
 					ResultSet rs = conn.createStatement().executeQuery(sql);
 
@@ -2103,7 +2104,7 @@ public class DVRSmain implements Job{
 				}
 
 				if (cMesg.equals("Y") || cMesg.equals("F")) {
-					cMesg = Query_SyncFileDtlStatus(NBR);
+					cMesg = Query_SyncFileDtlStatus(NBR.get("cServiceOrderNBR"));
 					if (cMesg.equals("")) {
 						cMesg = "501";
 					}
@@ -2111,13 +2112,54 @@ public class DVRSmain implements Job{
 					cMesg = "501";
 				}
 				
+				
+				//如果狀態更新失敗，沒有動作發送錯誤Email
+				if("501".equalsIgnoreCase(cMesg)){
+					sendMail("Suspend does not work for"+"<br>"
+							+ "IMSI : "+NBR.get("imsi")+"<br>"
+							+ "MSISDN : "+NBR.get("msisdn")+"<br>"
+							+ "WorkOrderNBR : "+NBR.get("cWorkOrderNBR")+"<br>"
+							+ "ServiceOrderNBR : "+NBR.get("cServiceOrderNBR")+"<br>");
+				}
+
 				sql=
 						"UPDATE HUR_SUSPEND_GPRS_LOG A "
 						+ "SET A.RESULT='"+cMesg+"' "
-						+ "WHERE A.SERVICE_ORDER_NBR='"+NBR+"'";
+						+ "WHERE A.SERVICE_ORDER_NBR='"+NBR.get("cServiceOrderNBR")+"'";
 				
 				conn.createStatement().executeUpdate(sql);
 				
+				
+				//更新回Table
+				SimpleDateFormat dFormat4=new SimpleDateFormat("yyyyMMddHHmmss");
+				String dString=dFormat4.format(new Date());
+				//PROVLOG 不需要
+				/*sql = "update PROVLOG set replytime=sysdate where LOGID="
+						+ sCMHKLOGID;
+
+				logger.debug("Update PROVLOG:" + sSql);
+				conn.createStatement().executeUpdateUpdate(sSql);*/
+
+				sql = "update S2T_TB_TYPB_WO_SYNC_FILE_DTL set s2t_operationdate="
+						+ "to_date('"+dString+"','YYYYMMDDHH24MISS')"
+						+ " where WORK_ORDER_NBR='" + NBR.get("cWorkOrderNBR") + "'";
+
+				logger.debug("update S2T_TB_TYPB_WO_SYNC_FILE_DTL:" + sql);
+				conn.createStatement().executeUpdate(sql);
+
+				sql = "update S2T_TB_SERVICE_ORDER_ITEM set timestamp="
+						+ "to_date('"+dString+"','YYYYMMDDHH24MISS')"
+						+ " where Service_Order_NBR='" + NBR.get("cServiceOrderNBR") + "'";
+
+				logger.debug("Update S2T_TB_SERVICE_ORDER_ITEM:" + sql);
+				conn.createStatement().executeUpdate(sql);
+
+				sql = "update S2T_TB_SERVICE_ORDER set timestamp="
+						+ "to_date('"+dString+"','YYYYMMDDHH24MISS')"
+						+ " where SERVICE_ORDER_NBR='" + NBR.get("cServiceOrderNBR") + "'";
+
+				logger.debug("Update S2T_TB_SERVICE_ORDER:" + sql);
+				conn.createStatement().executeUpdate(sql);
 				
 			} catch (InterruptedException e) {
 				e.printStackTrace();

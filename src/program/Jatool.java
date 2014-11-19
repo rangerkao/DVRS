@@ -2,9 +2,15 @@ package program;
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -35,12 +41,28 @@ import javax.mail.internet.MimeMultipart;
 
 
 
+
+
+
+
+
+
+
+
 import org.apache.log4j.Logger;
 
 //190
 /*import com.infotech.smpp.SMPPServicesStub;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
+
+
+
+
+
+
+
 
 //199
 import com.iglomo.SMPPServicesStub;
@@ -387,5 +409,57 @@ public class Jatool implements IJatool{
 		
 		return str;
 	}
-	
+
+	@Override
+	public void readtxt(String filePath) {
+		
+		BufferedReader reader = null;
+
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8")); 
+			// 指定讀取文件的編碼格式，以免出現中文亂碼
+			
+			String str = null;
+			
+			while ((str = reader.readLine()) != null) {
+				
+				System.out.println(str);
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void writetxt(String content) {
+		BufferedWriter fw = null;
+		
+		try {
+			File file = new File("c://text.txt");
+			fw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "UTF-8")); // 指點編碼格式，以免讀取時中文字符異常
+			fw.append("我寫入的內容");
+			fw.newLine();
+			fw.append("我又寫入的內容");
+			fw.flush(); // 全部寫入緩存中的內容
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (fw != null) {
+				try {
+					fw.close();
+				} catch (IOException e) {
+						e.printStackTrace();
+				}
+			}
+		}		
+	}
 }

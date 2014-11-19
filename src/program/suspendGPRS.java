@@ -10,7 +10,9 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -44,7 +46,7 @@ public class suspendGPRS {
 	private ResultSet Temprs;
 	private String sSql;	
 	
-	public String ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
+	public Map<String,String> ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
 		logger.debug("ReqStatus_17_Act");
 		
@@ -123,7 +125,13 @@ public class suspendGPRS {
 	                
 	         logger.debug("Update S2T_TB_SERVICE_ORDER:"+sSql);
 	         conn.createStatement().executeUpdate(sSql);*/
-		return cServiceOrderNBR;
+		
+		Map<String,String> map =new HashMap<String,String>();
+		map.put("cServiceOrderNBR", cServiceOrderNBR);
+		map.put("cWorkOrderNBR", cWorkOrderNBR);
+		map.put("imsi", imsi);
+		map.put("msisdn", msisdn);
+		return map;
 	}
 	
 	//20141104 add

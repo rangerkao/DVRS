@@ -160,6 +160,11 @@ public interface IJatool {
 	 */
 	String FormatNumString(Double value);
 	String FormatNumString(Double value, String form);
+	
+	
+	void readtxt(String filePath);
+	
+	void writetxt(String content);
 
 	
 }
