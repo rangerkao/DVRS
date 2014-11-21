@@ -71,8 +71,8 @@ public class BaseDao {
 				props.getProperty("mBOSS.UserName"), 
 				props.getProperty("mBOSS.PassWord")
 				);
-			if(conn==null){
-				throw new Exception("DB Connect null !");
+			if(conn2==null){
+				throw new Exception("DB Connect2 null !");
 			}
 
 	}

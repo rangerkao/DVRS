@@ -30,10 +30,10 @@ public class hello {
 		
 		System.out.println("Hello!");
 		
-		String param="*環球卡*感謝您的回覆*，我們已為您取消用量達約NTD5,000時自動斷網之管制，祝您一切順利。如需諮詢請電客服{{customerService}}。";
+		String param="*環球卡用量通知*提醒您本月上網金額累計已逾{{bracket}}，實際使用金額以帳單為準。除中國、香港、澳門有每日收費上限外，其餘國家按實際用量收費，不提供吃到飽方案，請謹慎使用。若您有申請中華電信日租型上網，請立即切換至中華電信漫遊。如欲使用通話功能，請務必切回環球卡以便節費。若您不知如何操作，請電客服{{customerService}}。";
 		
-		updateDB(5,param);
-		
+		updateDB(99,param);
+		updateDB(99,null);
 		
 		
 		Jatool tool =new Jatool();
@@ -44,13 +44,6 @@ public class hello {
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-6);
 		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
 		
-		Integer id=100;
-		Map<String,String> map =new HashMap<String,String>();
-		map.put("100","asdff");
-		map.put("101","asdffBBBBBBBBBBBBBBBBB");
-		System.out.println(map.get(id));
-		id+=1;
-		System.out.println(map.get(id.toString()));
 		
 		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
 		
@@ -83,6 +76,7 @@ public class hello {
 	      //System.Environment.SetEnvironmentVariable("NLS_LANG", "AMERICAN_AMERICA.WE8ISO8859P1");
 	      //localConnection = DriverManager.getConnection("jdbc:postgresql://192.168.10.197:5432/smppdb", "smpper", "SmIpp3r");
 	      localConnection = DriverManager.getConnection("jdbc:oracle:thin:@10.42.1.101:1521:S2TBSDEV", "foyadev", "foyadev");
+	      //localConnection = DriverManager.getConnection("jdbc:oracle:thin:@10.42.1.80:1521:s2tbs", "s2tbsadm", "s2tbsadm");
 	    }
 	    catch (Exception localException)
 	    {
@@ -93,7 +87,7 @@ public class hello {
 	  }
 	
 	static void updateDB(int num,String param) throws UnsupportedEncodingException{
-Connection conn=getConnection();
+		Connection conn=getConnection();
 		
 		if(conn==null){
 			System.out.println("connection is null");

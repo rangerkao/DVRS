@@ -1452,15 +1452,7 @@ public class DVRSmain implements Job{
 						continue;
 					}
 					
-					//查詢所在國家的客服電話
-					String cPhone = null;
-					String nMccmnc=searchMccmncByIMSI(imsi);
-					Map<String,String> map=null;
 					
-					if(nMccmnc!=null && !"".equals(nMccmnc))
-						map = codeMap.get(nMccmnc.substring(0,3));
-					if(map!=null)
-						cPhone=map.get("PHONE");
 					
 					//logger.info("For imsi="+imsi+" get phone number="+phone);
 					String res="";
@@ -1533,6 +1525,16 @@ public class DVRSmain implements Job{
 
 					//寄送簡訊
 					if(sendSMS){
+						//查詢所在國家的客服電話
+						String cPhone = null;
+						String nMccmnc=searchMccmncByIMSI(imsi);
+						Map<String,String> map=null;
+						
+						if(nMccmnc!=null && !"".equals(nMccmnc))
+							map = codeMap.get(nMccmnc.substring(0,3));
+						if(map!=null)
+							cPhone=map.get("PHONE");
+						
 						for(String s:contentid){
 							if(s!=null){
 								//寄送簡訊
@@ -1615,15 +1617,7 @@ public class DVRSmain implements Job{
 						continue;
 					}
 					
-					//查詢所在國家的客服電話
-					String cPhone = null;
-					String nMccmnc=searchMccmncByIMSI(imsi);
-					Map<String,String> map=null;
 					
-					if(nMccmnc!=null && !"".equals(nMccmnc))
-						map = codeMap.get(nMccmnc.substring(0,3));
-					if(map!=null)
-						cPhone=map.get("PHONE");
 					
 					Double daycharge=0D;
 					String alerted =null;
@@ -1635,6 +1629,16 @@ public class DVRSmain implements Job{
 					}
 					
 					if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
+						//查詢所在國家的客服電話
+						String cPhone = null;
+						String nMccmnc=searchMccmncByIMSI(imsi);
+						Map<String,String> map=null;
+						
+						if(nMccmnc!=null && !"".equals(nMccmnc))
+							map = codeMap.get(nMccmnc.substring(0,3));
+						if(map!=null)
+							cPhone=map.get("PHONE");
+						
 						//處理字串，日警示內容ID設定為99
 						String cont =processMag(content.get("99").get("COMTENT"),DEFAULT_DAY_THRESHOLD,cPhone);
 						//發送簡訊

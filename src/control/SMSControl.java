@@ -20,7 +20,7 @@ public class SMSControl extends BaseControl{
 
 	SMSDao smsDao = new SMSDao();
 	IJatool tool =new Jatool();
-	int smsId=5;
+	int smsId=6;
 	
 	public SMSControl() throws Exception {
 		super();
