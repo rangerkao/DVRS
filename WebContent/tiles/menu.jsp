@@ -74,7 +74,7 @@ var count=logOutTime/checkPeriod;
 		    	  var list=$.parseJSON(json);
 		    	     $.each(list,function(i,Auth){
 		    	   
-		    	    	 $('#'+Auth.belong).append('<li><a id='+Auth.action+' href="<s:url action="'+Auth.action+'"/>">'+Auth.name+'</a><br></li>');
+		    	    	 $('#'+Auth.belong).append('<li><p class="text-left"><a id='+Auth.action+' href="<s:url action="'+Auth.action+'"/>">'+Auth.name+'</a></p></li>');
 		    	     }); 
 		    	  },
 		      error: function() { $("#menuAuth").html('something bad happened');}
@@ -90,32 +90,34 @@ var count=logOutTime/checkPeriod;
 </script>
 </head>
 <body>
-	<div class="wapper" >
-	<label id="x">x.index</label>
-	<label id="y">y.index</label>
-	<label id="menuAuth"></label>
+<div class="container-fluid max_height" >
+	<div class="row max_height" align="center" style="vertical-align: top;">
+		<label id="x">x.index</label>
+		<label id="y">y.index</label>
+		<label id="menuAuth"></label>
 		<ul id="menu">
 			<li>
-				使用者管理
+				<p class="text-left">使用者管理</p>
 				<ul id="adminList">
 				</ul>
 			</li>
 			<li>
-				查詢相關
+				<p class="text-left">DVRS查詢</p>
 				<ul id="searchList">
 				</ul>
 			</li>
 			<li>
-				設定相關
+				<p class="text-left">DVRS設定</p>
 				<ul id="settingList">
 				</ul>
 			</li>
 			<li>
-				其他
+				<p class="text-left">其他</p>
 				<ul id="elseList">
 				</ul>
 			</li>
 		</ul>
 	</div>
+</div>
 </body>
 </html>

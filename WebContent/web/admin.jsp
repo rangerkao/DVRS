@@ -27,12 +27,12 @@
 			    	   $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 			    	  	adminList=list; 
 			    	     $.each(list,function(i,admin){  
-	                      var _tr = $(	"<tr>"+
-	                      					"<td align='center'>"+admin.userid+"</td>"+
-	                      					"<td align='center'>"+admin.account+"</td>"+
-	                      					"<td align='center'>"+admin.password+"</td>"+
-	                      					"<td align='center'>"+admin.role+"</td>"+
-	                      					"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
+	                      var _tr = $(	"<tr align='center'>"+
+	                      					"<td >"+admin.userid+"</td>"+
+	                      					"<td>"+admin.account+"</td>"+
+	                      					"<td>"+admin.password+"</td>"+
+	                      					"<td>"+admin.role+"</td>"+
+	                      					"<td><button class='btn btn-primary btn-sm' onclick='chooseRow(this)'>選擇</button></td>"+
 	                      				"</tr>");  
 	                      
 	                    $("#table1").append(_tr); }); 
@@ -145,59 +145,72 @@
 			return validation;
 		}
 		function clearText(item){
-			$("#L"+item).html("");
+			$("#L"+item).html("&nbsp;");
 		}
 </script>
 </head>
 <body>
-<div align="center">
-	<h3>使用者管理頁面</h3>
-	<div>
-		<form>
-		<table >
-			<tr>
-				<td class="label" align="right"><label>USERID:</label></td>
-				<td><input type="text" id="Userid" onkeyup="clearText('Userid')" /></td>
-				<td><label id="LUserid" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>ACCOUNT:</label></td>
-				<td><input type="text" id="Account" onkeyup="clearText('Account')" /></td>
-				<td><label id="LAccount" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>PASSWORD:</label></td>
-				<td><input type="text" id="Password" onkeyup="clearText('Password')" /></td>
-				<td><label id="LPassword" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>ROLE:</label></td>
-				<td><input type="text" id="Role" onkeyup="clearText('Role')" /></td>
-				<td><label id="LRole" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td>
-					<input type="button"  onclick="this.form.reset()" value="清除">
-					<input type="button" onclick="updateAdmin('add','新增')" value="新增">
-					<input type="button" onclick="updateAdmin('mod','修改')" value="修改">
-					<input type="button" onclick="updateAdmin('del','刪除')" value="刪除">
-					<input type="button" onclick="queryAdmin()" value="查詢">
-					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
-				</td>
-			</tr>
-		</table>
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height" align="center">
+		<form class="form-horizontal" >
+		<h3>使用者管理頁面</h3>
+			<div class="form-group">
+			    <label for="Userid" class="col-xs-5  control-label">使用者ID:</label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="Userid" onkeyup="clearText('Userid')" />
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			    	<label id="LUserid" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    
+			    <label for="Account" class="col-xs-5 control-label" >使用者帳號:<font color="red">*</font></label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="Account" onkeyup="clearText('Account')" />
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			    	<label id="LAccount" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    
+		    	<label for="Password" class="col-xs-5 control-label">使用者密碼：</label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="Password" onkeyup="clearText('Password')" />
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			   		<label id="LPassword" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    
+			    <label for="Role" class="col-xs-5 control-label">角色分類：</label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="Role" onkeyup="clearText('Role')" />
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			   		<label id="LRole" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    
+			    
+			    <div class="col-xs-12">
+			    	<div class="btn-group" class="col-xs-12">
+				    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" class="btn btn-primary">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateAdmin('add','新增')" value="新增">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateAdmin('mod','修改')" value="修改">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateAdmin('del','刪除')" value="刪除">
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢">
+				    </div>
+			    </div>
+			    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
+			</div>
 		</form>
-	</div>
-	<div >
-		<table id="table1" class="datatable" align="center">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center">USERID</td>
-				<td class="columnLabel" align="center">ACCOUNT</td>
-				<td class="columnLabel" align="center">PASSWORD</td>
-				<td class="columnLabel" align="center">ROLE</td>
-				<td>&nbsp;</td>
-			</tr>
-		</table>
+		<div>
+			<table class="table-bordered table-hover" align="center" style="width: 50%" id="table1">
+				<tr class="even_columm" >
+					<td class="columnLabel" align="center">使用者ID</td>
+					<td class="columnLabel" align="center">使用者帳號</td>
+					<td class="columnLabel" align="center">使用者密碼</td>
+					<td class="columnLabel" align="center">角色分類</td>
+					<td>&nbsp;</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 </body>

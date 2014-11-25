@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.mail.MessagingException;
+import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 
 import org.apache.log4j.Logger;
@@ -700,6 +701,7 @@ public class DVRSmain implements Job{
 		return mccmnc;
 	}
 
+
 	
 	/**
 	 * 開始批價
@@ -753,6 +755,9 @@ public class DVRSmain implements Job{
 					if(msisdnMap.containsKey(imsi))
 						pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
 					
+					
+					
+					
 					if(dataRate.containsKey(pricplanID)){
 						//假如沒有mccmnc給予預設字樣，必須要有
 						if(mccmnc==null || "".equals(mccmnc)){
@@ -762,6 +767,9 @@ public class DVRSmain implements Job{
 						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 						sendMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 					}
+					
+					
+					
 					
 					//還是找不到，給予預設，必須有
 					if(mccmnc==null || "".equals(mccmnc)){
@@ -780,50 +788,57 @@ public class DVRSmain implements Job{
 					sSX002.add("46000");
 					sSX002.add("45412");
 					
-					String serviceCode="";
-					
 					String sql2="SELECT COUNT(1) CD "
 							+ "FROM ADDONSERVICE_N A "
 							+ "WHERE A.S2TMSISDN=? AND A.S2TIMSI=? AND A.SERVICECODE=? and A.STARTDATE<=? AND (A.ENDDATE IS NULL OR A.ENDDATE>=?)";	
 					
 					PreparedStatement pst2 = null;
-					ResultSet rs2=null;
-					String msisdn=msisdnMap.get(imsi).get("MSISDN");
+					ResultSet rs2=null;					
+					
 					int cd=0;
-					//只有香港
-					if(cd==0 && sSX001.contains(mccmnc)){
-						pst2=conn.prepareStatement(sql2);
-						pst2.setString(1,msisdn );
-						pst2.setString(2,imsi );
-						pst2.setString(3,"SX001" );
-						pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-						pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-						logger.info("Execute SQL : "+sql2);
-						rs2=pst2.executeQuery();
+					
+					String msisdn=null;
+					if(msisdnMap.containsKey(imsi)) {
+						msisdnMap.get(imsi).get("MSISDN");
+						//只有香港
+						if(cd==0 && sSX001.contains(mccmnc)){
+							pst2=conn.prepareStatement(sql2);
+							pst2.setString(1,msisdn );
+							pst2.setString(2,imsi );
+							pst2.setString(3,"SX001" );
+							pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+							pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+							logger.info("Execute SQL : "+sql2+",param:("+msisdn+","+imsi+","+"SX001"+","+callTime+","+callTime+")");
+							rs2=pst2.executeQuery();
+							
+							while(rs2.next()){
+								cd=rs2.getInt("CD");
+							}
+						}
 						
-						while(rs2.next()){
-							cd=rs2.getInt("CD");
+						//香港加中國大陸
+						if(cd==0 && sSX002.contains(mccmnc)){
+							pst2=conn.prepareStatement(sql2);
+							pst2.setString(1,msisdn );
+							pst2.setString(2,imsi );
+							pst2.setString(3,"SX002" );
+							pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+							pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
+							logger.info("Execute SQL : "+sql2+",param:("+msisdn+","+imsi+","+"SX002"+","+callTime+","+callTime+")");
+							rs2=pst2.executeQuery();
+							while(rs2.next()){
+								cd=rs2.getInt("CD");
+							}
+							
 						}
 					}
 					
-					//香港加中國大陸
-					if(cd==0 && sSX002.contains(mccmnc)){
-						pst2=conn.prepareStatement(sql2);
-						pst2.setString(1,msisdn );
-						pst2.setString(2,imsi );
-						pst2.setString(3,"SX002" );
-						pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-						pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-						logger.info("Execute SQL : "+sql2);
-						rs2=pst2.executeQuery();
-						while(rs2.next()){
-							cd=rs2.getInt("CD");
-						}
-					}
+					
 
-					rs2.close();
-					pst2.close();
+					if(rs2!=null)rs2.close();
+					if(pst2!=null)pst2.close();
 					
+					logger.info("cd="+cd);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
@@ -844,6 +859,7 @@ public class DVRSmain implements Job{
 						}
 					}
 		
+					logger.info("charge="+charge);
 					//格式化至小數點後四位
 					charge=tool.FormatDouble(charge, "0.0000");
 					
@@ -957,8 +973,8 @@ public class DVRSmain implements Job{
 					map5.put(imsi, map4);
 					currentMap.put(cMonth, map5);
 				}
-				pst.close();
-				rs.close();
+				if(pst!=null)pst.close();
+				if(rs!=null)rs.close();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1724,8 +1740,14 @@ public class DVRSmain implements Job{
 			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
 				for(String imsi:currentDayMap.get(day).keySet()){
 					//確認priceplanid 與 subsidiaryid
-					String priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
-					String subsidiaryid = msisdnMap.get(imsi).get("SUBSIDIARYID");
+					
+					String priceplanid = null;
+					String subsidiaryid = null;
+					if(msisdnMap.containsKey(imsi)){
+						priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
+						subsidiaryid = msisdnMap.get(imsi).get("SUBSIDIARYID");
+					}
+					
 					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
 						for(String mccmnc:currentDayMap.get(day).get(imsi).keySet()){
 							//確認Mccmnc
@@ -1766,15 +1788,19 @@ public class DVRSmain implements Job{
 				}
 				
 				if(sendmsg){
-					String priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
-					//是否為Data only 方案
-					if(checkedPriceplanid2.contains(priceplanid)){
-						//以設定通知號通知
-						phone=msisdnMap.get(imsi).get("NCODE");
-					}else{
-						//以門號通知
-						phone=msisdnMap.get(imsi).get("MSISDN");
+					String priceplanid = null;
+					if(msisdnMap.containsKey(imsi)){
+						priceplanid = msisdnMap.get(imsi).get("PRICEPLANID");
+						//是否為Data only 方案
+						if(checkedPriceplanid2.contains(priceplanid)){
+							//以設定通知號通知
+							phone=msisdnMap.get(imsi).get("NCODE");
+						}else{
+							//以門號通知
+							phone=msisdnMap.get(imsi).get("MSISDN");
+						}
 					}
+					
 					//確認號碼
 					if(phone==null ||"".equals(phone)){
 						//sendMail
@@ -2060,7 +2086,12 @@ public class DVRSmain implements Job{
 				+ "Error Msg : "+errorMsg;
 
 		try {
-			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
+			if(mailReceiver==null ||"".equals(mailReceiver)){
+				System.out.println("Can't send email without receiver!");
+			}else{
+				tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
+			}
+			
 		} catch (AddressException e) {
 			e.printStackTrace();
 			logger.error("Error at sendMail : "+e.getMessage());

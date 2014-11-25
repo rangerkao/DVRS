@@ -47,23 +47,22 @@ public class CDRDao extends BaseDao {
 		
 	}
 	
-	public List<CDR> queryCDR(String from,String to) throws SQLException, ParseException{
-		if(from==null || to==null){
-			return queryCDR();
-		}
+	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException{
+		
 		System.out.println("查詢CDR期間從"+from+"到"+to);
 		sql=
 				"SELECT A.USAGEID,A.IMSI,A.CALLTIME,A.MCCMNC,A.SGSNADDRESS,A.DATAVOLUME,A.FILEID "
 				+ "FROM HUR_DATA_USAGE A "
-				+ "WHERE to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')>=to_date(?,'yyyy-mm-dd')-1 "
-				+ "AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')<=to_date(?,'yyyy-mm-dd') "
+				+ "WHERE 1=1 "
+				+ (from!=null &&!"".equals(from)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')>=to_date('"+from+"','yyyy-mm-dd') ":"")  
+				+ (to!=null &&!"".equals(to)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')<=to_date('"+to+"','yyyy-mm-dd')+1 ":"")
+				+ (IMSI!=null && !"".equals(IMSI)?"AND A.IMSI='"+IMSI+"' ":"")
 				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setString(1, from);
-			pst.setString(2, to);
-			ResultSet rs=pst.executeQuery();
+			Statement st = conn.createStatement();
+			System.out.println(sql);
+			ResultSet rs=st.executeQuery(sql);
 			
 			while(rs.next()){
 				CDR c = new CDR();
@@ -77,7 +76,7 @@ public class CDRDao extends BaseDao {
 				list.add(c);
 			}
 			rs.close();
-			pst.close();
+			st.close();
 			closeConnect();
 		return list;
 	}

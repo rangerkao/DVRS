@@ -1,6 +1,7 @@
 package action;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import org.json.JSONObject;
 
 import control.SMSControl;
 import bean.GPRSThreshold;
+import bean.SMSContent;
 import bean.SMSLog;
 import bean.SMSSetting;
 
@@ -44,22 +46,21 @@ public class SMSAction extends BaseAction {
 	private SMSControl smsControl = new SMSControl();
 	Boolean sendSMS;
 	
+	int SMSid;
+	SMSContent sc ;
+	String COMTENT;
+	String CHARSET;
+	String DESCRIPTION;
+	
 	public String querySMSLog(){
 		try {
-			System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo);
-			if((dateFrom==null||"".equals(dateFrom))&&(dateTo==null||"".equals(dateTo)))
-				smsLoglist=smsControl.querySMSLog();
-			else
-				smsLoglist=smsControl.querySMSLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
-						tool.DateFormat(dateTo, "yyyy-MM-dd"));		
+			System.out.println("dateFrom:"+dateFrom+";dateTo:"+dateTo+";msisdn:"+msisdn);
+			
+			smsLoglist=smsControl.querySMSLog(dateFrom,dateTo,msisdn);		
 			
 			result=beanToJSONArray(smsLoglist);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "SMSLog", "query","", SUCCESS);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
-		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
@@ -183,6 +184,8 @@ public class SMSAction extends BaseAction {
 			}else if("del".equals(mod)){
 				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}
+			
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update",mod+":"+smsSettinglistString, SUCCESS);
 				
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -205,16 +208,75 @@ public class SMSAction extends BaseAction {
 			Map<String,String> map =new HashMap<String,String>();
 			map=smsControl.queryIMSI(msisdn);
 			result=beanToJSONObject(map);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "QueryIMSI","", SUCCESS);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
 		
 		
 		return SUCCESS;
 	}
+	
+	public String querySMSContent(){
+		try {
+			List<SMSContent> scl=smsControl.querySMSContent();
+			result=beanToJSONArray(scl);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "SMSContentSetting", "Query","", SUCCESS);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
+		
+		return SUCCESS;
+	}
+	
+	
+	public String updateSMSContent(){
+		
+		
+		if(sc==null){
+			System.out.println("No perameter");
+			return SUCCESS;
+		}
+		
+		System.out.println("id:"+sc.getID()+" ; content : "+sc.getCOMTENT()+"; charset:"+sc.getCHARSET()+"; description:"+sc.getDESCRIPTION());
+		
+		
+		int i=0;
 
+		
+			try {
+				if("add".equals(mod)){
+					i=smsControl.insertSMSContent(sc);
+				}else if("mod".equals(mod)){
+					i=smsControl.updateSMSContent(sc);
+				}else if("del".equals(mod)){
+					i=smsControl.deleteSMSContent(sc);
+				}
+				String p = beanToJSONObject(sc);
+				actionLogControl.loggerAction(super.getUser().getAccount(), "SMSContentSetting", "update",mod+" : "+p, SUCCESS);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("Exception:"+e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("Exception:"+e.getMessage());
+			}
+	
+		
+		return SUCCESS;
+	}
 
+//*******************************************************************//
 	public String getDateFrom() {
 		return dateFrom;
 	}
@@ -331,6 +393,58 @@ public class SMSAction extends BaseAction {
 	public void setSendSMS(Boolean sendSMS) {
 		this.sendSMS = sendSMS;
 	}
+
+
+	public int getSMSid() {
+		return SMSid;
+	}
+
+
+	public void setSMSid(int sMSid) {
+		SMSid = sMSid;
+	}
+
+
+	public SMSContent getSc() {
+		return sc;
+	}
+
+
+	public void setSc(SMSContent sc) {
+		this.sc = sc;
+	}
+
+
+	public String getCOMTENT() {
+		return COMTENT;
+	}
+
+
+	public void setCOMTENT(String cOMTENT) {
+		COMTENT = cOMTENT;
+	}
+
+
+	public String getCHARSET() {
+		return CHARSET;
+	}
+
+
+	public void setCHARSET(String cHARSET) {
+		CHARSET = cHARSET;
+	}
+
+
+	public String getDESCRIPTION() {
+		return DESCRIPTION;
+	}
+
+
+	public void setDESCRIPTION(String dESCRIPTION) {
+		DESCRIPTION = dESCRIPTION;
+	}
+	
+	
 	
 	
 	

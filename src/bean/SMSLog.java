@@ -7,16 +7,16 @@ public class SMSLog {
 	String id;
 	String sendNumber;
 	String msg;
-	Date sendDate;
+	String sendDate;
 	String result;
-	Date createDate;
+	String createDate;
 	
 	public SMSLog(){
 		
 	}
 	
-	public SMSLog(String id, String sendNumber, String msg, Date sendDate,
-			String result, Date createDate) {
+	public SMSLog(String id, String sendNumber, String msg, String sendDate,
+			String result, String createDate) {
 		super();
 		this.id = id;
 		this.sendNumber = sendNumber;
@@ -43,10 +43,10 @@ public class SMSLog {
 	public void setMsg(String msg) {
 		this.msg = msg;
 	}
-	public Date getSendDate() {
+	public String getSendDate() {
 		return sendDate;
 	}
-	public void setSendDate(Date sendDate) {
+	public void setSendDate(String sendDate) {
 		this.sendDate = sendDate;
 	}
 	public String getResult() {
@@ -55,10 +55,10 @@ public class SMSLog {
 	public void setResult(String result) {
 		this.result = result;
 	}
-	public Date getCreateDate() {
+	public String getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(Date createDate) {
+	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
 	}
 	

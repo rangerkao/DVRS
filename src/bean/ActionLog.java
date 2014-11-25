@@ -8,7 +8,7 @@ public class ActionLog {
 	String account;
 	String page;
 	String action;
-	Date createDate;
+	String createDate;
 	String parameter;
 	String result;
 	
@@ -17,7 +17,7 @@ public class ActionLog {
 	}
 	
 	public ActionLog(String id, String account, String page, String action,
-			Date createDate, String parameter, String result) {
+			String createDate, String parameter, String result) {
 		super();
 		this.id = id;
 		this.account = account;
@@ -60,11 +60,11 @@ public class ActionLog {
 		this.action = action;
 	}
 
-	public Date getCreateDate() {
+	public String getCreateDate() {
 		return createDate;
 	}
 
-	public void setCreateDate(Date createDate) {
+	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
 	}
 

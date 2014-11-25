@@ -33,10 +33,16 @@ public class LinkAction extends BaseAction{
 	private String Progrma="program";
 	private String CDR="cdr";
 	private String LimitSetting="limitSetting";
+	private String DVRS="DVRS";
 	
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
+	
+	public String DVRS()  
+	{  
+	   return DVRS;        
+	}  
 	
 	public String bill()  
 	{  

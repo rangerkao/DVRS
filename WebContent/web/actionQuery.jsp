@@ -39,13 +39,14 @@ function query(){
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  actionLoglist=list;
 	    	    $.each(list,function(i,actionLoglist){  
-               var _tr = $(	"<tr>"+
-               					"<td align='center' width='9%'>"+actionLoglist.id+"</td>"+
-               					"<td align='center' width='15%'>"+actionLoglist.account+"</td>"+
-               					"<td align='center' width='20%'>"+actionLoglist.page+"</td>"+
-               					"<td align='center' width='20%'>"+actionLoglist.action+"</td>"+
-               					"<td align='center' width='18%'>"+actionLoglist.parameter+"</td>"+
-               					"<td align='center' width='8%'>"+actionLoglist.createDate+"</td>"+
+               var _tr = $(	"<tr align='center'>"+
+               					"<td>"+actionLoglist.id+"</td>"+
+               					"<td>"+actionLoglist.account+"</td>"+
+               					"<td>"+actionLoglist.page+"</td>"+
+               					"<td>"+actionLoglist.action+"</td>"+
+               					"<td>"+actionLoglist.parameter+"</td>"+
+               					"<td>"+actionLoglist.result+"</td>"+
+               					"<td>"+actionLoglist.createDate+"</td>"+
                					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
                				"</tr>");  
                
@@ -77,39 +78,52 @@ function clearDate(){
 </script>
 </head>
 <body>
-<div align="center" >
-	<h3>使用者操作紀錄查詢</h3>
-	<div>
-		查詢期間從
-		<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
-		到
-		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
-		<input type="button" onclick="query()" value="查詢">
-		<input type="button" onclick="clearDate()" value="清除">
-		<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height" align="center">
+		<h3>使用者操作紀錄查詢</h3>
+		<div class="col-xs-4" align="right">查詢期間從</div>
+		<div class="col-xs-8" align="left">
+			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
+			到
+			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
 		</div>
-		
-	<div>
-		<table class="datatable" align="center" style="width: 80%">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="9%">ID</td>
-				<td class="columnLabel" align="center" width="15%">ACCOUNT</td>
-				<td class="columnLabel" align="center" width="20%">PAGE</td>
-				<td class="columnLabel" align="center" width="20%">ACTION</td>
-				<td class="columnLabel" align="center" width="20%">PARAMETER</td>
-				<td class="columnLabel" align="center" width="5%">CREATE_DATE</td>
-				<td width="1%">&nbsp;</td>
-			</tr>
-			<tr>
-				<td colspan="6" >
-					<div style="height: 500px;overflow: auto;">
-					<table id="table1" class="wapper">
-						<tr><td colspan="10">&nbsp;</td></tr>
-					</table>
-					</div>
-				</td>
-			</tr>
-		</table>
+		<div class="col-xs-12">
+			<div class="btn-group" >
+				<input type="button" class="btn btn-primary btn-sm" onclick="query()" value="查詢">
+				<input type="button" class="btn btn-primary btn-sm" onclick="clearDate()" value="清除">
+			</div>
+		</div>
+		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
+		<div class="col-xs-12">
+			<table  align="center" class="table-bordered" class="col-xs-10" width="80%">
+				<tr class="even_columm" >
+					<td class="columnLabel" align="center" width="10%">紀錄ID</td>
+					<td class="columnLabel" align="center" width="10%">登入帳號</td>
+					<td class="columnLabel" align="center" width="10%">操作頁面</td>
+					<td class="columnLabel" align="center" width="10%">執行動作</td>
+					<td class="columnLabel" align="center" width="15%">參數</td>
+					<td class="columnLabel" align="center" width="15%">執行結果</td>
+					<td class="columnLabel" align="center" width="30%">操作時間</td>
+				</tr>
+				<tr>
+					<td colspan="7" >
+						<div style="height: 500px;overflow: auto;">
+						<table id="table1" class="table-bordered table-hover col-xs-12" align="center" >
+							<tr>
+								<td width="10%"></td>
+								<td width="10%"></td>
+								<td width="10%"></td>
+								<td width="10%"></td>
+								<td width="15%"></td>
+								<td width="15%"></td>
+								<td width="30%"></td>
+							</tr>
+						</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 </body>

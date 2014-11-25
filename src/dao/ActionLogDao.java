@@ -26,9 +26,9 @@ public class ActionLogDao extends BaseDao{
 		
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
-				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE,A.RESULT "
+				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
 				+ "FROM HUR_ACTION_LOG A "
-				+ "WHERE A.CREATE_DATE >= ? -1 AND A.CREATE_DATE <= ? "
+				+ "WHERE A.CREATE_DATE >= ?  AND A.CREATE_DATE <= ? +1 "
 				+ "ORDER BY A.CREATE_DATE ";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
@@ -43,8 +43,12 @@ public class ActionLogDao extends BaseDao{
 				log.setPage(rs.getString("PAGE"));
 				log.setAction(rs.getString("ACTION"));
 				log.setParameter(rs.getString("PARAMETER"));
-				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setCreateDate(rs.getString("CREATEDATE"));
 				log.setResult(rs.getString("RESULT"));
+				
+				if(log.getParameter()==null)
+					log.setParameter("");
+				
 				list.add(log);
 			}
 			
@@ -60,7 +64,7 @@ public class ActionLogDao extends BaseDao{
 	public List<ActionLog> queryActionLog() throws SQLException{
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
-				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,A.CREATE_DATE,A.RESULT "
+				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
 				+ "FROM HUR_ACTION_LOG A "
 				+ "ORDER BY A.CREATE_DATE ";
 		
@@ -74,8 +78,13 @@ public class ActionLogDao extends BaseDao{
 				log.setPage(rs.getString("PAGE"));
 				log.setAction(rs.getString("ACTION"));
 				log.setParameter(rs.getString("PARAMETER"));
-				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setCreateDate(rs.getString("CREATEDATE"));
 				log.setResult(rs.getString("RESULT"));
+				
+				
+				if(log.getParameter()==null)
+					log.setParameter("");
+				
 				list.add(log);
 			}
 			

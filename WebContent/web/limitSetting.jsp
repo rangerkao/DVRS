@@ -6,6 +6,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 $(function(){
@@ -31,7 +33,7 @@ function query(){
                					"<td align='center' >"+limitSetting.imsi+"</td>"+
                					"<td align='center' >"+limitSetting.msisdn+"</td>"+
                					"<td align='center' style='display: none;'>"+limitSetting.threshold+"</td>"+
-               					"<td align='center' ><button onclick='chooseRow(this)'>選擇</button></td>"+
+               					"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>"+
                				"</tr>");  
                
              $("#table1").append(_tr); });
@@ -47,9 +49,9 @@ function query(){
           complete:function(){
         	  enableButton();
         	  $("#IMSI").val("");
-        		$("#LIMSI").html("");	
+        		$("#LIMSI").html("&nbsp;");	
         		$("#Msisdn").val("");
-        		$("#LMsisdn").html("");
+        		$("#LMsisdn").html("&nbsp;");
           }
 	    });
 }
@@ -58,9 +60,9 @@ function chooseRow(bu){
 	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
 	//alert(row.cells[0].innerText);
 	$("#IMSI").val(row.cells[0].innerText);
-	$("#LIMSI").html("");	
+	$("#LIMSI").html("&nbsp;");	
 	$("#Msisdn").val(row.cells[1].innerText);
-	$("#LMsisdn").html("");
+	$("#LMsisdn").html("&nbsp;");
 	//$("#Limit").val(row.cells[2].innerText);
 	//$("#LLimit").html("");	
 }
@@ -208,7 +210,7 @@ function validat(mod,txt){
 	return validate;
 }
 function clearText(txt){
-	$("#L"+txt).html("");
+	$("#L"+txt).html("&nbsp;");
 
 	if(!volidateNum($("#"+txt).val()))
 		$("#L"+txt).html("格式錯誤，必須為純數字");
@@ -221,50 +223,57 @@ function volidateNum(val){
 </script>
 </head>
 <body>
-<div align="center">
-	<h3>警示上限設定頁面</h3>
-	<div>
-		<form>
-		<table >
-			<tr>
-				<td class="label" align="right"><label>IMSI:</label></td>
-				<td><input type="text" id="IMSI" onkeyup="clearText('Msisdn')" disabled="disabled"/></td>
-				<td><label id="LIMSI" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>門號:</label></td>
-				<td><input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" /></td>
-				<td><label id="LMsisdn" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
-			</tr>
-			<tr style="display: none; ">
-				<td class="label" align="right" ><label >最大上限:</label></td>
-				<td><input type="text" id="Limit"  onkeyup="clearText('Limit')" /></td>
-				<td><label id="LLimit" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td class="label" align="right"></td>
-				<td>
-					<input type="button"  onclick="this.form.reset()" value="清除" id="BClear">
-					<input type="button" onclick="updateLimit('add','新增')" value="新增">
-					<input type="button" onclick="updateLimit('mod','修改')" value="修改" style="display: none;">
-					<input type="button" onclick="updateLimit('del','刪除')" value="刪除">
-					<input type="button" onclick="queryIMSI()" value="查詢IMSI"> 
-					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
-				</td>
-			</tr>
-		</table>
+
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height" align="center">
+		<form class="form-horizontal" role="form">
+		<h3>警示上限設定頁面</h3>
+			<div class="form-group">
+			    <label for="IMSI" class="col-xs-5  control-label">IMSI:</label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="IMSI" onkeyup="clearText('Msisdn')" disabled="disabled"/>
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			    	<label id="LIMSI" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    <label for="Msisdn" class="col-xs-5 control-label" >門號:<font color="red">*</font></label>
+			    <div class="col-xs-7" align="left">
+			    	<input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" />
+			    </div>
+			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+			    	<label id="LMsisdn" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    </div>
+			    <div style="display: none;" class="col-xs-12">
+			    	<label for="Limit" class="col-xs-5 control-label">門最大上限:</label>
+				    <div class="col-xs-7" align="left">
+				    	<input type="text" id="Limit"  onkeyup="clearText('Limit')" />
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LLimit" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+			    </div>
+			    <div class="col-xs-12">
+			    	<div class="btn-group" class="col-xs-12">
+				    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('add','新增')" value="新增">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('mod','修改')" value="修改" style="display: none;">
+						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('del','刪除')" value="刪除">
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI()" value="查詢IMSI"> 
+				    </div>
+			    </div>
+			    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
+			</div>
 		</form>
-	</div>
-	<div>
-		<table class="datatable" align="center" style="width: 50%" id="table1">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="30%">IMSI</td>
-				<td class="columnLabel" align="center" width="30%">MSISDN</td>
-				<td class="columnLabel" align="center" width="20%" style="display: none;">LIMITE</td>
-				<td></td>
-				<td width="10%">&nbsp;</td>
-			</tr>
-		</table>
+		<div>
+			<table class="table-bordered table-hover" align="center" style="width: 50%" id="table1">
+				<tr class="even_columm" >
+					<td class="columnLabel" align="center" width="30%">IMSI</td>
+					<td class="columnLabel" align="center" width="30%">MSISDN</td>
+					<td class="columnLabel" align="center" width="20%" style="display: none;">LIMITE</td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 </body>

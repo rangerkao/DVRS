@@ -5,8 +5,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<!-- 載入 bootStract -->
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <style type="text/css">
 
 .datatable, .datatable td, .datatable th {
@@ -34,17 +43,17 @@
 	margin: 0;
 	z-index: 0; */
 }
-
-body, html {
-	height: 100%;
-	margin:0px;
-	padding:0px;
+html, body{
+      height:100%;
 }
-
-.wapper {
+.max_height {
 	height: 100%;
-	min-height: 100%;
-	width: 100%;
+	min-height: 100%; 
+	margin:0px;
+	padding:0px; 
+}
+.alert_msg{
+	color: red;
 }
 /* 擴展 base End */
 div.scroll {
@@ -55,7 +64,7 @@ div.scroll {
 </head>
 <body>
 	<div class="wapper" align="center">
-		<h1>RFP 管理系統</h1>
+		<h1>Sim2Travel 維運管理系統</h1>
 	</div>
 </body>
 </html>

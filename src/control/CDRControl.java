@@ -20,7 +20,10 @@ public class CDRControl extends BaseControl {
 		return cdrDao.queryCDR();
 	}
 	
-	public List<CDR> queryCDR(String from,String to) throws SQLException, ParseException{
-		return cdrDao.queryCDR(from,to);
+	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException{
+		if(from==null && to==null && IMSI ==null){
+			return queryCDR();
+		}
+		return cdrDao.queryCDR(from,to,IMSI);
 	}
 }

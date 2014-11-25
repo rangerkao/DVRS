@@ -32,8 +32,8 @@ public class hello {
 		
 		String param="*環球卡用量通知*提醒您本月上網金額累計已逾{{bracket}}，實際使用金額以帳單為準。除中國、香港、澳門有每日收費上限外，其餘國家按實際用量收費，不提供吃到飽方案，請謹慎使用。若您有申請中華電信日租型上網，請立即切換至中華電信漫遊。如欲使用通話功能，請務必切回環球卡以便節費。若您不知如何操作，請電客服{{customerService}}。";
 		
-		updateDB(99,param);
-		updateDB(99,null);
+		//updateDB(99,param);
+		//updateDB(99,null);
 		
 		
 		Jatool tool =new Jatool();
@@ -48,6 +48,8 @@ public class hello {
 		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
 		
 		System.out.println(tool.FormatNumString(500000D, "NT#,##0.00"));
+		
+		System.out.println(tool.FormatDouble(0.0000D, "0.0000"));
 		
 	}
 

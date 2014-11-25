@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +17,7 @@ import program.DVRSmain;
 import bean.GPRSThreshold;
 import bean.SMSLog;
 import bean.SMSSetting;
+import bean.SMSContent;
 
 public class SMSDao extends BaseDao{
 	
@@ -25,32 +27,29 @@ public class SMSDao extends BaseDao{
 		logger = Logger.getLogger(SMSDao.class);
 	}
 
-	public List<SMSLog> querySMSLog(Date fromDate,Date toDate) throws SQLException{
-		
-		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate)))
-			return querySMSLog();
-		
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException{
 		
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
-				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,A.SEND_DATE,A.CREATE_DATE "
+				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A "
-				+ "WHERE A.SEND_DATE >= ? -1 AND A.SEND_DATE <= ? "
+				+ "WHERE  1=1 AND A.SEND_DATE >= ? -1 AND A.SEND_DATE <= ? "
+				+ (fromDate!=null &&!"".equals(fromDate)?"AND A.SEND_DATE >=to_date('"+fromDate+"','yyyy-mm-dd') ":"")  
+				+ (toDate!=null &&!"".equals(toDate)?"AND A.SEND_DATE<=to_date('"+toDate+"','yyyy-mm-dd')+1 ":"")
+				+ (msisdn!=null && !"".equals(msisdn)?"AND A.SEND_NUMBER='"+msisdn+"' ":"")
 				+ "ORDER BY A.CREATE_DATE ";
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
-			pst.setDate(2, tool.convertJaveUtilDate_To_JavaSqlDate(toDate));
+			Statement st = conn.createStatement();
 			logger.debug("Execute sql: "+sql);
-			ResultSet rs=pst.executeQuery();
+			ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSLog log = new SMSLog();
 				log.setId(rs.getString("ID"));
 				log.setMsg(rs.getString("MSG"));
 				log.setResult(rs.getString("RESULT"));
 				log.setSendNumber(rs.getString("SEND_NUMBER"));
-				log.setSendDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("SEND_DATE")));
-				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setSendDate(rs.getString("SEND_DATE"));
+				log.setCreateDate(rs.getString("CREATE_DATE"));
 				list.add(log);
 			}
 		return list;
@@ -60,7 +59,7 @@ public class SMSDao extends BaseDao{
 	public List<SMSLog> querySMSLog() throws SQLException{
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
-				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,A.SEND_DATE,A.CREATE_DATE "
+				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A "
 				+ "ORDER BY A.CREATE_DATE ";
 		
@@ -73,8 +72,8 @@ public class SMSDao extends BaseDao{
 				log.setMsg(rs.getString("MSG"));
 				log.setResult(rs.getString("RESULT"));
 				log.setSendNumber(rs.getString("SEND_NUMBER"));
-				log.setSendDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("SEND_DATE")));
-				log.setCreateDate(tool.convertJaveSqlDate_To_JavaUtilDate(rs.getDate("CREATE_DATE")));
+				log.setSendDate(rs.getString("SEND_DATE"));
+				log.setCreateDate(rs.getString("CREATE_DATE"));
 				list.add(log);
 			}
 			rs.close();
@@ -349,6 +348,101 @@ public class SMSDao extends BaseDao{
 				e.printStackTrace();
 			}
 		}
+	}
+	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
+		List<SMSContent> result = new ArrayList<SMSContent>();
+		logger.info("querySMSContent...");
+
+		sql=
+				"SELECT  A.ID,A.COMTENT,A.CHARSET,A.DESCRIPTION "
+				+ "FROM HUR_SMS_COMTENT A "
+				+ "ORDER BY A.ID ";
+		
+			ResultSet rs = conn.createStatement().executeQuery(sql);
+			while(rs.next()){
+				SMSContent sc = new SMSContent();
+				
+				sc.setID(rs.getInt("ID"));
+				sc.setCOMTENT((rs.getString("COMTENT")==null?"":new String(rs.getString("COMTENT").getBytes("ISO8859-1"))));
+				sc.setCHARSET((rs.getString("CHARSET")==null?"":rs.getString("CHARSET")));
+				sc.setDESCRIPTION((rs.getString("DESCRIPTION")==null?"":new String(rs.getString("DESCRIPTION").getBytes("ISO8859-1"))));
+				result.add(sc);
+			}
+			
+			rs.close();
+			closeConnect();
+
+		return result;
+	}
+	
+	public int insertSMSContent(SMSContent sc) throws Exception{
+		int result=0;
+		
+		logger.info("insertSMSContent...");
+
+		sql=
+				"INSERT INTO HUR_SMS_COMTENT (ID,COMTENT,CHARSET,DESCRIPTION) "
+				+ "VALUES(?,?,?,?)";
+		
+			PreparedStatement pst = conn.prepareStatement(sql);
+			
+			pst.setInt(1, sc.getID());
+			pst.setString(2, new String(sc.getCOMTENT().getBytes(),"ISO8859-1"));
+			pst.setString(3, sc.getCHARSET());
+			pst.setString(4, sc.getDESCRIPTION());
+			
+			result=pst.executeUpdate();
+			
+			pst.close();
+			
+			connectDB();
+		
+		return result;
+	}
+	public int updateSMSContent(SMSContent sc) throws Exception{
+		int result=0;
+		
+		logger.info("insertSMSContent...");
+
+		sql=
+				"UPDATE  HUR_SMS_COMTENT A "
+				+ "SET A.COMTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
+				+ "WHERE A.ID=?";
+		
+			PreparedStatement pst = conn.prepareStatement(sql);
+			
+			pst.setString(1, new String(sc.getCOMTENT().getBytes(),"ISO8859-1"));
+			pst.setString(2, sc.getCHARSET());
+			pst.setString(3, sc.getDESCRIPTION());
+			pst.setInt(4, sc.getID());
+			
+			result=pst.executeUpdate();
+			
+			pst.close();
+			
+			connectDB();
+			
+		return result;
+	}
+	public int deleteSMSContent(SMSContent sc) throws Exception{
+		int result=0;
+		
+		logger.info("insertSMSContent...");
+
+		sql=
+				"DELETE HUR_SMS_COMTENT A "
+				+ "WHERE A.ID=?";
+		
+			PreparedStatement pst = conn.prepareStatement(sql);
+			
+			pst.setInt(1, sc.getID());
+			
+			result=pst.executeUpdate();
+			
+			pst.close();
+			
+			connectDB();
+		return result;
 	}
 	
 }

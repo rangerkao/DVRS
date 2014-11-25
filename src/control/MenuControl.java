@@ -22,6 +22,9 @@ public class MenuControl extends BaseControl {
 		l1.add(new Link("adminList","adminLink","使用者管理"));
 		l1.add(new Link("adminList","programLink","程式管理"));
 		l1.add(new Link("elseList","billLink","帳單匯出"));
+		l1.add(new Link("adminList","cdrLink","CDR查詢"));
+		l1.add(new Link("adminList","actionQueryLink","使用者操作紀錄查詢"));
+		l1.add(new Link("adminList","dataRateLink","資費查詢"));
 		
 		//層級二
 		List<Link> l2=new ArrayList<Link>();
@@ -30,10 +33,10 @@ public class MenuControl extends BaseControl {
 
 		//層級三
 		List<Link> l3=new ArrayList<Link>();
-		l3.add(new Link("searchList","actionQueryLink","使用者操作紀錄查詢"));
+		
 		l3.add(new Link("searchList","smsQueryLink","簡訊發送查詢"));
 		l3.add(new Link("searchList","dataRateLink","資費管理"));
-		l3.add(new Link("searchList","cdrLink","CDR查詢"));
+		
 		
 		l3.add(new Link("elseList","logoutLink","登出"));
 		
@@ -55,10 +58,8 @@ public class MenuControl extends BaseControl {
 			result.addAll(l1);
 		case 2:
 			result.addAll(l2);
-		case 3:
-			result.addAll(l3);
 		default:
-
+			result.addAll(l3);
 		}
 		return result;
 	}

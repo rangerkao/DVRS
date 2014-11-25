@@ -21,21 +21,19 @@ public class CDRAction extends BaseAction {
 	private static final long serialVersionUID = 1L;
 	String from;
 	String to;
+	String IMSI;
 	List<CDR> CDRlist =new ArrayList<CDR>();
 	
 	private CDRControl cdrControl =new CDRControl();
 	
 	public String queryCDR(){
 		try {
-			System.out.println("from:"+from+" to:"+to);
-			if(from==null||"".equals(from)||to==null||"".endsWith(to)){
-					CDRlist=cdrControl.queryCDR();
-			}else{
-					CDRlist=cdrControl.queryCDR(from,to);
-			}
+			System.out.println("from:"+from+" to:"+to+" IMSI:"+IMSI);
+			CDRlist=cdrControl.queryCDR(from,to,IMSI);
+			
 			
 			result=beanToJSONArray(CDRlist);
-			actionLogControl.loggerAction(super.getUser().getAccount(), "CDR", "query","", SUCCESS);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "CDR", "query","from:"+from+" to:"+to+" IMSI:"+IMSI, SUCCESS);
 		} catch (SQLException  e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,7 +45,7 @@ public class CDRAction extends BaseAction {
 		}
 		return SUCCESS;
 	}
-
+//***********************************************************************//
 	public String getFrom() {
 		return from;
 	}
@@ -62,6 +60,14 @@ public class CDRAction extends BaseAction {
 
 	public void setTo(String to) {
 		this.to = to;
+	}
+
+	public String getIMSI() {
+		return IMSI;
+	}
+
+	public void setIMSI(String iMSI) {
+		IMSI = iMSI;
 	}
 	
 	

@@ -3,6 +3,13 @@
 "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
 
 <tiles-definitions>
+
+	<definition name="web_base2" template="/tiles/base2.jsp">
+		<put-attribute name="top" value="/tiles/top.jsp" />
+		<put-attribute name="main" value="/web/systemMenu.jsp" />
+	</definition>
+	
+
 	<definition name="web_base" template="/tiles/base.jsp">
 		<put-attribute name="top" value="/tiles/top.jsp" />
 		<put-attribute name="menu" value="/tiles/menu.jsp" />

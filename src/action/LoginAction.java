@@ -39,10 +39,10 @@ public class LoginAction extends BaseAction{
 	public String execute() throws Exception {
 
 		tag=logincControl.loginC(session,acc,psw);
-		if(!"success".equals(tag)) result= "input";
-		else{ result= "success";
-			actionLogControl.loggerAction(super.getUser().getAccount(), "Login", "Login","", result);
-		}
+		if(!"success".equals(tag)) result= "fail";
+		else result= "success";
+		
+		actionLogControl.loggerAction(acc, page, "Login","", result);
 		return result;
 		
 	}

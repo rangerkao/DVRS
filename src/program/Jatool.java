@@ -49,12 +49,14 @@ import javax.mail.internet.MimeMultipart;
 
 
 
+
 import org.apache.log4j.Logger;
 
 //190
 /*import com.infotech.smpp.SMPPServicesStub;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
+
 
 
 
@@ -178,8 +180,11 @@ public class Jatool implements IJatool{
 				msg.setContent(mp); 
 			}
 
-			Transport.send(msg);
-			
+			if(receiver==null ||"".equals(receiver)){
+				System.out.println("Can't send email without receiver!");
+			}else{
+				Transport.send(msg);
+			}
 			logControl(logger,"info","sending mail from "+sender+" to "+receiver+"\n<br>"+
 										"Subject : "+msg.getSubject()+"\n<br>"+
 										"Content : "+msg.getContent()+"\n<br>"+

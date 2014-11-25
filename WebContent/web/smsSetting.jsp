@@ -6,11 +6,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
+<script src="http://bestdaylong.com/bootstrap/js/bootstrap.min.js"></script>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var smsSettinglist;
+
 $(function(){
 	query();
+	queryContent();
 })
 function query(){
 	$("#Qmsg").html("正在查尋，請稍待...");
@@ -29,10 +32,10 @@ function query(){
 	    	    $.each(list,function(i,smsSetting){  
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+smsSetting.id+"</td>"+
-               					"<td align='center' >"+smsSetting.bracket+"</td>"+
+               					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
                					"<td align='center' >"+smsSetting.msg+"</td>"+
                					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
-               					"<td align='center' ><button onclick='chooseRow(this)'>選擇</button></td>"+
+               					"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow(this)'>選擇</button></td>"+
                				"</tr>");  
                
              $("#table1").append(_tr); });
@@ -75,13 +78,13 @@ function validat(mod,txt){
 		validation=false;
 	}
 	
-	if($('#Bracket').val()>1){
-		$("#LBracket").html("此欄位不可大於1!");
+	if($('#Bracket').val()>100){
+		$("#LBracket").html("此欄位不可大於100!");
 		validation=false;
 	}
 	
 	if(!volidateNum($('#Bracket').val())){
-		$("#LBracket").html("此欄位必須為小數數字!");
+		$("#LBracket").html("此欄位必須為整數數字!");
 		validation=false;
 	}
 	
@@ -128,7 +131,7 @@ function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 function volidateNum(val){
-	var   reg=/^\d+(\.\d+)?$/g;
+	var   reg=/^\d+$/g;
 	return reg.test(val);
 }
 
@@ -139,7 +142,7 @@ function updateSetting(mod,txt){
 	      data: {
 	    	  "smsSettinglistString":JSON.stringify(smsSettinglist),
 	    	  "smsSetting.id":$("#Id").val(),
-	    	  "smsSetting.bracket":$("#Bracket").val(),
+	    	  "smsSetting.bracket":($("#Bracket").val()/100),
 	    	  "smsSetting.msg":$("#Msg").val(),
 	    	  "smsSetting.suspend":$("#Suspend").is(":checked"),
 	    	  "mod":mod
@@ -157,10 +160,10 @@ function updateSetting(mod,txt){
 	    	    $.each(list,function(i,smsSetting){  
              var _tr = $(	"<tr>"+
              					"<td align='center' >"+smsSetting.id+"</td>"+
-             					"<td align='center' >"+smsSetting.bracket+"</td>"+
+             					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
              					"<td align='center' >"+smsSetting.msg+"</td>"+
              					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
-             					"<td align='center' ><button onclick='chooseRow(this)'>選擇</button></td>"+
+             					"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow(this)'>選擇</button></td>"+
              				"</tr>");  
              
            $("#table1").append(_tr); });
@@ -179,67 +182,300 @@ function updateSetting(mod,txt){
 	    });
 }
 function clearText(txt){
-	$("#L"+txt).html("");
+	$("#L"+txt).html("&nbsp;");
+}
+//******簡訊內容設定
+var smsContentlist;
+function queryContent(){
+	$("#Qmsg2").html("正在查尋，請稍待...");
+	$.ajax({
+	      url: '<s:url action="querySMSContent"/>',
+	      data: {},//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  $("#Qmsg2").html("Success");
+	    	  //jQuery.parseJSON,JSON.parse(json)
+	    	  //alert(json);
+	    	  var list=$.parseJSON(json);
+	    	  $("#table2 tr:gt(0)").remove();//移除>0之後讀tr
+	    	  smsContentlist=list;
+	    	    $.each(list,function(i,smsContent){  
+               var _tr = $(	"<tr>"+
+               					"<td align='center' >"+smsContent.ID+"</td>"+
+               					"<td align='center' >"+smsContent.COMTENT+"</td>"+
+               					"<td align='center' >"+smsContent.CHARSET+"</td>"+
+               					"<td align='center' >"+smsContent.DESCRIPTION+"</td>"+
+               					"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow2(this)'>選擇</button></td>"+
+               				"</tr>");  
+               
+            	$("#table2").append(_tr); });
+	    	    $("#table2 tr:odd").addClass("odd_columm");//奇數欄位樣式
+	    	    $("#table2 tr:even").addClass("even_columm");
+	    	  },
+	      error: function() { $("#Qmsg2").html('something bad happened');  }
+	    });
+}
+function updateContent(mod,txt){
+	$("#Qmsg2").html("正在更新，請稍待...");
+	if(!validat2(mod,txt))
+		return;
+	
+	$.ajax({
+	      url: '<s:url action="updateSMSContent"/>',
+	      data: {
+	    	  "sc.ID":$("#sId").val(),
+	    	  "sc.COMTENT":$("#sContent").val(),
+	    	  "sc.CHARSET":$("#CharSet").val(),
+	    	  "sc.DESCRIPTION":$("#Discription").val(),
+	    	  "mod":mod
+	      },//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  $("#Qmsg2").html("Success");
+	    	  queryContent();
+	      },
+	      error: function() { $("#Qmsg").html('something bad happened'); 
+	      },
+  	  beforeSend:function(){
+  		  $("#Qmsg2").html("正在查詢，請稍待...");
+  			disableButton();
+        },
+        complete:function(){
+      	  //enableButton();
+        }
+	    });
+	
+	
+}
+function chooseRow2(bu){
+	
+	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
+	//alert(row.cells[0].innerText);
+	$("#sId").val(row.cells[0].innerText);
+	$("#sContent").val(row.cells[1].innerText);
+	$("#CharSet").val(row.cells[2].innerText);
+	$("#Discription").val(row.cells[3].innerText);
+	
+	$("#LsId").html("&nbsp;");
+	$("#LsContent").html("&nbsp;");
+	$("#LCharSet").html("&nbsp;");
+	$("#LDiscription").html("&nbsp;");
 }
 function replacetxt(txt){
-	//$("#Msg").val($("#Msg").val()+txt);
+	$("#sContent").val($("#sContent").val()+txt);
+}
+var exist2;
+var validation2;
+function validat2(mod,txt){
+	exist2=false;
+	validation2=true;
+	
+	if($("#sId").val()==null||$("#sId").val()==""){
+		$("#LsId").html("此欄位不可為空!");
+		validation2=false;
+	}
+	if($("#sContent").val()==null||$("#sContent").val()==""){
+		$("#LsContent").html("此欄位不可為空!");
+		validation2=false;
+	}
+	
+	if(!volidateNum($('#sId').val())){
+		$("#LsId").html("此欄位必須為整數數字!");
+		validation2=false;
+	}
+	
+	$.each(smsContentlist,function(i,smsContent){
+		if(smsContent.ID==$("#sId").val()){
+			exist2=true;
+		}
+	});
+	
+	if(mod=='add'){
+		
+		if(exist2){
+			$("#LsId").html("已經有簡訊內容！");
+			validation2=false;
+		}
+		if(!comfirm('確認新增內容?'))
+			validation2=false;
+	}else{
+
+		if(!exist2){
+			$("#LsId").html("無此ID，請新建立一筆內容!");
+			validation2=false;
+		}else{
+			if(mod=='mod'){
+				if(!comfirm('確認修改內容?'))
+					validation2=false;
+			}else if(mod=='del'){
+				if(!comfirm('確認刪除內容?'))
+					validation2=false;
+			}
+		}
+	}
+	return validation2;
 }
 
 </script>
 </head>
 <body>
-<div align="center" >
-	<h3>簡訊設定頁面</h3>
-	<div>
-		<form>
-		<table >
-			<tr>
-				<td class="label" align="right"><label>ID:</label></td>
-				<td><input type="text" id="Id" onkeyup="clearText('Id')" disabled="disabled"/></td>
-				<td><label id="LId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>		
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>BRACKET:</label></td>
-				<td><input type="text" id="Bracket"  onkeyup="clearText('Bracket')" /></td>
-				<td><label id="LBracket" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td class="label" align="right" valign="top"><label>MSGID:</label></td>
-				<td><input type="text" id="Msg"  onkeyup="clearText('Msg')" /></td>
-				<td><label id="LMsg" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td class="label" align="right"><label>SUSPEND:</label></td>
-				<td><input type="checkbox" id="Suspend" /></td>
-				<td><label id="LSuspend" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label></td>
-			</tr>
-			<tr>
-				<td>
-					<input type="button"  onclick="this.form.reset()" value="清除" id="BClear">
-					<input type="button" onclick="updateSetting('add','新增')" value="新增">
-					<input type="button" onclick="updateSetting('mod','修改')" value="修改">
-					<input type="button" onclick="updateSetting('del','刪除')" value="刪除">
-					<!-- <input type="button" onclick="queryAdmin()" value="查詢"> -->
-					<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
-				</td>
-			</tr>
-		</table>
-		</form>
-	</div>
-	<div>
-		<table class="datatable" align="center" style="width: 80%" id="table1">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="20%">ID</td>
-				<td class="columnLabel" align="center" width="20%">BRACKET</td>
-				<td class="columnLabel" align="center" width="25%">MSG</td>
-				<td class="columnLabel" align="center" width="20%">SUSPEND</td>
-				<td width="15%"></td>
-			</tr>
-		</table>
-	</div>
-	<div>
-		<label>參數帶入:</label>
-		<input type="button" onclick="replacetxt('{{bracket}}')" value="警示額度">
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height " align="center">
+		<h3>簡訊設定頁面</h3>
+		<ul class="nav nav-tabs" id="tabs" >
+			<li class="active" ><a href="#tab1" data-toggle="tab">簡訊額度設定</a></li>
+			<li ><a href="#tab2" data-toggle="tab">簡訊內容設定</a></li>
+		</ul>
+		<div class="tab-content">
+		
+			<div id="tab1" class="tab-pane active">
+				<form class="form-horizontal" >
+					<div class="form-group" >
+					    <label for="Id" class="col-xs-5  control-label">設定編號:</label>
+					    <div class="col-xs-7" align="left">
+					    	<input type="text" id="Id" onkeyup="clearText('Id')" disabled="disabled"/>
+					    </div>
+					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <label for="Bracket" class="col-xs-5 control-label" >額度比例(%):</label>
+					    <div class="col-xs-7" align="left">
+					    	<input type="text" id="Bracket"  onkeyup="clearText('Bracket')" />
+					    </div>
+					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LBracket" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+				    	<label for="Msg" class="col-xs-5 control-label">簡訊ID：</label>
+					    <div class="col-xs-7" align="left">
+					    	<input type="text" id="Msg"  onkeyup="clearText('Msg')" />
+					    </div>
+					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+					   		<label id="LMsg" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <label for="Suspend" class="col-xs-5 control-label">是否中斷數據連線：</label>
+					    <div class="col-xs-7" align="left">
+					    	<input type="checkbox" id="Suspend" />
+					    </div>
+					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+					   		<label id="LSuspend" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    
+					    <div class="col-xs-12">
+					    	<div class="btn-group" class="col-xs-12">
+								<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('add','新增')" value="新增">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('mod','修改')" value="修改">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('del','刪除')" value="刪除">
+								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
+						    </div>
+					    </div>
+					    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
+					</div>
+				</form>
+				<div>
+					<table class="table-bordered table-hover" align="center" style="width: 80%" id="table1">
+						<tr class="even_columm" >
+							<td class="columnLabel" align="center" width="20%">設定編號</td>
+							<td class="columnLabel" align="center" width="20%">額度比例(%)</td>
+							<td class="columnLabel" align="center" width="25%">簡訊ID</td>
+							<td class="columnLabel" align="center" width="20%">是否中斷數據連線</td>
+							<td width="15%"></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div id="tab2" class="tab-pane">
+				<!-- 簡訊內容設定 -->
+				<form class="form-horizontal" >
+					<div class="form-group">
+				    	<label for="sId" class="col-xs-2  control-label">簡訊ID:</label>
+					    <div class="col-xs-4" align="left">
+					    	<input type="text" id="sId" onkeyup="clearText('sId')" />
+					    </div>
+					    
+					     <label for="CharSet" class="col-xs-2  control-label">編碼:</label>
+					    <div class="col-xs-4" align="left">
+					    	<input type="text" id="CharSet" onkeyup="clearText('CharSet')" />
+					    </div>
+					    
+					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LsId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LCharSet" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <label for="sContent" class="col-xs-2 control-label" >簡訊內容：</label>
+					    <div class="col-xs-4" align="left">
+					    	<textarea rows="5" cols="50" id="sContent" onkeyup="clearText('sContent')"></textarea>
+					    	<div>
+								<label>參數帶入:</label>
+								<input type="button" onclick="replacetxt('{{bracket}}')" value="額度(NT****)">
+								<input type="button" onclick="replacetxt('{{customerService}}')" value="客服電話(+******)">
+							</div>
+					    </div>
+					    
+					    <label for="Discription" class="col-xs-2 control-label" >說明：</label>
+					    <div class="col-xs-4" align="left">
+					    	<textarea rows="5" cols="50" id="Discription" onkeyup="clearText('Discription')"></textarea>
+					    </div>
+					    
+
+					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LsContent" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LDiscription" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+		
+					    <div class="col-xs-12">
+					    	<div class="btn-group" class="col-xs-12">
+								<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('add','新增')" value="新增">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('mod','修改')" value="修改">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('del','刪除')" value="刪除">
+								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
+						    </div>
+					    </div>
+					    <div class="col-xs-12"><label id="Qmsg2" style="height: 20px;width: 100px">&nbsp;</label></div>
+					</div>
+				</form>
+				<div>
+					<table class="table-bordered table-hover" align="center" style="width: 80%">
+						<tr class="even_columm" >
+							<td class="columnLabel" align="center" width="10%">簡訊ID</td>
+							<td class="columnLabel" align="center" width="40%">簡訊內容</td>
+							<td class="columnLabel" align="center" width="10%">編碼</td>
+							<td class="columnLabel" align="center" width="35%">說明</td>
+							<td width="5%"></td>
+						</tr>
+						<tr>
+							<td colspan="10">
+								<div style="height: 300px;overflow: auto;">
+									<table id="table2" class="table-bordered table-hover">
+										<tr>
+											<td class="columnLabel" align="center" width="10%"></td>
+											<td class="columnLabel" align="center" width="40%"></td>
+											<td class="columnLabel" align="center" width="10%"></td>
+											<td class="columnLabel" align="center" width="35%"></td>
+											<td width="5%"></td>
+										</tr>
+									</table>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 </body>

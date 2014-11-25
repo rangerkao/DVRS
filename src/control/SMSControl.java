@@ -1,6 +1,8 @@
 package control;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import bean.GPRSThreshold;
+import bean.SMSContent;
 import bean.SMSLog;
 import bean.SMSSetting;
 import dao.SMSDao;
@@ -30,8 +33,11 @@ public class SMSControl extends BaseControl{
 	public List<SMSLog> querySMSLog() throws SQLException{
 		return smsDao.querySMSLog();
 	}
-	public List<SMSLog> querySMSLog(Date fromDate,Date toDate) throws SQLException{
-		return smsDao.querySMSLog();
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException{
+		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate))&&(msisdn==null||"".equals(msisdn)) )
+			return querySMSLog();
+		
+		return querySMSLog(fromDate,toDate,msisdn);
 	}
 	public List<SMSSetting> querySMSSetting() throws SQLException{
 		return smsDao.querySMSSetting();
@@ -165,5 +171,19 @@ public class SMSControl extends BaseControl{
 			}
 		}
 		return cphone;
+	}
+	
+	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
+		return smsDao.querySMSContent();
+	}
+	
+	public int insertSMSContent(SMSContent sc) throws Exception{
+		return smsDao.insertSMSContent(sc);
+	}
+	public int updateSMSContent(SMSContent sc) throws Exception{
+		return smsDao.updateSMSContent(sc);
+	}
+	public int deleteSMSContent(SMSContent sc) throws Exception{
+		return smsDao.deleteSMSContent(sc);
 	}
 }

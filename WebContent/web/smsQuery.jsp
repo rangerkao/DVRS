@@ -26,7 +26,8 @@ function query(){
 	$.ajax({
 	      url: '<s:url action="querySMSLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
-	    	  		"dateTo":$("#dateTo").val()
+	    	  		"dateTo":$("#dateTo").val(),
+	    	  		"msisdn":$("#MSISDN").val()
 	    	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
@@ -38,13 +39,13 @@ function query(){
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  	smsLoglist=list;
 	    	    $.each(list,function(i,smsLog){  
-               var _tr = $(	"<tr>"+
-               					"<td align='center' width='9%'>"+smsLog.id+"</td>"+
-               					"<td align='center' width='15%'>"+smsLog.sendNumber+"</td>"+
-               					"<td align='center' width='20%'>"+smsLog.msg+"</td>"+
-               					"<td align='center' width='20%'>"+smsLog.sendDate+"</td>"+
-               					"<td align='center' width='18%'>"+smsLog.result+"</td>"+
-               					"<td align='center' width='8%'>"+smsLog.createDate+"</td>"+
+               var _tr = $(	"<tr align='center'>"+
+               					"<td>"+smsLog.id+"</td>"+
+               					"<td>"+smsLog.sendNumber+"</td>"+
+               					"<td>"+smsLog.msg+"</td>"+
+               					"<td>"+smsLog.sendDate+"</td>"+
+               					"<td>"+smsLog.result+"</td>"+
+               					"<td>"+smsLog.createDate+"</td>"+
                					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
                				"</tr>");  
                
@@ -76,38 +77,52 @@ function clearDate(){
 </script>
 </head>
 <body>
-<div align="center" >
-	<h3>簡訊發送查詢頁面</h3>
-	<div>
-		查詢期間從
-		<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
-		到
-		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
-		<input type="button" onclick="query()" value="查詢">
-		<input type="button" onclick="clearDate()" value="清除">
-		<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
-	</div>
-	<div>
-		<table class="datatable" align="center" style="width: 80%">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="9%">ID</td>
-				<td class="columnLabel" align="center" width="15%">SEND_NUMBER</td>
-				<td class="columnLabel" align="center" width="20%">MSG</td>
-				<td class="columnLabel" align="center" width="20%">SEND_DATE</td>
-				<td class="columnLabel" align="center" width="20%">RESULT</td>
-				<td class="columnLabel" align="center" width="5%">CREATE_DATE</td>
-				<td width="1%">&nbsp;</td>
-			</tr>
-			<tr>
-				<td colspan="6" >
-					<div style="height: 500px;overflow: auto;">
-					<table id="table1" class="wapper">
-						<tr><td colspan="10">&nbsp;</td></tr>
-					</table>
-					</div>
-				</td>
-			</tr>
-		</table>
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height" align="center">
+		<h3>簡訊發送查詢頁面</h3>
+		<div class="col-xs-4" align="right">查詢期間從</div>
+		<div class="col-xs-8" align="left">
+			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
+			到
+			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
+		</div>
+		<div class="col-xs-4" align="right"><label>門號:</label> </div>
+		<div class="col-xs-8" align="left"><input type="text" id="MSISDN"></div>
+		<div class="col-xs-12">
+			<div class="btn-group" >
+				<input type="button" class="btn btn-primary btn-sm" onclick="query()" value="查詢">
+				<input type="button" class="btn btn-primary btn-sm" onclick="clearDate()" value="清除">
+			</div>
+		</div>
+		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
+		<div class="col-xs-12">
+			<table  align="center" class="table-bordered" class="col-xs-10" width="100%">
+				<tr class="even_columm" >
+					<td class="columnLabel" align="center" width="10%">記錄ID</td>
+					<td class="columnLabel" align="center" width="15%">接收門號</td>
+					<td class="columnLabel" align="center" width="20%">簡訊ID</td>
+					<td class="columnLabel" align="center" width="20%">發送時間</td>
+					<td class="columnLabel" align="center" width="20%">發送結果</td>
+					<td class="columnLabel" align="center" width="15%">記錄時間</td>
+				</tr>
+				<tr>
+					<td colspan="10" >
+						<div style="height: 500px;overflow: auto;">
+						<table id="table1" class="table-bordered table-hover col-xs-12" align="center" >
+							<tr>
+								<td width="10%"></td>
+								<td width="15%"></td>
+								<td width="20%"></td>
+								<td width="20%"></td>
+								<td width="20%"></td>
+								<td width="15%"></td>
+							</tr>
+						</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 </body>

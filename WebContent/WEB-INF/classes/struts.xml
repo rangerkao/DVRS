@@ -28,6 +28,8 @@
 
 		<action name="*Link" method="{1}" class="action.LinkAction">
 			<interceptor-ref name="authentication"></interceptor-ref>	
+			<result name="DVRS" type="tiles">welcome</result>
+			
 			<result name="bill" type="tiles">bill</result>
 			<result name="admin" type="tiles">admin</result>
 			<result name="dataRate" type="tiles">dataRate</result>
@@ -41,8 +43,8 @@
 
 		<!-- Struts Action Definition -->
 		<action name="login" method="execute" class="action.LoginAction">
-			<result name="success" type="tiles">welcome</result>
-			<result name="input">/index.jsp</result>
+			<result name="success" type="tiles">web_base2</result>
+			<result name="fail">/index.jsp</result>
 		</action>
 
 		<action name="billReport" method="bill" class="action.BillAction">
@@ -107,6 +109,18 @@
 	        	<param name="root">result</param>
 	        </result>
         </action>
+        <action name="querySMSContent" method="querySMSContent" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="updateSMSContent" method="updateSMSContent" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
     <!-- GPRSLIMIT -->
         <action name="queryAlertLimit" method="queryAlertLimit" class="action.SMSAction">
 	        <!-- 将返回类型设置为json -->
@@ -126,7 +140,7 @@
 	        	<param name="root">result</param>
 	        </result>
         </action>
-    <!-- SMSQuery -->
+    <!-- ActionLogQuery -->
         <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">

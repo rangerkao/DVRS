@@ -25,12 +25,12 @@ $(document).ready(function(){
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  	adminList=list;
 	    	    $.each(list,function(i,dataRate){  
-                 var _tr = $(	"<tr>"+
-                 					"<td align='center' width='20%'>"+dataRate.pricePlanId+"</td>"+
-                 					"<td align='center' width='20%'>"+dataRate.mccmnc+"</td>"+
-                 					"<td align='center' width='20%'>"+dataRate.rate+"</td>"+
-                 					"<td align='center' width='20%'>"+dataRate.chargeunit+"</td>"+
-                 					"<td align='center' width='20%'>"+dataRate.currency+"</td>"+
+                 var _tr = $(	"<tr align='center'>"+
+                 					"<td>"+dataRate.pricePlanId+"</td>"+
+                 					"<td>"+dataRate.mccmnc+"</td>"+
+                 					"<td>"+dataRate.rate+"</td>"+
+                 					"<td>"+dataRate.chargeunit+"</td>"+
+                 					"<td>"+dataRate.currency+"</td>"+
                  					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
                  				"</tr>");  
                  
@@ -48,29 +48,38 @@ $(document).ready(function(){
 <title>Insert title here</title>
 </head>
 <body>
-<div align="center" >
-	<h3>費率查詢頁面</h3>
-	<br><label id="Qmsg" style="height: 50px;width: 100px">&nbsp;</label>
-	<div>
-		<table class="datatable" align="center">
-			<tr class="even_columm" >
-				<td class="columnLabel" align="center" width="20%">PRICEPLANID</td>
-				<td class="columnLabel" align="center" width="20%">MCCMNC</td>
-				<td class="columnLabel" align="center" width="20%">RATE</td>
-				<td class="columnLabel" align="center" width="20%">CHARGEUNIT</td>
-				<td class="columnLabel" align="center" width="20%">CURRENCY</td>
-				<td width="15px">&nbsp;</td>
-			</tr>
-			<tr>
-				<td colspan="6" >
-					<div style="height: 500px;overflow: auto;">
-					<table id="table1" class="wapper">
-						<tr><td colspan="6">&nbsp;</td></tr>
-					</table>
-					</div>
-				</td>
-			</tr>
-		</table>
+<div class="container-fluid max_height" style="vertical-align: middle;">
+	<div class="row max_height" align="center">
+		<h3>費率查詢頁面</h3>
+		<div class="col-xs-12">
+			<label id="Qmsg" style="height: 30px;">&nbsp;</label>
+		</div>
+		<div class="col-xs-12">
+			<table  align="center" class="table-bordered" class="col-xs-10">
+				<tr class="even_columm" >
+					<td class="columnLabel" align="center" width="20%">資費ID</td>
+					<td class="columnLabel" align="center" width="20%">MCCMNC</td>
+					<td class="columnLabel" align="center" width="20%">費率</td>
+					<td class="columnLabel" align="center" width="20%">計價單位(KB)</td>
+					<td class="columnLabel" align="center" width="20%">幣別</td>
+				</tr>
+				<tr>
+					<td colspan="10" >
+						<div style="height: 500px;overflow: auto;">
+						<table id="table1" class="table-bordered table-hover col-xs-12">
+							<tr>
+								<td width="20%"></td>
+								<td width="20%"></td>
+								<td width="20%"></td>
+								<td width="20%"></td>
+								<td width="20%"></td>
+							</tr>
+						</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
 </body>
