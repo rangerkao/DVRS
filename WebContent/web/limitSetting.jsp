@@ -14,8 +14,13 @@ $(function(){
 	query();
 	$("#Limit").val("0");
 })
+
 var limitList;
 var dataList;
+var tHead=[{name:"IMSI",col:"imsi",_width:"33%"},
+           {name:"門號",col:"msisdn",_width:"33%"},
+           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"33%"}];
+var reportName="VIP客戶設定";
 function query(){
 	$.ajax({
 	      url: '<s:url action="queryAlertLimit"/>',
@@ -29,19 +34,7 @@ function query(){
 	    	  var list=$.parseJSON(json);
 	    	  //$("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  limitList=list;
-	    	  
 	    	  dataList=limitList.slice(0);
-	    	  /*   $.each(list,function(i,limitSetting){  
-               var _tr = $(	"<tr>"+
-               					"<td align='center' >"+limitSetting.imsi+"</td>"+
-               					"<td align='center' >"+limitSetting.msisdn+"</td>"+
-               					"<td align='center' style='display: none;'>"+limitSetting.threshold+"</td>"+
-               					"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>"+
-               				"</tr>");  
-               
-             $("#table1").append(_tr); });
-	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table1 tr:even").addClass("even_columm"); */
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
@@ -59,10 +52,6 @@ function query(){
           }
 	    });
 }
-
-var tHead=[{name:"IMSI",col:"imsi",_width:"33%"},
-           {name:"門號",col:"msisdn",_width:"33%"},
-           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"33%"}];
 
 //將被選擇的table欄位放入編輯區
 function chooseRow(bu){
@@ -174,46 +163,6 @@ function enableButton(){
           }
 	    });
 }
- /*
-function queryMSISDN(){
-	
-	if($("#IMSI").val()==null || $("#IMSI").val()==""){
-		$("#LIMSI").html('此欄位不可為空');
-		return
-	}
-
-	$.ajax({
-	      url: '<s:url action="queryMSISDN"/>',
-	      data: {
-	    	  "imsi":$("#IMSI").val(),
-	      },//parameters go here in object literal form
-	      type: 'POST',
-	      datatype: 'json',
-	      success: function(json) {  
-	    	  
-	    	  //jQuery.parseJSON,JSON.parse(json)
-	    	  //alert(json);
-	    	  var v=JSON.parse(json);
-	    	  if(json=="" || v.msisdn==null || v.msisdn==""){
-	    		  $("#Qmsg").html("查無門號");
-	    	  }else{
-	    		  $("#Msisdn").val(v.msisdn);
-	    		  $("#Qmsg").html("Success");
-	    	  }
-    	  },
-	      error: function(json) {
-	    	  $("#Qmsg").html('something bad happened'); 
-	      },
-    	  beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
-    			disableButton();
-    			$("#Msisdn").val("");
-          },
-          complete:function(){
-        	  enableButton();
-          }
-	    });
-} */
 function validat(mod,txt){
 	
 	var validate = true;
@@ -284,7 +233,6 @@ function queryVIP(){
 		} 
 	}); 
 	pagination();
-
 }
 
 </script>
@@ -325,7 +273,8 @@ function queryVIP(){
 						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
 						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
 						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢">  
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢"> 
+						<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
 				    </div>
 			    </div>
 			    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
@@ -343,16 +292,6 @@ function queryVIP(){
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
 		</div>
-		<!-- <div>
-			<table class="table-bordered table-hover" align="center" style="width: 50%" id="table1">
-				<tr class="even_columm" >
-					<td class="columnLabel" align="center" width="30%">IMSI</td>
-					<td class="columnLabel" align="center" width="30%">MSISDN</td>
-					<td class="columnLabel" align="center" width="20%" style="display: none;">LIMITE</td>
-					<td></td>
-				</tr>
-			</table>
-		</div> -->
 	</div>
 </div>
 </body>

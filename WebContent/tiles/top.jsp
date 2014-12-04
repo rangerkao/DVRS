@@ -67,10 +67,7 @@ function pagination(){
     $(".pages ").addClass("table-bordered");
 
     var _showTab=0;
-	
-	/* var $defaultLi = $('ul.pagination li').eq(_showTab).addClass('active');
-	$($defaultLi.find('a').attr('href')).siblings().hide(); */
-	
+    
 	$("#page"+firstPage).siblings().hide();
 	$("#nowPage").html(nowPage);
 	$("#totalPage").html("共"+totalPage+"頁");
@@ -110,6 +107,15 @@ function bindPageButtonClick(){
 	
 	
 }
+	
+function createExcel(){
+	$("[name='dataList']").val(encodeURI(JSON.stringify(dataList)));
+	$("[name='colHead']").val(encodeURI(JSON.stringify(tHead)));
+	$("[name='reportName']").val(encodeURI(JSON.stringify(reportName)));
+	$("#reportFrom").submit();	
+}
+
+
 
 
 </Script>
@@ -165,5 +171,11 @@ div.scroll {
 	<div class="wapper" align="center">
 		<h1>Sim2Travel 維運管理系統</h1>
 	</div>
+	<form action="createExcel" method="post" target="sub_iframe" id="reportFrom" style="display: none;">
+			<input type="text" name="dataList">
+			<input type="text" name="colHead">
+			<input type="text" name="reportName">
+		</form>
+	<iframe name="sub_iframe" width="0" height="0" style="display: none;"></iframe>
 </body>
 </html>
