@@ -10,6 +10,10 @@ import java.util.List;
 
 
 
+
+
+
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -44,11 +48,17 @@ public class AdminAction extends BaseAction{
 		adminList=adminControl.queryAdminList();
 		System.out.println( beanToJSONArray(adminList));
 		result=beanToJSONArray(adminList);
-		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", SUCCESS);
+		try {
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", SUCCESS);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 		return SUCCESS;
 	}
 	
-	public String updateAdmin() throws SQLException{
+	public String updateAdmin() {
 		result=SUCCESS;
 		System.out.println( beanToJSONObject(admin));
 		System.out.println(	"mod:"+mod);
@@ -63,7 +73,13 @@ public class AdminAction extends BaseAction{
 			if(adminControl.delAdmin(admin)!=1)
 				result="Error To delete data!";
 		}
-		actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "update", mod+":"+ beanToJSONObject(admin), result);
+		try {
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "update", mod+":"+ beanToJSONObject(admin), result);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 
 		return SUCCESS;
 

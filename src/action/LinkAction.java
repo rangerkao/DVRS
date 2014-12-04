@@ -34,6 +34,8 @@ public class LinkAction extends BaseAction{
 	private String CDR="cdr";
 	private String LimitSetting="limitSetting";
 	private String DVRS="DVRS";
+	private String currentMonth="currentMonth";
+	private String currentDay="currentDay";
 	
 	Map<String, Object> session;
 	
@@ -84,6 +86,16 @@ public class LinkAction extends BaseAction{
 	public String limitSetting()  
 	{  
 	   return LimitSetting;        
+	} 
+	
+	public String currentMonth()  
+	{  
+	   return currentMonth;        
+	} 
+	
+	public String currentDay()  
+	{  
+	   return currentDay;        
 	} 
 	
 	public String logout()  

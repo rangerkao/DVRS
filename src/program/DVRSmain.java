@@ -4,6 +4,7 @@ package program;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +23,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.mail.MessagingException;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 
 import org.apache.log4j.Logger;
@@ -53,33 +53,31 @@ public class DVRSmain implements Job{
 	private  final String URL = "jdbc:oracle:thin:@"+ Host + ":"+Port+ServiceName; */
 	
 	//HUR
-	Connection conn = null;
+	static Connection conn = null;
 	//MBOSS
-	Connection conn2 = null;
+	static Connection conn2 = null;
 	
-	static int runInterval=1*60*60;//單位秒
-	
-	private  Logger logger ;
-	Properties props=new Properties();
+	private static  Logger logger ;
+	static Properties props=new Properties();
 
 	
 	//mail conf
-	String mailSender="";
-	String mailReceiver="";
-	String mailSubject="mail test";
-	String mailContent="mail content text";
+	static String mailSender="";
+	static String mailReceiver="";
+	static String mailSubject="mail test";
+	static String mailContent="mail content text";
 	
-	IJatool tool=new Jatool();
+	static IJatool tool=new Jatool();
 	
 	
-	private String sql="";
-	private String errorMsg="";
+	private static String sql="";
+	private static String errorMsg="";
 	
 	//Hur Data conf
-	private Integer dataThreshold=null;//CDR資料一批次取出數量
-	private Integer lastfileID=null;//最後批價檔案號
-	private Double exchangeRate=null; //港幣對台幣匯率，暫訂為4
-	private Double kByte=null;//RATE單位KB，USAGE單位B
+	private static Integer dataThreshold=null;//CDR資料一批次取出數量
+	private static Integer lastfileID=null;//最後批價檔案號
+	private static Double exchangeRate=null; //港幣對台幣匯率，暫訂為4
+	private static Double kByte=null;//RATE單位KB，USAGE單位B
 
 	//日期設定
 	private String MONTH_FORMATE="yyyyMM";
@@ -91,17 +89,27 @@ public class DVRSmain implements Job{
 	private String DAY_FORMATE="yyyyMMdd";	
 	
 	//預設值
-	private String DEFAULT_MCCMNC=null;//預設mssmnc
-	private Double DEFAULT_THRESHOLD=null;//預設月警示量
-	private Double DEFAULT_DAY_THRESHOLD=null;//預設日警示量
-	private Double DEFAULT_DAYCAP=null;
-	private Double DEFAULT_VOLUME_THRESHOLD=null;//預設流量警示(降速)，1.5GB;
-	private Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
-	private String DEFAULT_PHONE=null;
-	private Boolean TEST_MODE=true;
+	private static int RUN_INTERVAL=3600;//單位秒
+	private static String DEFAULT_MCCMNC=null;//預設mssmnc
+	private static Double DEFAULT_THRESHOLD=null;//預設月警示量
+	private static Double DEFAULT_DAY_THRESHOLD=null;//預設日警示量
+	private static Double DEFAULT_DAYCAP=null;
+	private static Double DEFAULT_VOLUME_THRESHOLD=null;//預設流量警示(降速)，1.5GB;
+	private static Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
+	private static String DEFAULT_PHONE=null;
+	private static Boolean TEST_MODE=true;
+	
+	//多排程處理
+	private static boolean executing =false;
+	private static boolean hasWaiting = false;
+	
 	
 	Map<String,Map<String,Map<String,Object>>> currentMap = new HashMap<String,Map<String,Map<String,Object>>>();
 	Map<String,Map<String,Map<String,Map<String,Object>>>> currentDayMap = new HashMap<String,Map<String,Map<String,Map<String,Object>>>>();
+	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
+	Map <String,Set<String>> existMap = new HashMap<String,Set<String>>();
+	Map <String,Map <String,Set<String>>> existMapD = new HashMap<String,Map <String,Set<String>>>();
+	
 	Map<String,Map<String,Map<String,Object>>> dataRate = new HashMap<String,Map<String,Map<String,Object>>>();
 	Map<String,Map<String,String>> msisdnMap = new HashMap<String,Map<String,String>>();
 	Map<String,Double> thresholdMap = new HashMap<String,Double>();
@@ -110,13 +118,7 @@ public class DVRSmain implements Job{
 	Map<String,String> TADIGtoMCCMNC =new HashMap<String,String>();
 	Map<String,Double> oldChargeMap = new HashMap<String,Double>();
 	Map<String,Map<String,String>> codeMap = new HashMap<String,Map<String,String>>();
-
-	Map <String,Set<String>> updateMap = new HashMap<String,Set<String>>();
-	Map <String,Map <String,Set<String>>> updateMapD = new HashMap<String,Map <String,Set<String>>>();
-	Map <String,Set<String>> insertMap = new HashMap<String,Set<String>>();
-	Map <String,Map <String,Set<String>>> insertMapD = new HashMap<String,Map <String,Set<String>>>();
-	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
-	
+	List<Map<String,Object>> addonDataList = new ArrayList<Map<String,Object>>();
 	Set<Map<String,String>> serviceOrderNBR = new HashSet<Map<String,String>>();
 	
 	/**
@@ -135,7 +137,7 @@ public class DVRSmain implements Job{
 	 * 載入Log4j Properties
 	 * 同時載入參數porps
 	 */
-	private  void loadProperties(){
+	private static  void loadProperties(){
 		System.out.println("initial Log4j, property !");
 		String path=DVRSmain.class.getResource("").toString().replace("file:", "")+"/Log4j.properties";
 		try {
@@ -151,10 +153,11 @@ public class DVRSmain implements Job{
 			DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024D);//預設流量警示(降速)，1.5GB;
 			DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
 			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
+			RUN_INTERVAL=(props.getProperty("progrma.RUN_INTERVAL")!=null?Integer.parseInt(props.getProperty("progrma.RUN_INTERVAL")):3600);
 			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("progrma.TEST_MODE"))?true:false);
 			
 			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDR資料一批次取出數量
-			lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//最後批價檔案號
+			//lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//最後批價檔案號
 			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):4); //港幣對台幣匯率，暫訂為4
 			kByte=(props.getProperty("progrma.kByte")!=null?Double.parseDouble(props.getProperty("progrma.kByte")):1/1024D);//RATE單位KB，USAGE單位B
 			
@@ -166,22 +169,23 @@ public class DVRSmain implements Job{
 					+ "DEFAULT_VOLUME_THRESHOLD : "+DEFAULT_VOLUME_THRESHOLD+"\n"
 					+ "DEFAULT_VOLUME_THRESHOLD2 : "+DEFAULT_VOLUME_THRESHOLD2+"\n"
 					+ "DEFAULT_PHONE : "+DEFAULT_PHONE+"\n"
+					+ "RUN_INTERVAL : "+RUN_INTERVAL+"\n"
 					+ "TEST_MODE : "+TEST_MODE+"\n"
 					+ "dataThreshold : "+dataThreshold+"\n"
-					+ "lastfileID : "+lastfileID+"\n"
+					//+ "lastfileID : "+lastfileID+"\n"
 					+ "exchangeRate : "+exchangeRate+"\n"
 					+ "kByte : "+kByte+"\n");
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			System.out.println("File Not Found : "+e.getMessage());
+			System.out.println("File Not Found : "+e.getStackTrace());
 			System.out.println("File Path : "+path);
 			//send mail
 			sendMail("At loadProperties occur file not found error \n <br>"
 					+ "file path="+path);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("IOException : "+e.getMessage());
+			System.out.println("IOException : "+e.getStackTrace());
 			//send mail
 			sendMail("At loadProperties occur IOException error !\n <br>"
 					+ "file path="+path);
@@ -192,14 +196,14 @@ public class DVRSmain implements Job{
 	/**
 	 * 關閉連線
 	 */
-	private void closeConnect() {
+	private static void closeConnect() {
 		if (conn != null) {
 
 			try {
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.debug("close Connect Error : "+e.getMessage());
+				logger.debug("close Connect Error : "+e.getStackTrace());
 				//send mail
 				sendMail("At closeConnect occur SQLException error!");
 			}
@@ -212,7 +216,7 @@ public class DVRSmain implements Job{
 				conn2.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.debug("close Connect2 Error : "+e.getMessage());
+				logger.debug("close Connect2 Error : "+e.getStackTrace());
 				//send mail
 				sendMail("At closeConnect occur SQLException error!");
 			}
@@ -235,20 +239,21 @@ public class DVRSmain implements Job{
 		sYearmonth=tool.DateFormat(calendar.getTime(), MONTH_FORMATE);
 		sYearmonthday=tool.DateFormat(calendar.getTime(),DAY_FORMATE);
 		//上個月時間，減掉Month會-30天，採取到1號向前，確定跨月
-		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
+		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
 		sYearmonth2=tool.DateFormat(calendar.getTime(), MONTH_FORMATE);
 		
 		calendar.clear();
 	}
 	
 	/**
-	 * 尋找最後一次更改的fileID
+	 * 尋找最後一次更改的fileID，以及目標處理的最終ID
 	 */
 	private void setLastFileID(){
 		logger.info("setLastFileID...");
-		sql="SELECT MAX(A.LAST_FILEID) id FROM HUR_CURRENT A";
+		
 		
 		try {
+			sql="SELECT MAX(A.LAST_FILEID) id FROM HUR_CURRENT A";
 			Statement st = conn.createStatement();
 			logger.debug("Execute SQL : "+sql);
 			ResultSet rs = st.executeQuery(sql);
@@ -260,13 +265,14 @@ public class DVRSmain implements Job{
 			
 			st.close();
 			rs.close();
+			
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setLastFileID occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -283,14 +289,11 @@ public class DVRSmain implements Job{
 			sql=
 					"SELECT A.IMSI,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
 					+ "FROM HUR_CURRENT A "
-					+ "WHERE A.MONTH IN (?,?) ";
+					+ "WHERE A.MONTH IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
 			
-			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setString(1, sYearmonth);
-			pst.setString(2, sYearmonth2);
-			
+			Statement st = conn.createStatement();
 			logger.debug("Execute SQL : "+sql);
-			ResultSet rs = pst.executeQuery();
+			ResultSet rs = st.executeQuery(sql);
 			logger.debug("Set current map...");
 			
 			while(rs.next()){
@@ -317,20 +320,29 @@ public class DVRSmain implements Job{
 				currentMap.put(month,map2);
 				
 				
+				
+				//20141201 add 設定存在資料
+				Set<String> set =new HashSet<String>();
+				if(existMap.containsKey(month)){
+					set=existMap.get(month);
+				}
+				set.add(imsi);
+				existMap.put(month, set);
+
 				//保留舊資料
 				oldChargeMap.put(imsi, rs.getDouble("CHARGE"));
 				
 			}
-			pst.close();
+			st.close();
 			rs.close();
 
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setCurrentMap occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -351,17 +363,17 @@ public class DVRSmain implements Job{
 			logger.debug("Execute SQL : "+sql);
 			Statement st = conn.createStatement();
 			logger.debug("Set current day map...");
-			ResultSet rs2 =st.executeQuery(sql);
+			ResultSet rs =st.executeQuery(sql);
 			
-			while(rs2.next()){
+			while(rs.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
 				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();			
 				Map<String,Map<String,Map<String,Object>>> map3=new HashMap<String,Map<String,Map<String,Object>>>();
 				
-				String mccmnc=rs2.getString("MCCMNC");
+				String mccmnc=rs.getString("MCCMNC");
 				if(mccmnc==null || "".equals(mccmnc)) mccmnc=DEFAULT_MCCMNC;
-				String imsi =rs2.getString("IMSI");
-				String day =rs2.getString("DAY");
+				String imsi =rs.getString("IMSI");
+				String day =rs.getString("DAY");
 				//System.out.println("imsi : "+imsi);
 				
 				if(currentDayMap.containsKey(day)){
@@ -371,27 +383,43 @@ public class DVRSmain implements Job{
 					}
 				}
 						
-				map.put("LAST_FILEID", rs2.getInt("LAST_FILEID"));
-				map.put("LAST_DATA_TIME", (rs2.getDate("LAST_DATA_TIME")!=null?rs2.getDate("LAST_DATA_TIME"):new Date()));
-				map.put("CHARGE", rs2.getDouble("CHARGE"));
-				map.put("VOLUME", rs2.getDouble("VOLUME"));
-				map.put("ALERT", rs2.getString("ALERT"));
+				map.put("LAST_FILEID", rs.getInt("LAST_FILEID"));
+				map.put("LAST_DATA_TIME", (rs.getDate("LAST_DATA_TIME")!=null?rs.getDate("LAST_DATA_TIME"):new Date()));
+				map.put("CHARGE", rs.getDouble("CHARGE"));
+				map.put("VOLUME", rs.getDouble("VOLUME"));
+				map.put("ALERT", rs.getString("ALERT"));
 
 				map2.put(mccmnc, map);
 				
 				map3.put(imsi, map2);
 				currentDayMap.put(day,map3);
+				
+				
+				
+				//20141201 add 設定存在資料
+				Map<String,Set<String>> map5 = new HashMap<String,Set<String>>();
+				Set<String> set =new HashSet<String>();
+				if(existMapD.containsKey(day)){
+					map5=existMapD.get(day);
+					if(map5.containsKey(imsi)){
+						set=map5.get(imsi);
+					}
+				}
+				set.add(mccmnc);
+				map5.put(imsi, set);
+				existMapD.put(day, map5);
+
 			}
 			st.close();
-			rs2.close();
+			rs.close();
 			
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setCurrentMapDay occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 		
 		
@@ -439,10 +467,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setDataRate occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	/**
@@ -470,10 +498,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setThreshold occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -501,10 +529,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setIMSItoVLN occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -536,10 +564,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setVLNtoTADIG occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	/**
@@ -567,10 +595,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -604,10 +632,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -617,13 +645,13 @@ public class DVRSmain implements Job{
 	 */
 	private int dataCount(){
 		logger.info("dataCount...");
-		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? ";
+		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND A.CHARGE is null ";
 		int count=0;
 		//找出總量
 		PreparedStatement pst;
 		try {
 			pst = conn.prepareStatement(sql);
-			pst.setInt(1, lastfileID+1);
+			pst.setInt(1, lastfileID);
 			
 			ResultSet rs = pst.executeQuery();
 			logger.debug("Execute SQL : "+sql);
@@ -638,10 +666,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At dataCount occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 		return count;
 	}
@@ -652,7 +680,9 @@ public class DVRSmain implements Job{
 	 */
 	private double defaultRate(){
 		logger.info("defaultRate...");
-		double avg=0;
+		double defaultRate=0.011;
+		
+	/*	double avg=0;
 		sql=
 				"SELECT AVG(CASE WHEN A.CURRENCY = 'HKD' THEN A.RATE/A.CHARGEUNIT*"+exchangeRate+" ELSE  A.RATE/A.CHARGEUNIT END)  AVG "
 				+ "FROM HUR_DATA_RATE A ";
@@ -673,13 +703,14 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At defaultRate occur SQLException error!");
-			errorMsg=e.getMessage();
-		}
-		
-		return avg;
+			errorMsg=e.getStackTrace().toString();
+		}*/
+		logger.info("defaultRate : " +defaultRate+" TWD ");
+		return defaultRate;
+		//return avg;
 	}
 	
 	/**
@@ -701,6 +732,43 @@ public class DVRSmain implements Job{
 		return mccmnc;
 	}
 
+	
+	
+	/**
+	 * 建立華人上網包對應資料
+	 * 
+	 * List Map KEY:MSISDN,VALUE(IMSI,MSISDN,SERVICECODE,STARTDATE,ENDDATE)>
+	 */
+	private void setAddonData(){
+		logger.info("setAddonData...");
+		sql=
+				"SELECT A.S2TIMSI IMSI,A.S2TMSISDN MSISDN,A.SERVICECODE,A.STARTDATE,A.ENDDATE "
+				+ "FROM ADDONSERVICE_N A ";
+		try {
+			Statement st = conn.createStatement();
+			logger.debug("Execute SQL : "+sql);
+			ResultSet rs = st.executeQuery(sql);
+			
+			while(rs.next()){
+				Map<String,Object> map = new HashMap<String,Object>();
+				map.put("IMSI", rs.getString("IMSI"));
+				map.put("MSISDN", rs.getString("MSISDN"));
+				map.put("SERVICECODE", rs.getString("SERVICECODE"));
+				map.put("STARTDATE", rs.getDate("STARTDATE"));
+				map.put("ENDDATE", rs.getDate("ENDDATE"));
+				addonDataList.add(map);
+			}
+			st.close();
+			rs.close();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+			logger.error("Got a SQLException : "+e.getStackTrace());
+			//sendMail
+			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
+			errorMsg=e.getStackTrace().toString();
+		}
+	}
 
 	
 	/**
@@ -714,28 +782,25 @@ public class DVRSmain implements Job{
 		try {
 			count=dataCount();
 			defaultRate=defaultRate();
-			
-			sql=
-					"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
-					+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
-					+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID) "
-					+ "MINUS "
-					+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
-					+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
-					+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND ROWNUM <= ?  ORDER BY A.USAGEID,A.FILEID)";
-			
-			logger.debug("Execute SQL : "+sql);
-			
+
 			//批次Query 避免ram空間不足
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
+				sql=
+						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
+						+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= "+lastfileID+" AND ROWNUM <= "+(i*dataThreshold)+" AND A.CHARGE is null "
+						+ "ORDER BY A.USAGEID,A.FILEID) "
+						+ "MINUS "
+						+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME "
+						+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= "+lastfileID+" AND ROWNUM <= "+((i-1)*dataThreshold)+" AND A.CHARGE is null "
+						+ "ORDER BY A.USAGEID,A.FILEID) ";
+				
+				logger.debug("Execute SQL : "+sql);
+				
 				logger.debug("Round "+i+" Procsess ...");
-				PreparedStatement pst = conn.prepareStatement(sql);
-				pst.setInt(1, lastfileID+1);
-				pst.setInt(2, i*dataThreshold);
-				pst.setInt(3, lastfileID+1);
-				pst.setInt(4, (i-1)*dataThreshold);
-			
-				ResultSet rs = pst.executeQuery();
+				Statement st = conn.createStatement();
+				ResultSet rs = st.executeQuery(sql);
 
 				while(rs.next()){					
 					String imsi= rs.getString("IMSI");
@@ -754,23 +819,17 @@ public class DVRSmain implements Job{
 					String pricplanID=null;
 					if(msisdnMap.containsKey(imsi))
 						pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
-					
-					
-					
-					
+	
 					if(dataRate.containsKey(pricplanID)){
-						//假如沒有mccmnc給予預設字樣，必須要有
 						if(mccmnc==null || "".equals(mccmnc)){
 							mccmnc=searchMccmncByIMSI(imsi);
 						}
 					}else{
 						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 						sendMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
+						sql="";errorMsg="";
 					}
-					
-					
-					
-					
+
 					//還是找不到，給予預設，必須有
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc= DEFAULT_MCCMNC;
@@ -787,57 +846,38 @@ public class DVRSmain implements Job{
 					sSX002.add("460000");
 					sSX002.add("46000");
 					sSX002.add("45412");
-					
-					String sql2="SELECT COUNT(1) CD "
-							+ "FROM ADDONSERVICE_N A "
-							+ "WHERE A.S2TMSISDN=? AND A.S2TIMSI=? AND A.SERVICECODE=? and A.STARTDATE<=? AND (A.ENDDATE IS NULL OR A.ENDDATE>=?)";	
-					
-					PreparedStatement pst2 = null;
-					ResultSet rs2=null;					
-					
+
 					int cd=0;
 					
 					String msisdn=null;
 					if(msisdnMap.containsKey(imsi)) {
-						msisdnMap.get(imsi).get("MSISDN");
+						msisdn=msisdnMap.get(imsi).get("MSISDN");
+						
 						//只有香港
 						if(cd==0 && sSX001.contains(mccmnc)){
-							pst2=conn.prepareStatement(sql2);
-							pst2.setString(1,msisdn );
-							pst2.setString(2,imsi );
-							pst2.setString(3,"SX001" );
-							pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-							pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-							logger.info("Execute SQL : "+sql2+",param:("+msisdn+","+imsi+","+"SX001"+","+callTime+","+callTime+")");
-							rs2=pst2.executeQuery();
-							
-							while(rs2.next()){
-								cd=rs2.getInt("CD");
+							for(Map<String,Object> m : addonDataList){
+								if(imsi.equals(m.get("IMSI"))&&msisdn.equals(m.get("MSISDN"))&&"SX001".equals(m.get("SERVICECODE"))&&
+										callTime.after((Date) m.get("STARTDATE"))&&(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE")))){
+									cd=1;
+									break;
+								}
 							}
+							
 						}
 						
 						//香港加中國大陸
 						if(cd==0 && sSX002.contains(mccmnc)){
-							pst2=conn.prepareStatement(sql2);
-							pst2.setString(1,msisdn );
-							pst2.setString(2,imsi );
-							pst2.setString(3,"SX002" );
-							pst2.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-							pst2.setDate(5, tool.convertJaveUtilDate_To_JavaSqlDate(callTime));
-							logger.info("Execute SQL : "+sql2+",param:("+msisdn+","+imsi+","+"SX002"+","+callTime+","+callTime+")");
-							rs2=pst2.executeQuery();
-							while(rs2.next()){
-								cd=rs2.getInt("CD");
+							for(Map<String,Object> m : addonDataList){
+								if(imsi.equals(m.get("IMSI"))&&msisdn.equals(m.get("MSISDN"))&&"SX002".equals(m.get("SERVICECODE"))&&
+										callTime.after((Date) m.get("STARTDATE"))&&(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE")))){
+									cd=1;
+									break;
+								}
 							}
 							
 						}
 					}
-					
-					
 
-					if(rs2!=null)rs2.close();
-					if(pst2!=null)pst2.close();
-					
 					logger.info("cd="+cd);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
@@ -845,23 +885,30 @@ public class DVRSmain implements Job{
 								dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
 							
 							double ec=1;
-							if("HKD".equalsIgnoreCase((String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY")))
+							
+							String currency=(String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY");
+							
+							if("HKD".equalsIgnoreCase(currency))
 								ec=exchangeRate;
-							charge=volume*kByte*(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE")*ec;
+							Double rate=(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE");
+							Double unit=(Double)dataRate.get(pricplanID).get(mccmnc).get("CHARGEUNIT");
+							charge=Math.ceil(volume*kByte)*rate*ec/unit;
 							dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
 							
 						}else{
 							//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
 							//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
-							//以最大費率計費
+							//以預設費率計費
 							sendMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
-							charge=volume*kByte*defaultRate;
+							charge=Math.ceil(volume*kByte)*defaultRate;
+							sql="";errorMsg="";
 						}
 					}
 		
-					logger.info("charge="+charge);
+					
 					//格式化至小數點後四位
 					charge=tool.FormatDouble(charge, "0.0000");
+					logger.info("charge="+charge);
 					
 					//將此筆CDR結果記錄，稍後回寫到USAGE TABLE
 					cdrChargeMap.put(usageId, charge);
@@ -871,9 +918,6 @@ public class DVRSmain implements Job{
 					Map<String,Map<String,Map<String,Object>>> map=new HashMap<String,Map<String,Map<String,Object>>>();
 					Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
 					Map<String,Object> map3=new HashMap<String,Object>();
-					
-					Map<String,Set<String>> smd= new HashMap<String,Set<String>>();
-					Set<String> sed=new HashSet<String>();
 					
 					if(currentDayMap.containsKey(cDay)){
 						map=currentDayMap.get(cDay);
@@ -889,30 +933,11 @@ public class DVRSmain implements Job{
 						charge=oldCharge+charge;
 						alert=(String)map3.get("ALERT");
 						oldvolume=(Double)map3.get("VOLUME");
-						if(updateMapD.containsKey(cDay)){
-							smd= updateMapD.get(cDay);
-							if(smd.containsKey(imsi)){
-								sed=smd.get(imsi);
-							}
-						}
-						sed.add(mccmnc);
-						smd.put(imsi, sed);
-						updateMapD.put(cDay, smd);
-					}else{
-						if(insertMapD.containsKey(cDay)){
-							smd= insertMapD.get(cDay);
-							if(smd.containsKey(imsi)){
-								sed=smd.get(imsi);
-							}
-						}
-						sed.add(mccmnc);
-						smd.put(imsi, sed);
-						insertMapD.put(cDay, smd);
 					}
 					
-					//如果有計費上線，限制最大值
-					if(dayCap==null || dayCap==0) dayCap= DEFAULT_DAYCAP;
-					if(dayCap!=null && charge>dayCap) charge=dayCap;
+					//如果有計費上線，限制最大值  20141125 取消預設Daycap，如果值為負，表示沒有
+					//if(dayCap==null || dayCap==0) dayCap= DEFAULT_DAYCAP;
+					if(dayCap!=null && dayCap>=0 && charge>dayCap) charge=dayCap;
 					
 					//將結果記錄到currentDayMap
 					map3.put("CHARGE", charge);
@@ -939,7 +964,6 @@ public class DVRSmain implements Job{
 						map5=currentMap.get(cMonth);
 					}
 					
-					Set<String> se=new HashSet<String>();
 					if(map5.containsKey(imsi)){
 						map4=map5.get(imsi);
 						
@@ -949,18 +973,6 @@ public class DVRSmain implements Job{
 						volume=(Double)map4.get("VOLUME")+volume;
 						lastAlertThreshold=(Double) map4.get("LAST_ALERN_THRESHOLD");
 						volumeAlert=(Double) map4.get("LAST_ALERN_VOLUME");
-						if(updateMap.containsKey(cMonth)){
-							se=updateMap.get(cMonth);
-						}
-						se.add(imsi);
-						updateMap.put(cMonth, se);
-
-					}else{
-						if(insertMap.containsKey(cMonth)){
-							se=insertMap.get(cMonth);
-						}
-						se.add(imsi);
-						insertMap.put(cMonth, se);
 					}
 					map4.put("LAST_FILEID", fileID);
 					map4.put("SMS_TIMES", smsTimes);
@@ -973,15 +985,16 @@ public class DVRSmain implements Job{
 					map5.put(imsi, map4);
 					currentMap.put(cMonth, map5);
 				}
-				if(pst!=null)pst.close();
+				if(st!=null)st.close();
 				if(rs!=null)rs.close();
+
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Got a SQLException : "+e.getMessage());
+			logger.error("Got a SQLException : "+e.getStackTrace());
 			//sendMail
 			sendMail("At charge occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}	
 	}
 	
@@ -989,50 +1002,40 @@ public class DVRSmain implements Job{
 	 * 回寫CDR的CHARGE
 	 */
 	private void updateCdr(){
-		String sql=
-				"UPDATE HUR_DATA_USAGE A "
-				+ "SET A.CHARGE=? "
-				+ "WHERE A.USAGEID=? ";
-		
+		int count=0;
+		int [] result;
 		try {
-			PreparedStatement pst = conn.prepareStatement(sql);
-			int count=0;
-			@SuppressWarnings("unused")
-			int [] result;
+			Statement st = conn.createStatement();
 			for(String s: cdrChargeMap.keySet()){
-				pst.setDouble(1, cdrChargeMap.get(s));
-				pst.setString(2, s);
-				pst.addBatch();
+				sql=
+						"UPDATE HUR_DATA_USAGE A "
+						+ "SET A.CHARGE="+cdrChargeMap.get(s)+" "
+						+ "WHERE A.USAGEID='"+s+"' ";
+				
+				logger.info("Execute Sql: "+sql);
+				st.addBatch(sql);
 				count++;
 
 				if(count==dataThreshold){
 					logger.info("Execute updateCdr Batch");
-					result=pst.executeBatch();
+					result=st.executeBatch();
 					count=0;
 				}
 			}
 			if(count!=0){
-				logger.info("Execute updateCdr Batch");
-				result=pst.executeBatch();
+				result=st.executeBatch();
 			}
-			//conn.commit();
-			pst.close();
+			st.close();
 		} catch (SQLException e) {
-			
 			e.printStackTrace();
-			logger.error("Error at updateCdr : "+e.getMessage());
+			logger.error("Error at updateCdr : "+e.getStackTrace());
 			//sendMail
 			sendMail("At updateCdr occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
-		
-		
 	}
 	
-	
-	
-	
-	
+
 	/**
 	 * 取消connection的Auto commit
 	 */
@@ -1047,11 +1050,11 @@ public class DVRSmain implements Job{
 			logger.error("Error Occur at setAutoCommit !");
 			//sendMail
 			sendMail("At cancelAutoCommit occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
-	private void IniProgram(){
+	private static void IniProgram(){
 		// 初始化log
 		// iniLog4j();
 		loadProperties();
@@ -1062,7 +1065,7 @@ public class DVRSmain implements Job{
 		
 	}
 	
-	private void connectDB(){
+	private static void connectDB(){
 		// 進行DB連線
 		//conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
@@ -1079,20 +1082,20 @@ public class DVRSmain implements Job{
 			logger.info("Connrct to "+url);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			logger.error("Error at connDB : "+e.getMessage());
+			logger.error("Error at connDB : "+e.getStackTrace());
 			//sendMail
 			sendMail("At connDB occur ClassNotFoundException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at connDB : "+e.getMessage());
+			logger.error("Error at connDB : "+e.getStackTrace());
 			//sendMail
 			sendMail("At connDB occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
-	private void connectDB2(){
+	private static void connectDB2(){
 		// 進行DB連線
 		//conn2=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
@@ -1109,24 +1112,25 @@ public class DVRSmain implements Job{
 			logger.info("Connrct to "+url);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			logger.error("Error at connDB2 : "+e.getMessage());
+			logger.error("Error at connDB2 : "+e.getStackTrace());
 			//sendMail
 			sendMail("At connDB2 occur ClassNotFoundException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at connDB2 : "+e.getMessage());
+			logger.error("Error at connDB2 : "+e.getStackTrace());
 			//sendMail
 			sendMail("At connDB2 occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 
 	/**
 	 * 計算完畢後寫回資料庫-更新
+	 * @throws SQLException 
 	 */
 
-	private void updateCurrentMap(){
+	private void updateCurrentMap() throws SQLException{
 		logger.info("updateCurrentMap...");
 
 		@SuppressWarnings("unused")
@@ -1139,49 +1143,41 @@ public class DVRSmain implements Job{
 				+ "WHERE A.MONTH=? AND A.IMSI=? ";
 		
 		logger.info("Execute SQL :"+sql);
-		
-		
-		try {
-			PreparedStatement pst = conn.prepareStatement(sql);
-			
-			for(String mon : updateMap.keySet()){
-				for(String imsi : updateMap.get(mon)){
+
+		PreparedStatement pst = conn.prepareStatement(sql);
+
+		//20141201 add change another method to distinguish insert and update
+		for(String mon : currentMap.keySet()){
+			for(String imsi : currentMap.get(mon).keySet()){
+				if(existMap.containsKey(mon) && existMap.get(mon).contains(imsi)){
+					pst.setDouble(1,(Double) currentMap.get(mon).get(imsi).get("CHARGE"));
+					pst.setInt(2, (Integer) currentMap.get(mon).get(imsi).get("LAST_FILEID"));
+					pst.setInt(3, (Integer) currentMap.get(mon).get(imsi).get("SMS_TIMES"));
+					pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(mon).get(imsi).get("LAST_DATA_TIME")));
+					pst.setDouble(5,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
+					pst.setString(6,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
+					pst.setDouble(7,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
+					pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_VOLUME"));
+					pst.setString(9, mon);
+					pst.setString(10, imsi);//具有mccmnc
+					pst.addBatch();
+					count++;
 					
-						pst.setDouble(1,(Double) currentMap.get(mon).get(imsi).get("CHARGE"));
-						pst.setInt(2, (Integer) currentMap.get(mon).get(imsi).get("LAST_FILEID"));
-						pst.setInt(3, (Integer) currentMap.get(mon).get(imsi).get("SMS_TIMES"));
-						pst.setDate(4, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentMap.get(mon).get(imsi).get("LAST_DATA_TIME")));
-						pst.setDouble(5,(Double) currentMap.get(mon).get(imsi).get("VOLUME"));
-						pst.setString(6,(String) currentMap.get(mon).get(imsi).get("EVER_SUSPEND"));
-						pst.setDouble(7,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
-						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_VOLUME"));
-						pst.setString(9, mon);
-						pst.setString(10, imsi);//具有mccmnc
-						pst.addBatch();
-						count++;
-						
 					if(count==dataThreshold){
 						logger.info("Execute updateCurrentMap Batch");
 						result=pst.executeBatch();
 						count=0;
 					}
-				}
+				}	
 			}
-			if(count!=0){
-				logger.info("Execute updateCurrentMap Batch");
-				result=pst.executeBatch();
-			}
-			pst.close();
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			logger.error("Error at updateCurrentMap : "+e.getMessage());
-			//sendMail
-			sendMail("At updateCurrentMap occur SQLException error!");
-			errorMsg=e.getMessage();
 		}
+		if(count!=0){
+			logger.info("Execute updateCurrentMap Batch");
+			result=pst.executeBatch();
+		}
+		pst.close();
 	}
-	private void updateCurrentMapDay(){
+	private void updateCurrentMapDay() throws SQLException{
 		logger.info("updateCurrentMapDay...");
 		@SuppressWarnings("unused")
 		int[] result;
@@ -1194,29 +1190,24 @@ public class DVRSmain implements Job{
 		
 		logger.info("Execute SQL :"+sql);
 		
-		try {
-			PreparedStatement pst = conn.prepareStatement(sql);
-			
-			for(String day : updateMapD.keySet()){
-				for(String imsi : updateMapD.get(day).keySet()){
-					for(String mccmnc : updateMapD.get(day).get(imsi)){
-						
-						if(currentDayMap.get(day).get(imsi).get(mccmnc)==null){
-							System.out.println(day+" for imsi:"+imsi+" mccmnc:"+mccmnc+" in updateMapD can't get in current day map !");
-							continue;
-						}
-						
-						
-							pst.setDouble(1,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
-							pst.setInt(2, (Integer) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
-							pst.setDate(3, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME")));
-							pst.setDouble(4,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
-							pst.setString(5,(String) currentDayMap.get(day).get(imsi).get(mccmnc).get("ALERT"));
-							pst.setString(6, day);
-							pst.setString(7, imsi);
-							pst.setString(8, mccmnc);
-							pst.addBatch();
-							count++;
+		PreparedStatement pst = conn.prepareStatement(sql);
+
+		//20141201 add change another method to distinguish insert and update
+		for(String day : currentDayMap.keySet()){
+			for(String imsi : currentDayMap.get(day).keySet()){
+				for(String mccmnc : currentDayMap.get(day).get(imsi).keySet()){
+					if(existMapD.containsKey(day) && existMapD.get(day).containsKey(imsi) && existMapD.get(day).get(imsi).contains(mccmnc)){
+
+						pst.setDouble(1,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
+						pst.setInt(2, (Integer) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
+						pst.setDate(3, tool.convertJaveUtilDate_To_JavaSqlDate((Date) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_DATA_TIME")));
+						pst.setDouble(4,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("VOLUME"));
+						pst.setString(5,(String) currentDayMap.get(day).get(imsi).get(mccmnc).get("ALERT"));
+						pst.setString(6, day);
+						pst.setString(7, imsi);
+						pst.setString(8, mccmnc);
+						pst.addBatch();
+						count++;
 						if(count==dataThreshold){
 							logger.info("Execute updateCurrentMapU Batch");
 							result=pst.executeBatch();
@@ -1225,23 +1216,18 @@ public class DVRSmain implements Job{
 					}
 				}
 			}
-			if(count!=0){
-				logger.info("Execute updateCurrentMapU Batch");
-				result=pst.executeBatch();
-			}
-			pst.close();
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			logger.error("Error at updateCurrentMapU : "+e.getMessage());
-			//sendMail
-			sendMail("At updateCurrentMapU occur SQLException error!");
-			errorMsg=e.getMessage();
 		}
+		if(count!=0){
+			logger.info("Execute updateCurrentMapU Batch");
+			result=pst.executeBatch();
+		}
+		pst.close();
+
 	}
 	
 	/**
 	 * 計算完畢後寫回資料庫-新增
+	 * @throws SQLException 
 	 */
 	
 	private void insertCurrentMap(){
@@ -1257,11 +1243,15 @@ public class DVRSmain implements Job{
 		
 		logger.info("Execute SQL :"+sql);
 		
-		try {
-			PreparedStatement pst = conn.prepareStatement(sql);
-			for(String mon : insertMap.keySet()){
-				for(String imsi : insertMap.get(mon)){
+		/*for(String mon : insertMap.keySet()){
+			for(String imsi : insertMap.get(mon)){*/
+		//20141201 add change another method to distinguish insert and update
+		for(String mon : currentMap.keySet()){
+			for(String imsi : currentMap.get(mon).keySet()){
+				if(!existMap.containsKey(mon) || !existMap.get(mon).contains(imsi)){
 					
+					try {
+						PreparedStatement pst = conn.prepareStatement(sql);
 						pst.setString(1, imsi);		
 						pst.setDouble(2,(Double) currentMap.get(mon).get(imsi).get("CHARGE"));
 						pst.setInt(3,(Integer) currentMap.get(mon).get(imsi).get("LAST_FILEID"));
@@ -1272,28 +1262,28 @@ public class DVRSmain implements Job{
 						pst.setDouble(8,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_THRESHOLD"));
 						pst.setDouble(9,(Double) currentMap.get(mon).get(imsi).get("LAST_ALERN_VOLUME"));
 						pst.setString(10, mon);
-						pst.addBatch();
-						count++;
-					if(count==dataThreshold){
-						logger.info("Execute insertCurrentMap Batch");
-						result=pst.executeBatch();
-						count=0;
+						pst.executeUpdate();
+						pst.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+						logger.error("Error at Load SMSSetting : "+e.getStackTrace());
+						//sendMail
+						sendMail("At insertCurrent "+mon+":"+imsi+" occur SQLException error!");
+						errorMsg=e.getStackTrace().toString();
+						
+						//新增失敗後嘗試update更新
+						Set<String> set=new HashSet<String>();
+						if(existMap.containsKey(mon))
+							set=existMap.get(mon);
+						
+						set.add(imsi);
+						existMap.put(mon, set);
 					}
 				}
 			}
-			if(count!=0){
-				logger.info("Execute insertCurrentMap Batch");
-				result=pst.executeBatch();
-			}
-			pst.close();
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			logger.error("Error at insertCurrentMap : "+e.getMessage());
-			//sendMail
-			sendMail("At insertCurrentMap occur SQLException error!");
-			errorMsg=e.getMessage();
 		}
+
+		
 	}
 	private void insertCurrentMapDay(){
 		logger.info("insertCurrentMapDay...");
@@ -1307,18 +1297,14 @@ public class DVRSmain implements Job{
 				+ "VALUES(?,?,?,?,?,SYSDATE,?,?,?)";
 		
 		logger.info("Execute SQL :"+sql);
-		
-		try {
-			PreparedStatement pst = conn.prepareStatement(sql);
-			for(String day : insertMapD.keySet()){
-				for(String imsi : insertMapD.get(day).keySet()){
-					for(String mccmnc : insertMapD.get(day).get(imsi)){
-						
-						if(currentDayMap.get(day).get(imsi).get(mccmnc)==null){
-							System.out.println(day+" for imsi:"+imsi+" mccmnc:"+mccmnc+" in insertMap can't get in current day map !");
-							continue;
-						}
-						
+
+		//20141201 add change another method to distinguish insert and update
+		for(String day : currentDayMap.keySet()){
+			for(String imsi : currentDayMap.get(day).keySet()){
+				for(String mccmnc : currentDayMap.get(day).get(imsi).keySet()){
+					if(!existMapD.containsKey(day)||!existMapD.get(day).containsKey(imsi)||!existMapD.get(day).get(imsi).contains(mccmnc)){
+						try {
+							PreparedStatement pst = conn.prepareStatement(sql);
 							pst.setString(1, imsi);
 							pst.setDouble(2,(Double) currentDayMap.get(day).get(imsi).get(mccmnc).get("CHARGE"));
 							pst.setInt(3, (Integer) currentDayMap.get(day).get(imsi).get(mccmnc).get("LAST_FILEID"));
@@ -1327,30 +1313,31 @@ public class DVRSmain implements Job{
 							pst.setString(6, mccmnc);
 							pst.setString(7, day);
 							pst.setString(8, (String) currentDayMap.get(day).get(imsi).get(mccmnc).get("ALERT"));
-							pst.addBatch();
-							count++;
-						if(count==dataThreshold){
-							result=pst.executeBatch();
-							logger.info("Execute insertCurrentMapU Batch");
-							count=0;
-						}
+							pst.executeUpdate();
+							pst.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+							//sendMail
+							sendMail("At insertCurrentDay "+day+":"+":"+imsi+":"+mccmnc+" occur SQLException error!");
+							errorMsg=e.getStackTrace().toString();
+							
+							//新增失敗後嘗試update更新
+							Set<String> set=new HashSet<String>();
+							Map<String,Set<String>> map = new HashMap<String,Set<String>>();
+							if(existMapD.containsKey(day)){
+								map=existMapD.get(day);
+								if(map.containsKey(imsi)){
+									set=map.get(imsi);
+								}							
+							}
+							set.add(mccmnc);
+							map.put(imsi, set);
+							existMapD.put(day,map);
+						}	
+						
 					}
 				}
 			}
-			
-			if(count!=0){
-				result=pst.executeBatch();
-				logger.info("Execute insertCurrentMapU Batch");
-			}
-			pst.close();
-			
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			logger.error("Error at insertCurrentMapU : "+e.getMessage());
-			//sendMail
-			sendMail("At insertCurrentMapU occur SQLException error!");
-			errorMsg=e.getMessage();
 		}
 	}
 
@@ -1394,10 +1381,10 @@ public class DVRSmain implements Job{
 
 		} catch (SQLException e1) {
 			e1.printStackTrace();
-			logger.error("Error at Load SMSSetting : "+e1.getMessage());
+			logger.error("Error at Load SMSSetting : "+e1.getStackTrace());
 			//sendMail
 			sendMail("At sendAlertSMS:Load SMSSetting occur SQLException error!");
-			errorMsg=e1.getMessage();
+			errorMsg=e1.getStackTrace().toString();
 		}
 		
 		
@@ -1412,28 +1399,28 @@ public class DVRSmain implements Job{
 		
 		try {
 			sql=
-					"SELECT A.ID,A.COMTENT,A.CHARSET "
-					+ "FROM HUR_SMS_COMTENT A ";	
+					"SELECT A.ID,A.CONTENT,A.CHARSET "
+					+ "FROM HUR_SMS_CONTENT A ";	
 			
 			Statement st;
 			st = conn.createStatement();
-			logger.debug("Execute SQL:"+sql);
+			logger.debug("Execute SQL:"+sql); 
 			ResultSet rs=st.executeQuery(sql);
 			
 			while(rs.next()){
 				Map<String,String> map =new HashMap<String,String>();
-				map.put("COMTENT", rs.getString("COMTENT"));
+				map.put("CONTENT", rs.getString("CONTENT"));
 				map.put("CHARSET", rs.getString("CHARSET"));
 				content.put(rs.getString("ID"), map);
 			}
 
 		} catch (SQLException e1) {
 			e1.printStackTrace();
-			logger.error("Error at Load SMSContent : "+e1.getMessage());
+			logger.error("Error at Load SMSContent : "+e1.getStackTrace());
 			//sendMail
 			sendMail("At sendAlertSMS:Load SMSContent occur SQLException error!");
-			errorMsg=e1.getMessage();
-		}
+			errorMsg=e1.getStackTrace().toString();
+		} 
 		
 		if(content.size()==0){
 			logger.error("No SMS content!");
@@ -1468,9 +1455,6 @@ public class DVRSmain implements Job{
 						continue;
 					}
 					
-					
-					
-					//logger.info("For imsi="+imsi+" get phone number="+phone);
 					String res="";
 					
 					Double charge=(Double) currentMap.get(sYearmonth).get(imsi).get("CHARGE");
@@ -1519,7 +1503,7 @@ public class DVRSmain implements Job{
 								logger.info("For "+imsi+" ,System forecast the next hour will over charge limit");
 								sendSMS=true;
 								alertBracket=bracket.get(0)*threshold;
-								contentid=msg.get(i).split(",");
+								contentid=msg.get(0).split(",");
 								if("1".equals(suspend.get(0))){
 									needSuspend=true;
 								}else{
@@ -1557,7 +1541,7 @@ public class DVRSmain implements Job{
 								lastAlernThreshold=alertBracket;
 								smsTimes++;
 								logger.info("For "+imsi+" send "+smsTimes+"th message:"+msg.get(i));
-								String cont =processMag(content.get(s).get("COMTENT"),alertBracket,cPhone);
+								String cont =processMag(content.get(s).get("CONTENT"),alertBracket,cPhone);
 								//TODO
 								//WSDL方式呼叫 WebServer
 								//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
@@ -1576,20 +1560,11 @@ public class DVRSmain implements Job{
 								}
 								//寫入資料庫
 								pst.setString(1, phone);
-								pst.setString(2, msg.get(i));
+								pst.setString(2, cont);
 								pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
-								pst.setString(4, res);
+								pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 								pst.addBatch();
-								
-								//HUR_Current 需更新
-								//如果是新資料，insertList會已有資料，直接註記update
-								if(!updateMap.containsKey(sYearmonth)){
-									Set<String> se=new HashSet<String>();
-									se.add(imsi);
-									updateMap.put(sYearmonth, se);
-								}else{
-									updateMap.get(sYearmonth).add(imsi);
-								}
+
 							}
 							
 						}
@@ -1602,16 +1577,16 @@ public class DVRSmain implements Job{
 
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.error("Error at sendMonthAlertSMS : "+e.getMessage());
+				logger.error("Error at sendMonthAlertSMS : "+e.getStackTrace());
 				//sendMail
 				sendMail("At sendMonthAlertSMS occur SQLException error!");
-				errorMsg=e.getMessage();
+				errorMsg=e.getStackTrace().toString();
 			}catch(Exception e){
 				e.printStackTrace();
-				logger.error("Error at sendMonthAlertSMS : "+e.getMessage());
+				logger.error("Error at sendMonthAlertSMS : "+e.getStackTrace());
 				//sendMail
 				sendMail("At sendMonthAlertSMS occur Exception error!");
-				errorMsg=e.getMessage();
+				errorMsg=e.getStackTrace().toString();
 			}
 		}
 		
@@ -1632,16 +1607,15 @@ public class DVRSmain implements Job{
 						logger.debug("The IMSI:"+imsi+" can't find msisdn to send! ");
 						continue;
 					}
-					
-					
-					
+
 					Double daycharge=0D;
-					String alerted =null;
+					String alerted ="0";
 					
 					//累計
 					for(String mccmnc : currentDayMap.get(sYearmonthday).get(imsi).keySet()){
 						daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(imsi).get(mccmnc).get("CHARGE");
-						alerted=(String) currentDayMap.get(sYearmonthday).get(imsi).get(mccmnc).get("ALERT");
+						String a=(String) currentDayMap.get(sYearmonthday).get(imsi).get(mccmnc).get("ALERT");
+						if("1".equals(a)) alerted="1";
 					}
 					
 					if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
@@ -1656,54 +1630,42 @@ public class DVRSmain implements Job{
 							cPhone=map.get("PHONE");
 						
 						//處理字串，日警示內容ID設定為99
-						String cont =processMag(content.get("99").get("COMTENT"),DEFAULT_DAY_THRESHOLD,cPhone);
+						String cont =processMag(content.get("99").get("CONTENT"),DEFAULT_DAY_THRESHOLD,cPhone);
 						//發送簡訊
+						logger.info("For "+imsi+" send daily allert message:99");
 						String res = setSMSPostParam(cont,phone);
 						logger.debug("send message result : "+res);	
 						smsCount++;
 						//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 						for(String mccmnc : currentDayMap.get(sYearmonthday).get(imsi).keySet()){
 							currentDayMap.get(sYearmonthday).get(imsi).get(mccmnc).put("ALERT", "1");
-							
-							//HUR_Current_day 需更新，如果是新資料，insertList會已有資料，直接註記update
-							Map<String, Set<String>> smd=new HashMap<String, Set<String>>();
-							Set<String> sed = new HashSet<String>();
-							if(updateMapD.containsKey(sYearmonthday)){
-								smd= updateMapD.get(sYearmonthday);
-								if(smd.containsKey(imsi)){
-									sed=smd.get(imsi);
-								}
-							}
-							sed.add(mccmnc);
-							smd.put(imsi, sed);
-							updateMapD.put(sYearmonthday, smd);
 						}
 						
 						//寫入資料庫
 						pst.setString(1, phone);
-						pst.setString(2, "99");
+						pst.setString(2, cont);
 						pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
-						pst.setString(4, res);
+						pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 						pst.addBatch();
 					}
 				}
-				logger.debug("Total send day alert"+smsCount+" ...");
+				logger.debug("Total send day alert "+smsCount+" ...");
 				logger.debug("Log to table...executeBatch");
 				pst.executeBatch();
 				pst.close();
 			
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				logger.error("Error at sendDayAlertSMS : "+e1.getMessage());
+				logger.error("Error at sendDayAlertSMS : "+e1.getStackTrace());
 				//sendMail
 				sendMail("At sendDayAlertSMS occur SQLException error!");
-				errorMsg=e1.getMessage();
+				errorMsg=e1.getStackTrace().toString();
 			} catch (IOException e) {
 				e.printStackTrace();
-				logger.error("Error at sendDayAlertSMS : "+e.getMessage());
+				logger.error("Error at sendDayAlertSMS : "+e.getStackTrace());
 				//sendMail
 				sendMail("At sendDayAlertSMS occur SQLException error!");
-				errorMsg=e.getMessage();
+				errorMsg=e.getStackTrace().toString();
 			}	
 		}
 		
@@ -1828,16 +1790,24 @@ public class DVRSmain implements Job{
 					
 					//中文
 					//處理字串
-					String cont =processMag(content.get(msgid.toString()).get("COMTENT"),null,cPhone);
+					String cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
 					//發送簡訊
 					String res = setSMSPostParam(cont,phone);
 					logger.debug("send chinese message result : "+res);	
 					smsCount++;
 					
+					//寫入資料庫
+					pst.setString(1, phone);
+					pst.setString(2, cont);
+					pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
+					pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
+					pst.addBatch();
+					
+					
 					//英文
 					msgid+=1;
 					//處理字串
-					cont =processMag(content.get(msgid.toString()).get("COMTENT"),null,cPhone);
+					cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
 					//發送簡訊
 					res = setSMSPostParam(cont,phone);
 					logger.debug("send english message result : "+res);	
@@ -1845,40 +1815,33 @@ public class DVRSmain implements Job{
 					
 					//寫入資料庫
 					pst.setString(1, phone);
-					pst.setString(2, msgid.toString());
+					pst.setString(2, cont);
 					pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
-					pst.setString(4, res);
+					pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 					pst.addBatch();
 					
 					//更新CurrentMap
 					currentMap.get(sYearmonth).get(imsi).put("LAST_ALERN_VOLUME",volume);
-					
-					//如果是新資料，insertList會已有資料，直接註記update
-					if(!updateMap.containsKey(sYearmonth)){
-						Set<String> se=new HashSet<String>();
-						se.add(imsi);
-						updateMap.put(sYearmonth, se);
-					}else{
-						updateMap.get(sYearmonth).add(imsi);
-					}
+
 				}
 				
 			}
 			logger.debug("Total send volume alert SMS "+smsCount+" ...");
+			pst.executeBatch();
 			pst.close();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at sendDayAlertSMS : "+e.getMessage());
+			logger.error("Error at sendDayAlertSMS : "+e.getStackTrace());
 			//sendMail
 			sendMail("At sendDayAlertSMS occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.error("Error at sendDayAlertSMS : "+e.getMessage());
+			logger.error("Error at sendDayAlertSMS : "+e.getStackTrace());
 			//sendMail
 			sendMail("At sendDayAlertSMS occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
@@ -1899,7 +1862,7 @@ public class DVRSmain implements Job{
 		//客服電話
 		if(cPhone==null)
 			cPhone="";
-		msg=msg.replace("{{customerService}}", cPhone);
+		msg=msg.replace("{{customerService}}",cPhone);
 		
 		return msg;
 	}
@@ -2019,16 +1982,17 @@ public class DVRSmain implements Job{
 			st.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at setMsisdnMap : "+e.getMessage());
+			logger.error("Error at setMsisdnMap : "+e.getStackTrace());
 			//sendMail
 			sendMail("At setMsisdnMap occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		}
 	}
 	
 	private void suspend(String imsi,String msisdn){
 		logger.info("suspend...");
 		suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
+		PreparedStatement pst = null;
 		try {
 			//20141118 add 傳回suspend排程的 service order nbr
 			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
@@ -2039,45 +2003,68 @@ public class DVRSmain implements Job{
 					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN) "
 					+ "VALUES(?,?,SYSDATE,?)";
 			
-			PreparedStatement pst = conn.prepareStatement(sql);
+			pst=conn.prepareStatement(sql);
 			pst.setString(1,orderNBR.get("cServiceOrderNBR") );
 			pst.setString(2,imsi );
 			pst.setString(3,msisdn );
 			logger.info("Execute SQL : "+sql);
 			
-			pst.executeUpdate();
-			
-			pst.close();
-			
+			pst.executeUpdate();		
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Error at suspend : "+e.getMessage());
+			logger.error("Error at suspend : "+e.getStackTrace());
 			//sendMail
 			sendMail("At suspend occur SQLException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.error("Error at suspend : "+e.getMessage());
+			logger.error("Error at suspend : "+e.getStackTrace());
 			//sendMail
 			sendMail("At suspend occur IOException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			logger.error("Error at suspend : "+e.getMessage());
+			logger.error("Error at suspend : "+e.getStackTrace());
 			//sendMail
 			sendMail("At suspend occur ClassNotFoundException error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error("Error at suspend : "+e.getMessage());
+			logger.error("Error at suspend : "+e.getStackTrace());
 			//sendMail
 			sendMail("At suspend occur Exception error!");
-			errorMsg=e.getMessage();
+			errorMsg=e.getStackTrace().toString();
+		}finally{
+			if(pst!=null){
+				try {
+					pst.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					logger.error("Error at close pst : "+e.getStackTrace());
+					//sendMail
+					sendMail("At close pst occur Exception error!");
+					errorMsg=e.getStackTrace().toString();
+				}
+			}
+			if(sus.Temprs!=null){
+				try {
+					sus.Temprs.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					logger.error("Error at close sus.Temprs : "+e.getStackTrace());
+					//sendMail
+					sendMail("At close sus.Temprs occur Exception error!");
+					errorMsg=e.getStackTrace().toString();
+				}
+			}
+		
 		}
 	}
 	
-	private void sendMail(String content){
+	private static void sendMail(String content){
 		mailReceiver=props.getProperty("mail.Receiver");
 		mailSubject="DVRS Warnning Mail";
 		mailContent="Error :"+content+"<br>\n"
@@ -2087,29 +2074,20 @@ public class DVRSmain implements Job{
 
 		try {
 			if(mailReceiver==null ||"".equals(mailReceiver)){
-				System.out.println("Can't send email without receiver!");
+				logger.error("Can't send email without receiver!");
 			}else{
 				tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
 			}
 			
 		} catch (AddressException e) {
 			e.printStackTrace();
-			logger.error("Error at sendMail : "+e.getMessage());
-			//sendMail
-			//sendMail("At sendMail occur AddressException error!");
-			//errorMsg=e.getMessage();
+			logger.error("Error at sendMail : "+e.getStackTrace());
 		} catch (MessagingException e) {
 			e.printStackTrace();
-			logger.error("Error at sendMail : "+e.getMessage());
-			//sendMail
-			//sendMail("At sendMail occur MessagingException error!");
-			//errorMsg=e.getMessage();
+			logger.error("Error at sendMail : "+e.getStackTrace());
 		} catch (IOException e) {
 			e.printStackTrace();
-			logger.error("Error at sendMail : "+e.getMessage());
-			//sendMail
-			//sendMail("At sendMail occur IOException error!");
-			//errorMsg=e.getMessage();
+			logger.error("Error at sendMail : "+e.getStackTrace());
 		}
 	}
 
@@ -2124,11 +2102,15 @@ public class DVRSmain implements Job{
 					sql = "select STATUS from S2T_TB_SERVICE_ORDER Where SERVICE_ORDER_NBR ='"
 							+ NBR.get("cServiceOrderNBR") + "'";
 					logger.info(sql);
-					ResultSet rs = conn.createStatement().executeQuery(sql);
+					Statement st = conn.createStatement();
+					ResultSet rs = st.executeQuery(sql);
 
 					while (rs.next()) {
 						cMesg = rs.getString("STATUS");
 					}
+					
+					rs.close();
+					st.close();
 
 					logger.info("Query_ServiceOrderStatus:"
 							+ Integer.toString(i) + " Times " + cMesg);
@@ -2147,7 +2129,6 @@ public class DVRSmain implements Job{
 					cMesg = "501";
 				}
 				
-				
 				//如果狀態更新失敗，沒有動作發送錯誤Email
 				if("501".equalsIgnoreCase(cMesg)){
 					sendMail("Suspend does not work for"+"<br>"
@@ -2162,7 +2143,10 @@ public class DVRSmain implements Job{
 						+ "SET A.RESULT='"+cMesg+"' "
 						+ "WHERE A.SERVICE_ORDER_NBR='"+NBR.get("cServiceOrderNBR")+"'";
 				
-				conn.createStatement().executeUpdate(sql);
+				Statement st2 = conn.createStatement();
+				st2.executeUpdate(sql);
+				st2.close();
+				//conn.createStatement().executeUpdate(sql);
 				
 				
 				//更新回Table
@@ -2180,41 +2164,50 @@ public class DVRSmain implements Job{
 						+ " where WORK_ORDER_NBR='" + NBR.get("cWorkOrderNBR") + "'";
 
 				logger.debug("update S2T_TB_TYPB_WO_SYNC_FILE_DTL:" + sql);
-				conn.createStatement().executeUpdate(sql);
+				//conn.createStatement().executeUpdate(sql);
+				Statement st3 = conn.createStatement();
+				st3.executeUpdate(sql);
+				st3.close();
 
 				sql = "update S2T_TB_SERVICE_ORDER_ITEM set timestamp="
 						+ "to_date('"+dString+"','YYYYMMDDHH24MISS')"
 						+ " where Service_Order_NBR='" + NBR.get("cServiceOrderNBR") + "'";
 
 				logger.debug("Update S2T_TB_SERVICE_ORDER_ITEM:" + sql);
-				conn.createStatement().executeUpdate(sql);
+				//conn.createStatement().executeUpdate(sql);
+				Statement st4 = conn.createStatement();
+				st4.executeUpdate(sql);
+				st4.close();
 
 				sql = "update S2T_TB_SERVICE_ORDER set timestamp="
 						+ "to_date('"+dString+"','YYYYMMDDHH24MISS')"
 						+ " where SERVICE_ORDER_NBR='" + NBR.get("cServiceOrderNBR") + "'";
 
 				logger.debug("Update S2T_TB_SERVICE_ORDER:" + sql);
-				conn.createStatement().executeUpdate(sql);
+				//conn.createStatement().executeUpdate(sql);
+				Statement st5 = conn.createStatement();
+				st5.executeUpdate(sql);
+				st5.close();
 				
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				logger.error("Error at processSuspendNBR : "+e.getStackTrace());
 				//sendMail
 				sendMail("At processSuspendNBR occur InterruptedException error!");
-				errorMsg=e.getMessage();
+				errorMsg=e.getStackTrace().toString();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				logger.error("Error at processSuspendNBR : "+e.getStackTrace());
 				//sendMail
 				sendMail("At processSuspendNBR occur SQLException error!");
-				errorMsg=e.getMessage();
+				errorMsg=e.getStackTrace().toString();
 			} catch (IOException e) {
 				e.printStackTrace();
-				logger.error("Error at processSuspendNBR : "+e.getMessage());
+				logger.error("Error at processSuspendNBR : "+e.getStackTrace());
 				//sendMail
 				sendMail("At processSuspendNBR occur IOException error!");
-				errorMsg=e.getMessage();
-			}			
+				errorMsg=e.getStackTrace().toString();
+			}
 		}
 	}
 	public String Query_SyncFileDtlStatus(String cServiceOrderNBR) throws SQLException, InterruptedException, IOException{
@@ -2353,9 +2346,21 @@ public class DVRSmain implements Job{
 		// 副程式開始時間
 		long subStartTime;
 
-		IniProgram();
-		
 		logger.info("RFP Program Start! "+new Date());
+		
+		try {
+			if(conn==null ||conn.isClosed()){
+				logger.error("ReConnect for conn!");
+				connectDB();
+			}
+			if(conn2==null ||conn2.isClosed()){
+				logger.error("ReConnect for conn2!");
+				connectDB2();
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			logger.error("ReConnect DB error! ");
+		}
 		
 		if (conn != null && conn2!=null) {
 			
@@ -2415,6 +2420,11 @@ public class DVRSmain implements Job{
 			setCostomerNumber();
 			logger.info("setCostomerNumber execute time :"+(System.currentTimeMillis()-subStartTime));
 			
+			//華人上網包申請資料
+			subStartTime = System.currentTimeMillis();
+			setAddonData();
+			logger.info("setAddonData execute time :"+(System.currentTimeMillis()-subStartTime));
+			
 			//開始批價 
 			subStartTime = System.currentTimeMillis();
 			charge();
@@ -2427,10 +2437,9 @@ public class DVRSmain implements Job{
 			
 			//回寫批價結果
 			subStartTime = System.currentTimeMillis();
-			updateCdr();
-			
 			//避免資料異常，完全處理完之後在commit
 			try {
+				updateCdr();
 				insertCurrentMap();
 				insertCurrentMapDay();
 				updateCurrentMap();
@@ -2438,10 +2447,10 @@ public class DVRSmain implements Job{
 				conn.commit();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				logger.error("Error at commit : "+e.getMessage());
+				logger.error("Error at updateTable : "+e.getStackTrace());
 				//sendMail
-				sendMail("At updateCurrentMapU occur SQLException error!");
-				errorMsg=e.getMessage();
+				sendMail("At updateTable occur SQLException error!");
+				errorMsg=e.getStackTrace().toString();
 			}
 			logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
 
@@ -2455,16 +2464,51 @@ public class DVRSmain implements Job{
 			endTime = System.currentTimeMillis();
 			logger.info("Program execute time :" + (endTime - startTime));
 			show();
-			closeConnect();
+			//closeConnect();
 
 		} else {
 			logger.error("connect is null!");
+			sendMail("Cannot connect to DB!");
 		}
 	}
 	
 	@Override
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		
+		//如果已有等待的thread，結束自己
+		if(hasWaiting) {
+			logger.debug("****************************      Found had wating thread doesn't execute!");
+			return;
+		}
+		//如果已經在進行中，暫停
+		if(executing) {
+			logger.debug("****************************      New Thread Wating... ");
+			hasWaiting=true;
+			while(executing){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					logger.error("At waiting thread occur error "+e.getStackTrace());
+					sendMail("Cannot connect to DB!");
+					errorMsg=e.getStackTrace().toString();
+				}
+			}
+			//離開等待狀態
+			hasWaiting=false;
+			logger.debug("****************************      Thread Leave Wating... ");
+		}
+
+		
+		//開始執行程式
+		executing=true;
 		process();
+		
+		//將動作交給下個thread
+		executing=false;
+		
+		//sendMail("test mail " + new Date());
 	}
 	
 	public static void regularTimeRun(){
@@ -2485,12 +2529,12 @@ public class DVRSmain implements Job{
 					.startNow()
 					.withSchedule(
 							SimpleScheduleBuilder.simpleSchedule()
-									.withIntervalInSeconds(runInterval)
+									.withIntervalInSeconds(RUN_INTERVAL)
 									.repeatForever()).build();
 
 			// Tell quartz to schedule the job using our trigger
 			scheduler.scheduleJob(job, trigger);
-			
+		
 			// and start it off
 			scheduler.start();
 			
@@ -2517,10 +2561,13 @@ public class DVRSmain implements Job{
 	}
 	
 	public static void main(String[] args) {
-		/*DVRSmain rf =new DVRSmain();
-		rf.process();*/
+		//DVRSmain rf =new DVRSmain();
+		//rf.process();
+		IniProgram();
 
 		regularTimeRun();
+		
+		closeConnect();
 
 	}
 	

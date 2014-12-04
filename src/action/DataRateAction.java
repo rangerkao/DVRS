@@ -31,6 +31,10 @@ public class DataRateAction extends BaseAction{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
 		return SUCCESS;
 	}

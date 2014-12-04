@@ -33,7 +33,7 @@ window.onmousemove = handleMouseMove;
  */
 var oldx,oldy;
 var checkPeriod=1000*5; //每5秒檢查一次
-var logOutminute=5//閒置登出時間（分鐘）
+var logOutminute=20//閒置登出時間（分鐘）
 var logOutTime=1000*60*logOutminute;
 var count=logOutTime/checkPeriod;
 
@@ -87,14 +87,121 @@ var count=logOutTime/checkPeriod;
 		queryAuth();
 	});
 
+	function volidateNum(val){
+		var   reg=/^\d+$/g;
+		return reg.test(val);
+	}
+	
+	
+	
+	
+	function tqueryIMSI(){
+		
+		if($("#tMsisdn").val()==null || $("#tMsisdn").val()==""||$("#tMsisdn").val()=="請輸入門號"){
+			alert('查詢IMSI時，門號必填');
+			return
+		}
+		if(!volidateNum($("#tMsisdn").val())){
+			alert('門號輸入格式錯誤');
+			return
+		}
+
+		$.ajax({
+		      url: '<s:url action="queryIMSI"/>',
+		      data: {
+		    	  "msisdn":$("#tMsisdn").val(),
+		      },//parameters go here in object literal form
+		      type: 'POST',
+		      datatype: 'json',
+		      success: function(json) {  
+		    	  
+		    	  //jQuery.parseJSON,JSON.parse(json)
+		    	  //alert(json);
+		    	  var v=JSON.parse(json);
+		    	  if(json=="" || v.imsi==null || v.imsi==""){
+		    		  alert("查無IMSI");
+		    	  }else{
+		    		  $("#tIMSI").val(v.imsi);
+		    	  }
+	    	  },
+		      error: function(json) {
+		    	  alert('something bad happened'); 
+		      },
+	    	  beforeSend:function(){
+    			//disableButton();
+    			$("#tIMSI").val("").css('color','#333333');
+	          },
+	          complete:function(){
+	        	  //enableButton();
+	          }
+		    });
+	}
+
+	function tqueryMSISDN(){
+		
+		if($("#tIMSI").val()==null || $("#tIMSI").val()=="" ||$("#tIMSI").val()=="請輸入IMSI"){
+			alert('查詢門號時IMSI不可為空');
+			return
+		}
+		
+		if(!volidateNum($("#tIMSI").val())){
+			alert('IMSI輸入格式錯誤');
+			return
+		}
+
+		$.ajax({
+		      url: '<s:url action="queryMSISDN"/>',
+		      data: {
+		    	  "imsi":$("#tIMSI").val(),
+		      },//parameters go here in object literal form
+		      type: 'POST',
+		      datatype: 'json',
+		      success: function(json) {  
+		    	  
+		    	  //jQuery.parseJSON,JSON.parse(json)
+		    	  //alert(json);
+		    	  var v=JSON.parse(json);
+		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+		    		 alert("查無門號");
+		    	  }else{
+		    		  $("#tMsisdn").val(v.msisdn).css('color','#333333');
+		    	  }
+	    	  },
+		      error: function(json) {
+		    	  alert('something bad happened'); 
+		      },
+	    	  beforeSend:function(){
+	    			//disableButton();
+	    			$("#tMsisdn").val("");
+	          },
+	          complete:function(){
+	        	  //enableButton();
+	          }
+		    });
+	}
 </script>
 </head>
 <body>
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: top;">
-		<label id="x">x.index</label>
-		<label id="y">y.index</label>
-		<label id="menuAuth"></label>
+		<div class="col-xs-12">
+			<label id="x" style="display: none;">x.index</label>
+			<label id="y" style="display: none;">y.index</label>
+			<label id="menuAuth"></label>
+		</div>
+		<div class="col-xs-12">
+			<input 	type="text" id="tIMSI" class="col-xs-12"
+					value="請輸入IMSI" style="color: #AAAAAA;" 
+					onfocus="if (this.value == '請輸入IMSI') {this.value = ''; this.style.color='#333333'}" 
+					onblur="if (this.value == '') {this.value = '請輸入IMSI'; this.style.color='#AAAAAA'}"  >
+			<input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryMSISDN()" value="IMSI查詢門號">
+			<input 	type="text" id="tMsisdn" class="col-xs-12"
+					value="請輸入門號" style="color: #AAAAAA;" 
+					onfocus="if (this.value == '請輸入門號') {this.value = ''; this.style.color='#333333'}" 
+					onblur="if (this.value == '') {this.value = '請輸入門號'; this.style.color='#AAAAAA'}" >
+			<input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"> 
+		</div>
+		
 		<ul id="menu">
 			<li>
 				<p class="text-left">使用者管理</p>

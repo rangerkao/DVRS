@@ -18,7 +18,7 @@ public class LoginControl extends BaseControl{
 	public String loginC(Map session,String account,String password){
 		String msg="";
 			Admin admin = adminDao.queryAdminByAccount(account);
-			if(admin==null || "".equals(admin.getPassword())){
+			if(admin==null || admin.getPassword()==null || "".equals(admin.getPassword())){
 				msg="Account error or without !";
 			}else if(!admin.getPassword().equals(password)){
 				msg="PassWord Error !";

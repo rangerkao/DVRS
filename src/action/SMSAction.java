@@ -46,7 +46,7 @@ public class SMSAction extends BaseAction {
 	private SMSControl smsControl = new SMSControl();
 	Boolean sendSMS;
 	
-	int SMSid;
+	String SMSid;
 	SMSContent sc ;
 	String COMTENT;
 	String CHARSET;
@@ -64,6 +64,10 @@ public class SMSAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
 		return SUCCESS;
 	}
@@ -76,6 +80,10 @@ public class SMSAction extends BaseAction {
 			result=beanToJSONArray(smsSettinglist);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "SMSSetting", "query","", SUCCESS);
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
@@ -142,6 +150,10 @@ public class SMSAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
 
 		return SUCCESS;
@@ -155,6 +167,10 @@ public class SMSAction extends BaseAction {
 			result=beanToJSONArray(list);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "query","", SUCCESS);
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
@@ -185,7 +201,7 @@ public class SMSAction extends BaseAction {
 				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}
 			
-			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update",mod+":"+smsSettinglistString, SUCCESS);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update","msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS+"sendSMS:"+sendSMS, SUCCESS);
 				
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -196,6 +212,10 @@ public class SMSAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			result=e.getMessage();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
 		}
 		
@@ -213,6 +233,31 @@ public class SMSAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
+		
+		
+		return SUCCESS;
+	}
+	
+public String queryMSISDN(){
+		
+		try {
+			Map<String,String> map =new HashMap<String,String>();
+			map=smsControl.queryMSISDN(imsi);
+			result=beanToJSONObject(map);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "QueryIMSI","", SUCCESS);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
 		}
 		
 		
@@ -221,7 +266,7 @@ public class SMSAction extends BaseAction {
 	
 	public String querySMSContent(){
 		try {
-			List<SMSContent> scl=smsControl.querySMSContent();
+			List<SMSContent> scl=smsControl.querySMSContent(SMSid);
 			result=beanToJSONArray(scl);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "SMSContentSetting", "Query","", SUCCESS);
 		} catch (UnsupportedEncodingException e) {
@@ -229,6 +274,10 @@ public class SMSAction extends BaseAction {
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
@@ -246,7 +295,7 @@ public class SMSAction extends BaseAction {
 			return SUCCESS;
 		}
 		
-		System.out.println("id:"+sc.getID()+" ; content : "+sc.getCOMTENT()+"; charset:"+sc.getCHARSET()+"; description:"+sc.getDESCRIPTION());
+		System.out.println("id:"+sc.getId()+" ; content : "+sc.getComtent()+"; charset:"+sc.getCharSet()+"; description:"+sc.getDescription());
 		
 		
 		int i=0;
@@ -395,12 +444,12 @@ public class SMSAction extends BaseAction {
 	}
 
 
-	public int getSMSid() {
+	public String getSMSid() {
 		return SMSid;
 	}
 
 
-	public void setSMSid(int sMSid) {
+	public void setSMSid(String sMSid) {
 		SMSid = sMSid;
 	}
 

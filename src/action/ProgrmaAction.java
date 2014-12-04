@@ -34,7 +34,13 @@ public class ProgrmaAction extends BaseAction {
 			e.printStackTrace();
 			result=e.getMessage();
 		}
-		actionLogControl.loggerAction(super.getUser().getAccount(), "Program", "execute","filename¡G"+filename, result);
+		try {
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Program", "execute","filename¡G"+filename, result);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 		return SUCCESS;
 	}
 	public String getFilename() {

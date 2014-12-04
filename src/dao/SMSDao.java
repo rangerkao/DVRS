@@ -27,17 +27,17 @@ public class SMSDao extends BaseDao{
 		logger = Logger.getLogger(SMSDao.class);
 	}
 
-	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException{
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
 		
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
 				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A "
-				+ "WHERE  1=1 AND A.SEND_DATE >= ? -1 AND A.SEND_DATE <= ? "
+				+ "WHERE  1=1 "
 				+ (fromDate!=null &&!"".equals(fromDate)?"AND A.SEND_DATE >=to_date('"+fromDate+"','yyyy-mm-dd') ":"")  
 				+ (toDate!=null &&!"".equals(toDate)?"AND A.SEND_DATE<=to_date('"+toDate+"','yyyy-mm-dd')+1 ":"")
 				+ (msisdn!=null && !"".equals(msisdn)?"AND A.SEND_NUMBER='"+msisdn+"' ":"")
-				+ "ORDER BY A.CREATE_DATE ";
+				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			Statement st = conn.createStatement();
 			logger.debug("Execute sql: "+sql);
@@ -45,7 +45,8 @@ public class SMSDao extends BaseDao{
 			while(rs.next()){
 				SMSLog log = new SMSLog();
 				log.setId(rs.getString("ID"));
-				log.setMsg(rs.getString("MSG"));
+				//log.setMsg(rs.getString("MSG"));
+				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
 				log.setResult(rs.getString("RESULT"));
 				log.setSendNumber(rs.getString("SEND_NUMBER"));
 				log.setSendDate(rs.getString("SEND_DATE"));
@@ -56,12 +57,13 @@ public class SMSDao extends BaseDao{
 
 	}
 	
-	public List<SMSLog> querySMSLog() throws SQLException{
+	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
 				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
-				+ "FROM HUR_SMS_LOG A "
-				+ "ORDER BY A.CREATE_DATE ";
+				+ "FROM HUR_SMS_LOG A  "
+				+ "WHERE 1=1 "
+				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			Statement st = conn.createStatement();
 			logger.debug("Execute sql: "+sql);
@@ -69,7 +71,8 @@ public class SMSDao extends BaseDao{
 			while(rs.next()){
 				SMSLog log = new SMSLog();
 				log.setId(rs.getString("ID"));
-				log.setMsg(rs.getString("MSG"));
+				//log.setMsg(rs.getString("MSG"));
+				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
 				log.setResult(rs.getString("RESULT"));
 				log.setSendNumber(rs.getString("SEND_NUMBER"));
 				log.setSendDate(rs.getString("SEND_DATE"));
@@ -252,25 +255,69 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
-	public String getSMSContent(int id) throws SQLException{
-		
-		String result=null;
-		
-		sql="SELECT A.COMTENT FROM HUR_SMS_COMTENT A WHERE A.ID=? ";
+	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
+		logger.info("queryIMSI...");
+		Map<String,String> map =new HashMap<String,String>();
+		String msisdn = null;
+		String pricaplainid = null;
+		sql=
+				"SELECT B.IMSI,C.SERVICECODE,C.PRICEPLANID "
+				+ "FROM IMSI B,SERVICE C "
+				+ "WHERE B.SERVICEID = C.SERVICEID "
+				+ "AND B.IMSI = ?";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
-		pst.setInt(1, id);
+		pst.setString(1, imsi);
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs = pst.executeQuery();
+		while(rs.next()){
+			msisdn=rs.getString("SERVICECODE");
+			pricaplainid=rs.getString("PRICEPLANID");
+		}
+		rs.close();
+		pst.close();
+		map.put("msisdn", msisdn);
+		map.put("pricaplainid", pricaplainid);
+		closeConnect();
+		return map;
+	}
+	
+	public String getSMSContent(String smsId) throws SQLException{
+		
+		String result=null;
+		
+		sql="SELECT A.CONTENT FROM HUR_SMS_CONTENT A WHERE A.ID=? ";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, smsId);
 		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
 		
 		while(rs.next()){
-			result=rs.getString("COMTENT");
+			result=rs.getString("CONTENT");
 		}
 		rs.close();
 		pst.close();
 	
 		return result;
+	}
+	
+	public void logSendSMS(String phone,String msgid,String res) throws SQLException{
+		sql="INSERT INTO HUR_SMS_LOG"
+				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		pst.setString(1, phone);
+		pst.setString(2, msgid);
+		pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
+		pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
+		pst.executeUpdate();
+		pst.close();
+		
+		
 	}
 	
 	public String queryVLR(String imsi) throws SQLException{
@@ -336,7 +383,6 @@ public class SMSDao extends BaseDao{
 			try {
 				super.conn.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -344,7 +390,6 @@ public class SMSDao extends BaseDao{
 			try {
 				super.conn2.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -354,18 +399,45 @@ public class SMSDao extends BaseDao{
 		logger.info("querySMSContent...");
 
 		sql=
-				"SELECT  A.ID,A.COMTENT,A.CHARSET,A.DESCRIPTION "
-				+ "FROM HUR_SMS_COMTENT A "
+				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
+				+ "FROM HUR_SMS_CONTENT A "
 				+ "ORDER BY A.ID ";
 		
 			ResultSet rs = conn.createStatement().executeQuery(sql);
 			while(rs.next()){
 				SMSContent sc = new SMSContent();
 				
-				sc.setID(rs.getInt("ID"));
-				sc.setCOMTENT((rs.getString("COMTENT")==null?"":new String(rs.getString("COMTENT").getBytes("ISO8859-1"))));
-				sc.setCHARSET((rs.getString("CHARSET")==null?"":rs.getString("CHARSET")));
-				sc.setDESCRIPTION((rs.getString("DESCRIPTION")==null?"":new String(rs.getString("DESCRIPTION").getBytes("ISO8859-1"))));
+				sc.setId(rs.getInt("ID"));
+				sc.setComtent((rs.getString("CONTENT")==null?"":new String(rs.getString("CONTENT").getBytes("ISO8859-1"),"BIG5")));
+				sc.setCharSet((rs.getString("CHARSET")==null?"":rs.getString("CHARSET")));
+				sc.setDescription((rs.getString("DESCRIPTION")==null?"":new String(rs.getString("DESCRIPTION").getBytes("ISO8859-1"),"BIG5")));
+				result.add(sc);
+			}
+			
+			rs.close();
+			closeConnect();
+
+		return result;
+	}
+	
+	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
+		List<SMSContent> result = new ArrayList<SMSContent>();
+		logger.info("querySMSContent...");
+
+		sql=
+				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
+				+ "FROM HUR_SMS_CONTENT A "
+				+ "WHERE A.ID IN ("+id+") "
+				+ "ORDER BY A.ID ";
+		
+			ResultSet rs = conn.createStatement().executeQuery(sql);
+			while(rs.next()){
+				SMSContent sc = new SMSContent();
+				
+				sc.setId(rs.getInt("ID"));
+				sc.setComtent((rs.getString("CONTENT")==null?"":new String(rs.getString("CONTENT").getBytes("ISO8859-1"),"BIG5")));
+				sc.setCharSet((rs.getString("CHARSET")==null?"":rs.getString("CHARSET")));
+				sc.setDescription((rs.getString("DESCRIPTION")==null?"":new String(rs.getString("DESCRIPTION").getBytes("ISO8859-1"),"BIG5")));
 				result.add(sc);
 			}
 			
@@ -381,21 +453,21 @@ public class SMSDao extends BaseDao{
 		logger.info("insertSMSContent...");
 
 		sql=
-				"INSERT INTO HUR_SMS_COMTENT (ID,COMTENT,CHARSET,DESCRIPTION) "
+				"INSERT INTO HUR_SMS_CONTENT (ID,CONTENT,CHARSET,DESCRIPTION) "
 				+ "VALUES(?,?,?,?)";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
 			
-			pst.setInt(1, sc.getID());
-			pst.setString(2, new String(sc.getCOMTENT().getBytes(),"ISO8859-1"));
-			pst.setString(3, sc.getCHARSET());
-			pst.setString(4, sc.getDESCRIPTION());
+			pst.setInt(1, sc.getId());
+			pst.setString(2, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
+			pst.setString(3, sc.getCharSet());
+			pst.setString(4, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
 			
 			result=pst.executeUpdate();
 			
 			pst.close();
 			
-			connectDB();
+			closeConnect();
 		
 		return result;
 	}
@@ -405,22 +477,22 @@ public class SMSDao extends BaseDao{
 		logger.info("insertSMSContent...");
 
 		sql=
-				"UPDATE  HUR_SMS_COMTENT A "
-				+ "SET A.COMTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
+				"UPDATE  HUR_SMS_CONTENT A "
+				+ "SET A.CONTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
 				+ "WHERE A.ID=?";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
 			
-			pst.setString(1, new String(sc.getCOMTENT().getBytes(),"ISO8859-1"));
-			pst.setString(2, sc.getCHARSET());
-			pst.setString(3, sc.getDESCRIPTION());
-			pst.setInt(4, sc.getID());
+			pst.setString(1, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
+			pst.setString(2, sc.getCharSet());
+			pst.setString(3, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
+			pst.setInt(4, sc.getId());
 			
 			result=pst.executeUpdate();
 			
 			pst.close();
 			
-			connectDB();
+			closeConnect();
 			
 		return result;
 	}
@@ -430,18 +502,18 @@ public class SMSDao extends BaseDao{
 		logger.info("insertSMSContent...");
 
 		sql=
-				"DELETE HUR_SMS_COMTENT A "
+				"DELETE HUR_SMS_CONTENT A "
 				+ "WHERE A.ID=?";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
 			
-			pst.setInt(1, sc.getID());
+			pst.setInt(1, sc.getId());
 			
 			result=pst.executeUpdate();
 			
 			pst.close();
 			
-			connectDB();
+			closeConnect();
 		return result;
 	}
 	

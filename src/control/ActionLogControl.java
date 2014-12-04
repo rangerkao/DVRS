@@ -26,7 +26,7 @@ public class ActionLogControl extends BaseControl {
 		return actionLogDao.queryActionLog();
 	}
 	
-	public int loggerAction(String userid,String page,String action,String parameter,String result) throws SQLException{
+	public int loggerAction(String userid,String page,String action,String parameter,String result) throws Exception{
 		return actionLogDao.loggerAction(userid, page, action, parameter, result);
 	}
 }

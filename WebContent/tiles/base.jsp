@@ -17,9 +17,9 @@
 						name="top" /></td>
 			</tr>
 			<tr style="height: 90%;">
-				<td class="col-xs-2" bgcolor="#AFFFB0"><tiles:insertAttribute
+				<td width="190px" bgcolor="#AFFFB0"><tiles:insertAttribute
 						name="menu" /></td>
-				<td class="col-xs-10" bgcolor="#AFFFD8"><tiles:insertAttribute
+				<td  bgcolor="#AFFFD8"><tiles:insertAttribute
 						name='main' />
 				</td>
 			</tr>

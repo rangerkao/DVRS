@@ -23,21 +23,21 @@ public class SMSControl extends BaseControl{
 
 	SMSDao smsDao = new SMSDao();
 	IJatool tool =new Jatool();
-	int smsId=6;
+	String smsId="6";
 	
 	public SMSControl() throws Exception {
 		super();
 		logger = Logger.getLogger(SMSControl.class);
 	}
 	
-	public List<SMSLog> querySMSLog() throws SQLException{
+	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
 		return smsDao.querySMSLog();
 	}
-	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException{
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate))&&(msisdn==null||"".equals(msisdn)) )
 			return querySMSLog();
 		
-		return querySMSLog(fromDate,toDate,msisdn);
+		return smsDao.querySMSLog(fromDate,toDate,msisdn);
 	}
 	public List<SMSSetting> querySMSSetting() throws SQLException{
 		return smsDao.querySMSSetting();
@@ -57,7 +57,14 @@ public class SMSControl extends BaseControl{
 					logger.error("Can't send SMS without msisdn number!");
 				}else{
 					String cphone=queryCustmerServicePhone(imsi);
-					setSMSPostParam(content,msisdn,cphone);
+					
+					if(cphone==null)
+						cphone="";
+					content=content.replace("{{customerService}}", cphone);
+					
+					String res=setSMSPostParam(content,msisdn,cphone);
+					
+					smsDao.logSendSMS(msisdn, content, res);
 				}
 					
 			}
@@ -95,6 +102,9 @@ public class SMSControl extends BaseControl{
 	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
 		return smsDao.queryIMSI(msisdn);
 	}
+	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
+		return smsDao.queryMSISDN(imsi);
+	}
 	
 	
 	
@@ -114,12 +124,6 @@ public class SMSControl extends BaseControl{
 			System.out.println("test mode");
 			phone=props.getProperty("progrma.DEFAULT_PHONE");
 		}
-		
-		if(cphone==null)
-			cphone="";
-		msg=msg.replace("{{customerService}}", cphone);
-		
-		
 		String PhoneNumber=phone,Text=msg,charset="big5",InfoCharCounter=null,PID=null,DCS=null;
 		String param =
 				"PhoneNumber=+{{PhoneNumber}}&"
@@ -175,6 +179,11 @@ public class SMSControl extends BaseControl{
 	
 	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
 		return smsDao.querySMSContent();
+	}
+	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
+		if(id==null ||"".equals(id))
+			return smsDao.querySMSContent();
+		return smsDao.querySMSContent(id);
 	}
 	
 	public int insertSMSContent(SMSContent sc) throws Exception{

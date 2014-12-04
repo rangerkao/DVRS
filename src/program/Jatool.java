@@ -22,10 +22,14 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -38,18 +42,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-
-
-
-
-
-
-
-
-
-
-
-
 import org.apache.log4j.Logger;
 
 //190
@@ -57,19 +49,10 @@ import org.apache.log4j.Logger;
 import com.infotech.smpp.SMPPServicesStub.SendSMPP;
 import com.infotech.smpp.SMPPServicesStub.SendSMPPResponse;*/
 
-
-
-
-
-
-
-
-
-
 //199
-import com.iglomo.SMPPServicesStub;
+/*import com.iglomo.SMPPServicesStub;
 import com.iglomo.SMPPServicesStub.SendSMPP;
-import com.iglomo.SMPPServicesStub.SendSMPPResponse;
+import com.iglomo.SMPPServicesStub.SendSMPPResponse;*/
 
 public class Jatool implements IJatool{
 
@@ -235,13 +218,13 @@ public class Jatool implements IJatool{
 	public String callWSDLServer(String param) throws RemoteException {
 
 		String result = null;
-		SMPPServicesStub stub = new SMPPServicesStub();
+		/*SMPPServicesStub stub = new SMPPServicesStub();
 
 		SendSMPP smpp = new SendSMPP();
 		smpp.setArgs0(param);
 		SendSMPPResponse res = stub.sendSMPP(smpp);
 
-		result = res.get_return();
+		result = res.get_return();*/
 
 		return result;
 
@@ -368,7 +351,7 @@ public class Jatool implements IJatool{
  
 		int responseCode = con.getResponseCode();
 		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + param);
+		System.out.println("Post parameters : " + new String(param.getBytes("ISO8859-1")));
 		System.out.println("Response Code : " + responseCode);
  
 		BufferedReader in = new BufferedReader(
@@ -466,5 +449,33 @@ public class Jatool implements IJatool{
 				}
 			}
 		}		
+	}
+
+	@Override
+	public boolean regularMatch(String content, String regex) {
+		
+		return content.matches(regex);
+	}
+
+	@Override
+	public Pattern regularMatch(String regex) {
+
+		Pattern p =Pattern.compile(regex);
+		return p;
+	}
+
+	@Override
+	public List<String> regularFind(String content, String regex) {
+		
+		Pattern p =Pattern.compile(regex);
+		Matcher m = p.matcher(content);
+		
+		List<String> list = new ArrayList<String>();
+		
+		while(m.find()){
+			list.add(m.group());
+		}
+		
+		return list;
 	}
 }

@@ -55,6 +55,14 @@
 	<definition name="limitSetting" extends="web_base">
 		<put-attribute name="main" value="/web/limitSetting.jsp" />
 	</definition>
+	
+	<definition name="currentMonth" extends="web_base">
+		<put-attribute name="main" value="/web/currentMonth.jsp" />
+	</definition>
+	
+	<definition name="currentDay" extends="web_base">
+		<put-attribute name="main" value="/web/currentDay.jsp" />
+	</definition>
 
 
 </tiles-definitions>

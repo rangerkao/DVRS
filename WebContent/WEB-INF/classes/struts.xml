@@ -24,6 +24,8 @@
 
 		<global-results>
 			<result name="login">/index.jsp</result>
+			<result name="input">/index.jsp</result>
+			<result name="fail">/index.jsp</result>
 		</global-results>
 
 		<action name="*Link" method="{1}" class="action.LinkAction">
@@ -39,12 +41,13 @@
 			<result name="program" type="tiles">program</result>
 			<result name="cdr" type="tiles">cdr</result>
 			<result name="limitSetting" type="tiles">limitSetting</result>
+			<result name="currentMonth" type="tiles">currentMonth</result>
+			<result name="currentDay" type="tiles">currentDay</result>
 		</action>
 
 		<!-- Struts Action Definition -->
 		<action name="login" method="execute" class="action.LoginAction">
-			<result name="success" type="tiles">web_base2</result>
-			<result name="fail">/index.jsp</result>
+			<result name="success" type="tiles">web_base2</result>		
 		</action>
 
 		<action name="billReport" method="bill" class="action.BillAction">
@@ -140,6 +143,12 @@
 	        	<param name="root">result</param>
 	        </result>
         </action>
+        <action name="queryMSISDN" method="queryMSISDN" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
     <!-- ActionLogQuery -->
         <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
 	        <!-- 将返回类型设置为json -->
@@ -156,6 +165,19 @@
         </action>
     <!-- CDR -->
         <action name="queryCDR" method="queryCDR" class="action.CDRAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    <!-- Current -->
+    	<action name="queryCurrentMonth" method="queryCurrentMonth" class="action.CurrentAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="queryCurrentDay" method="queryCurrentDay" class="action.CurrentAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>

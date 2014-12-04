@@ -29,7 +29,7 @@ public class ActionLogDao extends BaseDao{
 				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
 				+ "FROM HUR_ACTION_LOG A "
 				+ "WHERE A.CREATE_DATE >= ?  AND A.CREATE_DATE <= ? +1 "
-				+ "ORDER BY A.CREATE_DATE ";
+				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
@@ -66,7 +66,7 @@ public class ActionLogDao extends BaseDao{
 		sql=
 				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
 				+ "FROM HUR_ACTION_LOG A "
-				+ "ORDER BY A.CREATE_DATE ";
+				+ "ORDER BY A.CREATE_DATE DESC ";
 		
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
@@ -95,7 +95,11 @@ public class ActionLogDao extends BaseDao{
 		return list;
 	}
 	
-	public int loggerAction(String userid,String page,String action,String parameter,String result) throws SQLException{
+	public int loggerAction(String userid,String page,String action,String parameter,String result) throws Exception{
+		
+		if(conn==null || conn.isClosed())
+			super.connectDB();
+		
 		
 		sql="INSERT INTO HUR_ACTION_LOG "
 				+ "(ID,USERID,PAGE,ACTION,PARAMETER,RESULT,CREATE_DATE) "

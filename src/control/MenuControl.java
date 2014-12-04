@@ -24,7 +24,7 @@ public class MenuControl extends BaseControl {
 		l1.add(new Link("elseList","billLink","帳單匯出"));
 		l1.add(new Link("adminList","cdrLink","CDR查詢"));
 		l1.add(new Link("adminList","actionQueryLink","使用者操作紀錄查詢"));
-		l1.add(new Link("adminList","dataRateLink","資費查詢"));
+		//l1.add(new Link("adminList","dataRateLink","資費查詢"));
 		
 		//層級二
 		List<Link> l2=new ArrayList<Link>();
@@ -35,12 +35,14 @@ public class MenuControl extends BaseControl {
 		List<Link> l3=new ArrayList<Link>();
 		
 		l3.add(new Link("searchList","smsQueryLink","簡訊發送查詢"));
-		l3.add(new Link("searchList","dataRateLink","資費管理"));
-		
+		l3.add(new Link("searchList","dataRateLink","資費查詢"));
+		l3.add(new Link("searchList","currentMonthLink","月份累計查詢"));
+		l3.add(new Link("searchList","currentDayLink","單日累計查詢"));
 		
 		l3.add(new Link("elseList","logoutLink","登出"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();
+		roleAuth.put("cs", 2);
 		roleAuth.put("act1", 2);
 		roleAuth.put("ranger", 1);
 		roleAuth.put("admin", 1);

@@ -2,49 +2,71 @@ package bean;
 
 public class SMSContent {
 
-	Integer ID;
-	String COMTENT;
-	String CHARSET;
-	String DESCRIPTION;
+	Integer id;
+	String comtent;
+	String charSet;
+	String description;
 	
 	
 	public SMSContent(){
 		
 	}
+
 	
 	
-	public SMSContent(Integer iD, String cOMTENT, String cHARSET,
-			String dESCRIPTION) {
+
+	public SMSContent(Integer id, String comtent, String charSet,
+			String description) {
 		super();
-		ID = iD;
-		COMTENT = cOMTENT;
-		CHARSET = cHARSET;
-		DESCRIPTION = dESCRIPTION;
+		this.id = id;
+		this.comtent = comtent;
+		this.charSet = charSet;
+		this.description = description;
 	}
-	public Integer getID() {
-		return ID;
+
+
+
+
+	public Integer getId() {
+		return id;
 	}
-	public void setID(Integer iD) {
-		ID = iD;
+
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
-	public String getCOMTENT() {
-		return COMTENT;
+
+
+	public String getComtent() {
+		return comtent;
 	}
-	public void setCOMTENT(String cOMTENT) {
-		COMTENT = cOMTENT;
+
+
+	public void setComtent(String comtent) {
+		this.comtent = comtent;
 	}
-	public String getCHARSET() {
-		return CHARSET;
+
+
+	public String getCharSet() {
+		return charSet;
 	}
-	public void setCHARSET(String cHARSET) {
-		CHARSET = cHARSET;
+
+
+	public void setCharSet(String charSet) {
+		this.charSet = charSet;
 	}
-	public String getDESCRIPTION() {
-		return DESCRIPTION;
+
+
+	public String getDescription() {
+		return description;
 	}
-	public void setDESCRIPTION(String dESCRIPTION) {
-		DESCRIPTION = dESCRIPTION;
+
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
+	
+	
 	
 	
 	

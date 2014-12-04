@@ -19,7 +19,7 @@ $(function() {
         dateFormat: 'yy-mm-dd'
     });
   });
-var smsLoglist;
+var dataList;
 function query(){
 	if(!validate()) return false;
 	$("#Qmsg").html("正在查尋，請稍待...");
@@ -36,25 +36,32 @@ function query(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  	smsLoglist=list;
-	    	    $.each(list,function(i,smsLog){  
-               var _tr = $(	"<tr align='center'>"+
-               					"<td>"+smsLog.id+"</td>"+
-               					"<td>"+smsLog.sendNumber+"</td>"+
-               					"<td>"+smsLog.msg+"</td>"+
-               					"<td>"+smsLog.sendDate+"</td>"+
-               					"<td>"+smsLog.result+"</td>"+
-               					"<td>"+smsLog.createDate+"</td>"+
-               					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
-               				"</tr>");  
-               
-             $("#table1").append(_tr); });
-	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table1 tr:even").addClass("even_columm");
+	    	  	dataList=list;
 	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened');  }
+	      error: function() { $("#Qmsg").html('something bad happened');  
+	      },
+	      beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+        	  pagination();
+          }
 	    });
+}
+var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
+           {name:"接收門號",col:"sendNumber",_width:"15%"},
+           {name:"簡訊ID",col:"msg",_width:"20%"},
+           {name:"發送時間",col:"sendDate",_width:"20%"},
+           {name:"發送結果",col:"result",_width:"20%"},
+           {name:"記錄時間",col:"createDate",_width:"15%"}];
+           
+function disableButton(){
+	$(':button').attr('disabled', 'disabled');
+}
+function enableButton(){
+	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 function validate(){
 	var validation=true;
@@ -95,33 +102,17 @@ function clearDate(){
 			</div>
 		</div>
 		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
-		<div class="col-xs-12">
-			<table  align="center" class="table-bordered" class="col-xs-10" width="100%">
-				<tr class="even_columm" >
-					<td class="columnLabel" align="center" width="10%">記錄ID</td>
-					<td class="columnLabel" align="center" width="15%">接收門號</td>
-					<td class="columnLabel" align="center" width="20%">簡訊ID</td>
-					<td class="columnLabel" align="center" width="20%">發送時間</td>
-					<td class="columnLabel" align="center" width="20%">發送結果</td>
-					<td class="columnLabel" align="center" width="15%">記錄時間</td>
-				</tr>
-				<tr>
-					<td colspan="10" >
-						<div style="height: 500px;overflow: auto;">
-						<table id="table1" class="table-bordered table-hover col-xs-12" align="center" >
-							<tr>
-								<td width="10%"></td>
-								<td width="15%"></td>
-								<td width="20%"></td>
-								<td width="20%"></td>
-								<td width="20%"></td>
-								<td width="15%"></td>
-							</tr>
-						</table>
-						</div>
-					</td>
-				</tr>
-			</table>
+		<div class="col-xs-12"> 
+			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+			<label id="nowPage"></label>
+			<button type="button" name="Next" class="pagination btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+			<label id="totalPage" style="margin-right: 10px"></label>
+			<label>每頁筆數</label>
+			<input id="rown" type="text" value="10" width="5px">
+			<input type="button" onclick="pagination()" class="btn btn-primary btn-sm" style="margin: 20px"  value="重新分頁">
+		</div>
+		<div class="col-xs-12"> 
+			<div id="page_contain"></div>
 		</div>
 	</div>
 </div>

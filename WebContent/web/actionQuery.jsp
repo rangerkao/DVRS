@@ -20,10 +20,15 @@ $(function() {
         dateFormat: 'yy-mm-dd'
     });
   });
-var actionLoglist;
+function disableButton(){
+	$(':button').attr('disabled', 'disabled');
+}
+function enableButton(){
+	$(':button').removeAttr('disabled'); //.attr('disabled', '');
+}
+var dataList;
 function query(){
 	if(!validate()) return flase;
-	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="queryActionLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
@@ -36,27 +41,32 @@ function query(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  actionLoglist=list;
-	    	    $.each(list,function(i,actionLoglist){  
-               var _tr = $(	"<tr align='center'>"+
-               					"<td>"+actionLoglist.id+"</td>"+
-               					"<td>"+actionLoglist.account+"</td>"+
-               					"<td>"+actionLoglist.page+"</td>"+
-               					"<td>"+actionLoglist.action+"</td>"+
-               					"<td>"+actionLoglist.parameter+"</td>"+
-               					"<td>"+actionLoglist.result+"</td>"+
-               					"<td>"+actionLoglist.createDate+"</td>"+
-               					//"<td align='center'><button onclick='chooseRow(this)'>選擇</button></td>"+
-               				"</tr>");  
-               
-             $("#table1").append(_tr); });
-	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table1 tr:even").addClass("even_columm");
+
+	    	  dataList=list;
+
 	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened'); }
+	      error: function() { $("#Qmsg").html('something bad happened'); 
+	      },
+	      beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+        	  pagination();
+          }
 	    });
 }
+
+var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
+           {name:"登入帳號",col:"account",_width:"10%"},
+           {name:"操作頁面",col:"page",_width:"10%"},
+           {name:"執行動作",col:"action",_width:"10%"},
+           {name:"參數",col:"parameter",_width:"15%"},
+           {name:"執行結果",col:"result",_width:"15%"},
+           {name:"操作時間",col:"createDate",_width:"30%"}];
+           
+           
 function validate(){
 	var validation=true;
 	if((($("#dateFrom").val()==null||$("#dateFrom").val()=="")^($("#dateTo").val()==null||$("#dateTo").val()==""))){
@@ -94,35 +104,17 @@ function clearDate(){
 			</div>
 		</div>
 		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
-		<div class="col-xs-12">
-			<table  align="center" class="table-bordered" class="col-xs-10" width="80%">
-				<tr class="even_columm" >
-					<td class="columnLabel" align="center" width="10%">紀錄ID</td>
-					<td class="columnLabel" align="center" width="10%">登入帳號</td>
-					<td class="columnLabel" align="center" width="10%">操作頁面</td>
-					<td class="columnLabel" align="center" width="10%">執行動作</td>
-					<td class="columnLabel" align="center" width="15%">參數</td>
-					<td class="columnLabel" align="center" width="15%">執行結果</td>
-					<td class="columnLabel" align="center" width="30%">操作時間</td>
-				</tr>
-				<tr>
-					<td colspan="7" >
-						<div style="height: 500px;overflow: auto;">
-						<table id="table1" class="table-bordered table-hover col-xs-12" align="center" >
-							<tr>
-								<td width="10%"></td>
-								<td width="10%"></td>
-								<td width="10%"></td>
-								<td width="10%"></td>
-								<td width="15%"></td>
-								<td width="15%"></td>
-								<td width="30%"></td>
-							</tr>
-						</table>
-						</div>
-					</td>
-				</tr>
-			</table>
+		<div class="col-xs-12"> 
+			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+			<label id="nowPage"></label>
+			<button type="button" name="Next" class="pagination btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+			<label id="totalPage" style="margin-right: 10px"></label>
+			<label>每頁筆數</label>
+			<input id="rown" type="text" value="10" width="5px">
+			<input type="button" onclick="pagination()" class="btn btn-primary btn-sm" style="margin: 20px"  value="重新分頁">
+		</div>
+		<div class="col-xs-12"> 
+			<div id="page_contain"></div>
 		</div>
 	</div>
 </div>

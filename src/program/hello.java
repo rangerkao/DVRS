@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -30,26 +31,41 @@ public class hello {
 		
 		System.out.println("Hello!");
 		
-		String param="*環球卡用量通知*提醒您本月上網金額累計已逾{{bracket}}，實際使用金額以帳單為準。除中國、香港、澳門有每日收費上限外，其餘國家按實際用量收費，不提供吃到飽方案，請謹慎使用。若您有申請中華電信日租型上網，請立即切換至中華電信漫遊。如欲使用通話功能，請務必切回環球卡以便節費。若您不知如何操作，請電客服{{customerService}}。";
+		String param="測試123.33215測次側側側";
 		
-		//updateDB(99,param);
-		//updateDB(99,null);
+		//updateDB(999,param);
+		//updateDB(999,null);
 		
+		
+		System.out.println("1".endsWith("0"));
 		
 		Jatool tool =new Jatool();
 		
 		Date d =new Date(new Date().getTime()-1000*60*60);
 			
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-6);
-		calendar.set(Calendar.DAY_OF_YEAR, calendar.getActualMaximum(Calendar.DAY_OF_YEAR)-1);
+		//calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-120);
+		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
 		
+		
+		System.out.println(Calendar.getInstance().get(Calendar.MONTH)+1);
+		System.out.println(calendar.getTime());
 		
 		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
+		
+		System.out.println("1235461p".matches("^\\d+$"));
 		
 		System.out.println(tool.FormatNumString(500000D, "NT#,##0.00"));
 		
 		System.out.println(tool.FormatDouble(0.0000D, "0.0000"));
+		
+		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
+		
+
+		for(String s:list){
+			System.out.println(s);
+		}
+		
 		
 	}
 
@@ -100,7 +116,7 @@ public class hello {
 				
 				if(param!=null && !"".equals(param)){
 					PreparedStatement pst = conn.prepareStatement("UPDATE HUR_SMS_COMTENT A SET A.COMTENT =? WHERE A.ID=?");
-					String pm=new String(param.getBytes(),"ISO8859-1");
+					String pm=new String(param.getBytes("BIG5"),"ISO8859-1");
 					pst.setString(1, pm);
 					pst.setInt(2, num);
 					pst.executeUpdate();
@@ -114,7 +130,7 @@ public class hello {
 			
 				while(rs.next()){
 					String rss=rs.getString("comtent");
-					rss=new String(rss.getBytes("ISO8859-1"));
+					rss=new String(rss.getBytes("ISO8859-1"),"BIG5");
 					System.out.println(rss);
 				}
 

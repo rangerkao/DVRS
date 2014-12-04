@@ -7,7 +7,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -161,10 +163,55 @@ public interface IJatool {
 	String FormatNumString(Double value);
 	String FormatNumString(Double value, String form);
 	
-	
+	/**
+	 * read File example
+	 * @param filePath
+	 */
 	void readtxt(String filePath);
 	
+	/**
+	 * write File example
+	 * @param content
+	 */
 	void writetxt(String content);
 
+	/**
+	 * ノタ砏ボ猭喷靡﹃戈
+	 * 
+	 * "^\\d+$"  计
+	 * "^\\d+(.\\d+)?"  俱计┪Τ计
+	 * 
+	 * @param content
+	 * @param regex
+	 * @return
+	 */
+	boolean regularMatch(String content,String regex);
+	
+	
+	/**
+	 * 尿てボ猭
+	 * 肚Pattern
+	 *  pattern.matcher(testString)ㄏノ
+	 * 
+	 * @param regex
+	 * @return
+	 */
+	
+	Pattern regularMatch(String regex);
+	
+	
+	/**
+	 * ノタ砏ボ猭
+	 * тず甧才ボ猭场だ
+	 * 
+	 * "\\d{4}-\\d{6}"
+	 * 4计-6计 ex:1111-555663
+	 * 
+	 * 
+	 * @param content
+	 * @param regex
+	 * @return
+	 */
+	List<String> regularFind(String content,String regex);
 	
 }

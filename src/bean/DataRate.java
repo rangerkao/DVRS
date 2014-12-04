@@ -2,22 +2,35 @@ package bean;
 
 public class DataRate {
 	Long pricePlanId;
+	String pricePlanName;
 	String mccmnc;
+	String country;
+	String netWork;
 	Double rate;
 	Long chargeunit;
 	String currency;
+	Double dayCap;
 	
 	public DataRate(){};
 	
-	public DataRate(Long pricePlanId, String mccmnc, Double rate,
-			Long chargeunit, String currency) {
+	
+
+	public DataRate(Long pricePlanId, String pricePlanName, String mccmnc,
+			String country, String netWork, Double rate, Long chargeunit,
+			String currency, Double dayCap) {
 		super();
 		this.pricePlanId = pricePlanId;
+		this.pricePlanName = pricePlanName;
 		this.mccmnc = mccmnc;
+		this.country = country;
+		this.netWork = netWork;
 		this.rate = rate;
 		this.chargeunit = chargeunit;
 		this.currency = currency;
+		this.dayCap = dayCap;
 	}
+
+
 
 	public Long getPricePlanId() {
 		return pricePlanId;
@@ -57,6 +70,54 @@ public class DataRate {
 
 	public void setCurrency(String currency) {
 		this.currency = currency;
+	}
+
+
+
+	public String getPricePlanName() {
+		return pricePlanName;
+	}
+
+
+
+	public void setPricePlanName(String pricePlanName) {
+		this.pricePlanName = pricePlanName;
+	}
+
+
+
+	public String getCountry() {
+		return country;
+	}
+
+
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+
+
+	public String getNetWork() {
+		return netWork;
+	}
+
+
+
+	public void setNetWork(String netWork) {
+		this.netWork = netWork;
+	}
+
+
+
+	public Double getDayCap() {
+		return dayCap;
+	}
+
+
+
+	public void setDayCap(Double dayCap) {
+		this.dayCap = dayCap;
 	}
 	
 	

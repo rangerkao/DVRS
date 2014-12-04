@@ -16,7 +16,6 @@ $(function(){
 	queryContent();
 })
 function query(){
-	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="querySMSSetting"/>',
 	      data: {},//parameters go here in object literal form
@@ -42,7 +41,15 @@ function query(){
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
 	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened');  }
+	      error: function() { $("#Qmsg").html('something bad happened');  
+	      },
+	      beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+          }
 	    });
 }
 function validate(){
@@ -137,6 +144,7 @@ function volidateNum(val){
 
 function updateSetting(mod,txt){
 	if (!validat(mod,txt)) return false;
+	
 	$.ajax({
 	      url: '<s:url action="updateSMSSetting"/>',
 	      data: {
@@ -173,7 +181,7 @@ function updateSetting(mod,txt){
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
     	  beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
+    		  $("#Qmsg").html("正在更新，請稍待...");
     			disableButton();
           },
           complete:function(){
@@ -186,8 +194,23 @@ function clearText(txt){
 }
 //******簡訊內容設定
 var smsContentlist;
+var dataList;
+function queryContentByID(){
+	var SMSid=$("#sId").val();
+	dataList.splice(0,dataList.length);
+	 $.each(smsContentlist,function(i,smsContent){
+		if((smsContent.id==SMSid)||(SMSid==null||SMSid=="")){
+			dataList.push(smsContent);
+		} 
+	}); 
+	pagination();
+	
+/*     $("#table2 tr:odd").addClass("odd_columm");//奇數欄位樣式
+    $("#table2 tr:even").addClass("even_columm"); */
+	
+}
 function queryContent(){
-	$("#Qmsg2").html("正在查尋，請稍待...");
+
 	$.ajax({
 	      url: '<s:url action="querySMSContent"/>',
 	      data: {},//parameters go here in object literal form
@@ -198,36 +221,47 @@ function queryContent(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  $("#table2 tr:gt(0)").remove();//移除>0之後讀tr
+	    	  //$("#table2 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  smsContentlist=list;
-	    	    $.each(list,function(i,smsContent){  
+	    	  dataList=smsContentlist.slice(0);
+	    	  //dataList=smsContentlist;
+	    	  
+	   /*  	    $.each(list,function(i,smsContent){  
                var _tr = $(	"<tr>"+
-               					"<td align='center' >"+smsContent.ID+"</td>"+
-               					"<td align='center' >"+smsContent.COMTENT+"</td>"+
-               					"<td align='center' >"+smsContent.CHARSET+"</td>"+
-               					"<td align='center' >"+smsContent.DESCRIPTION+"</td>"+
+               					"<td align='center' >"+smsContent.id+"</td>"+
+               					"<td align='center' >"+smsContent.comtent+"</td>"+
+               					"<td align='center' >"+smsContent.charSet+"</td>"+
+               					"<td align='center' >"+smsContent.description+"</td>"+
                					"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow2(this)'>選擇</button></td>"+
                				"</tr>");  
                
             	$("#table2").append(_tr); });
 	    	    $("#table2 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table2 tr:even").addClass("even_columm");
+	    	    $("#table2 tr:even").addClass("even_columm"); */
 	    	  },
-	      error: function() { $("#Qmsg2").html('something bad happened');  }
+	      error: function() { $("#Qmsg2").html('something bad happened');  
+	      },
+	      beforeSend:function(){
+    		  $("#Qmsg2").html("正在查詢，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  enableButton();
+        	  pagination();
+          }
 	    });
 }
 function updateContent(mod,txt){
-	$("#Qmsg2").html("正在更新，請稍待...");
 	if(!validat2(mod,txt))
 		return;
 	
 	$.ajax({
 	      url: '<s:url action="updateSMSContent"/>',
 	      data: {
-	    	  "sc.ID":$("#sId").val(),
-	    	  "sc.COMTENT":$("#sContent").val(),
-	    	  "sc.CHARSET":$("#CharSet").val(),
-	    	  "sc.DESCRIPTION":$("#Discription").val(),
+	    	  "sc.id":$("#sId").val(),
+	    	  "sc.comtent":$("#sContent").val(),
+	    	  "sc.charSet":$("#CharSet").val(),
+	    	  "sc.discription":$("#Discription").val(),
 	    	  "mod":mod
 	      },//parameters go here in object literal form
 	      type: 'POST',
@@ -238,17 +272,22 @@ function updateContent(mod,txt){
 	      },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
-  	  beforeSend:function(){
-  		  $("#Qmsg2").html("正在查詢，請稍待...");
-  			disableButton();
-        },
-        complete:function(){
-      	  //enableButton();
-        }
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在更新，請稍待...");
+    			disableButton();
+          },
+          complete:function(){
+        	  //enableButton();
+          }
 	    });
-	
-	
 }
+
+var tHead=[{name:"簡訊ID",col:"id",_width:"10%"},
+           {name:"簡訊內容",col:"comtent",_width:"40%"},
+           {name:"編碼",col:"charSet",_width:"10%"},
+           {name:"說明",col:"description",_width:"35%"},
+           {name:"button",col:"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow2(this)'>選擇</button></td>",_width:"5%"}];
+
 function chooseRow2(bu){
 	
 	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
@@ -287,7 +326,8 @@ function validat2(mod,txt){
 	}
 	
 	$.each(smsContentlist,function(i,smsContent){
-		if(smsContent.ID==$("#sId").val()){
+		//alert("Search id:"+$("#sId").val()+"="+smsContent.id);
+		if(smsContent.id==$("#sId").val()){
 			exist2=true;
 		}
 	});
@@ -298,7 +338,7 @@ function validat2(mod,txt){
 			$("#LsId").html("已經有簡訊內容！");
 			validation2=false;
 		}
-		if(!comfirm('確認新增內容?'))
+		if(!confirm('確認新增內容?'))
 			validation2=false;
 	}else{
 
@@ -307,10 +347,10 @@ function validat2(mod,txt){
 			validation2=false;
 		}else{
 			if(mod=='mod'){
-				if(!comfirm('確認修改內容?'))
+				if(!confirm('確認修改內容?'))
 					validation2=false;
 			}else if(mod=='del'){
-				if(!comfirm('確認刪除內容?'))
+				if(!confirm('確認刪除內容?'))
 					validation2=false;
 			}
 		}
@@ -325,12 +365,12 @@ function validat2(mod,txt){
 	<div class="row max_height " align="center">
 		<h3>簡訊設定頁面</h3>
 		<ul class="nav nav-tabs" id="tabs" >
-			<li class="active" ><a href="#tab1" data-toggle="tab">簡訊額度設定</a></li>
-			<li ><a href="#tab2" data-toggle="tab">簡訊內容設定</a></li>
+			<li ><a href="#tab1" data-toggle="tab">簡訊額度設定</a></li>
+			<li class="active"><a href="#tab2" data-toggle="tab">簡訊內容設定</a></li>
 		</ul>
 		<div class="tab-content">
 		
-			<div id="tab1" class="tab-pane active">
+			<div id="tab1" class="tab-pane">
 				<form class="form-horizontal" >
 					<div class="form-group" >
 					    <label for="Id" class="col-xs-5  control-label">設定編號:</label>
@@ -390,7 +430,7 @@ function validat2(mod,txt){
 					</table>
 				</div>
 			</div>
-			<div id="tab2" class="tab-pane">
+			<div id="tab2" class="tab-pane active">
 				<!-- 簡訊內容設定 -->
 				<form class="form-horizontal" >
 					<div class="form-group">
@@ -442,14 +482,27 @@ function validat2(mod,txt){
 								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('add','新增')" value="新增">
 								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('mod','修改')" value="修改">
 								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('del','刪除')" value="刪除">
+								<input type="button" class="btn btn-primary btn-sm" onclick="queryContentByID()" value="以ID查詢">
 								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
 						    </div>
 					    </div>
 					    <div class="col-xs-12"><label id="Qmsg2" style="height: 20px;width: 100px">&nbsp;</label></div>
 					</div>
 				</form>
-				<div>
-					<table class="table-bordered table-hover" align="center" style="width: 80%">
+				<div class="col-xs-12"> 
+					<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+					<label id="nowPage"></label>
+					<button type="button" name="Next" class="pagination btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+					<label id="totalPage" style="margin-right: 10px"></label>
+					<label>每頁筆數</label>
+					<input id="rown" type="text" value="10" width="5px">
+					<input type="button" onclick="pagination()" class="btn btn-primary btn-sm" style="margin: 20px"  value="重新分頁">
+				</div>
+				<div class="col-xs-12"> 
+					<div id="page_contain"></div>
+				</div>
+				<!-- <div>
+					<table class="table-bordered " align="center" style="width: 80%">
 						<tr class="even_columm" >
 							<td class="columnLabel" align="center" width="10%">簡訊ID</td>
 							<td class="columnLabel" align="center" width="40%">簡訊內容</td>
@@ -458,9 +511,9 @@ function validat2(mod,txt){
 							<td width="5%"></td>
 						</tr>
 						<tr>
-							<td colspan="10">
+							<td colspan="5">
 								<div style="height: 300px;overflow: auto;">
-									<table id="table2" class="table-bordered table-hover">
+									<table id="table2" class="table-bordered table-hover" width="100%" >
 										<tr>
 											<td class="columnLabel" align="center" width="10%"></td>
 											<td class="columnLabel" align="center" width="40%"></td>
@@ -473,7 +526,7 @@ function validat2(mod,txt){
 							</td>
 						</tr>
 					</table>
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>

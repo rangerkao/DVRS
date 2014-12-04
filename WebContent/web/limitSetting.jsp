@@ -15,6 +15,7 @@ $(function(){
 	$("#Limit").val("0");
 })
 var limitList;
+var dataList;
 function query(){
 	$.ajax({
 	      url: '<s:url action="queryAlertLimit"/>',
@@ -26,9 +27,11 @@ function query(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
+	    	  //$("#table1 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  limitList=list;
-	    	    $.each(list,function(i,limitSetting){  
+	    	  
+	    	  dataList=limitList.slice(0);
+	    	  /*   $.each(list,function(i,limitSetting){  
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+limitSetting.imsi+"</td>"+
                					"<td align='center' >"+limitSetting.msisdn+"</td>"+
@@ -38,7 +41,7 @@ function query(){
                
              $("#table1").append(_tr); });
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table1 tr:even").addClass("even_columm");
+	    	    $("#table1 tr:even").addClass("even_columm"); */
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
@@ -48,6 +51,7 @@ function query(){
           },
           complete:function(){
         	  enableButton();
+        	  pagination();
         	  $("#IMSI").val("");
         		$("#LIMSI").html("&nbsp;");	
         		$("#Msisdn").val("");
@@ -55,6 +59,11 @@ function query(){
           }
 	    });
 }
+
+var tHead=[{name:"IMSI",col:"imsi",_width:"33%"},
+           {name:"門號",col:"msisdn",_width:"33%"},
+           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"33%"}];
+
 //將被選擇的table欄位放入編輯區
 function chooseRow(bu){
 	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
@@ -112,7 +121,6 @@ function updateLimit(mod,txt){
     			disableButton();
           },
           complete:function(){
-        	  enableButton();
           }
 	    });
 }
@@ -123,11 +131,15 @@ function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 
-function queryIMSI(){
+ function queryIMSI(mod,txt){
 	
 	if($("#Msisdn").val()==null || $("#Msisdn").val()==""){
 		$("#LMsisdn").html('此欄位不可為空');
 		return
+	}
+	if(!volidateNum($("#Msisdn").val())){
+		$("#LMsisdn").html('格式錯誤，必須為純數字');
+		validate = false;
 	}
 
 	$.ajax({
@@ -143,10 +155,10 @@ function queryIMSI(){
 	    	  //alert(json);
 	    	  var v=JSON.parse(json);
 	    	  if(json=="" || v.imsi==null || v.imsi==""){
-	    		  $("#Qmsg").html("查無IMSI");
+	    		  $("#Qmsg").html("此門號無對應IMSI，操作失敗");
 	    	  }else{
 	    		  $("#IMSI").val(v.imsi);
-	    		  $("#Qmsg").html("Success");
+	    		  updateLimit(mod,txt);
 	    	  }
     	  },
 	      error: function(json) {
@@ -162,6 +174,46 @@ function queryIMSI(){
           }
 	    });
 }
+ /*
+function queryMSISDN(){
+	
+	if($("#IMSI").val()==null || $("#IMSI").val()==""){
+		$("#LIMSI").html('此欄位不可為空');
+		return
+	}
+
+	$.ajax({
+	      url: '<s:url action="queryMSISDN"/>',
+	      data: {
+	    	  "imsi":$("#IMSI").val(),
+	      },//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  
+	    	  //jQuery.parseJSON,JSON.parse(json)
+	    	  //alert(json);
+	    	  var v=JSON.parse(json);
+	    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+	    		  $("#Qmsg").html("查無門號");
+	    	  }else{
+	    		  $("#Msisdn").val(v.msisdn);
+	    		  $("#Qmsg").html("Success");
+	    	  }
+    	  },
+	      error: function(json) {
+	    	  $("#Qmsg").html('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    		  $("#Qmsg").html("正在查詢，請稍待...");
+    			disableButton();
+    			$("#Msisdn").val("");
+          },
+          complete:function(){
+        	  enableButton();
+          }
+	    });
+} */
 function validat(mod,txt){
 	
 	var validate = true;
@@ -209,7 +261,7 @@ function validat(mod,txt){
 	}
 	return validate;
 }
-function clearText(txt){
+function tclearText(txt){
 	$("#L"+txt).html("&nbsp;");
 
 	if(!volidateNum($("#"+txt).val()))
@@ -218,6 +270,21 @@ function clearText(txt){
 function volidateNum(val){
 	var   reg=/^\d+$/g;
 	return reg.test(val);
+}
+function queryVIP(){
+	if(!volidateNum($("#Msisdn").val())){
+		$("#LMsisdn").html('門號輸入格式錯誤');
+		return
+	}
+	
+	dataList.splice(0,dataList.length);
+	 $.each(limitList,function(i,limit){
+		if((limit.msisdn==$("#Msisdn").val())||($("#Msisdn").val()==null||$("#Msisdn").val()=="")){
+			dataList.push(limit);
+		} 
+	}); 
+	pagination();
+
 }
 
 </script>
@@ -229,9 +296,9 @@ function volidateNum(val){
 		<form class="form-horizontal" role="form">
 		<h3>警示上限設定頁面</h3>
 			<div class="form-group">
-			    <label for="IMSI" class="col-xs-5  control-label">IMSI:</label>
-			    <div class="col-xs-7" align="left">
-			    	<input type="text" id="IMSI" onkeyup="clearText('Msisdn')" disabled="disabled"/>
+			    <label for="IMSI" class="col-xs-5  control-label" style="display: none;">IMSI:</label>
+			    <div class="col-xs-7" align="left" style="display: none;" >
+			    	<input type="text" id="IMSI" onkeyup="clearText('IMSI')" disabled="disabled"/>
 			    </div>
 			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
 			    	<label id="LIMSI" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
@@ -255,16 +322,28 @@ function volidateNum(val){
 			    <div class="col-xs-12">
 			    	<div class="btn-group" class="col-xs-12">
 				    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
-						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('add','新增')" value="新增">
-						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('mod','修改')" value="修改" style="display: none;">
-						<input type="button" class="btn btn-primary btn-sm" onclick="updateLimit('del','刪除')" value="刪除">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI()" value="查詢IMSI"> 
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">
+						<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢">  
 				    </div>
 			    </div>
 			    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
 			</div>
 		</form>
-		<div>
+		<div class="col-xs-12"> 
+			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
+			<label id="nowPage"></label>
+			<button type="button" name="Next" class="pagination btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> Next</button>
+			<label id="totalPage" style="margin-right: 10px"></label>
+			<label>每頁筆數</label>
+			<input id="rown" type="text" value="10" width="5px">
+			<input type="button" onclick="pagination()" class="btn btn-primary btn-sm" style="margin: 20px"  value="重新分頁">
+		</div>
+		<div class="col-xs-12"> 
+			<div id="page_contain"></div>
+		</div>
+		<!-- <div>
 			<table class="table-bordered table-hover" align="center" style="width: 50%" id="table1">
 				<tr class="even_columm" >
 					<td class="columnLabel" align="center" width="30%">IMSI</td>
@@ -273,7 +352,7 @@ function volidateNum(val){
 					<td></td>
 				</tr>
 			</table>
-		</div>
+		</div> -->
 	</div>
 </div>
 </body>

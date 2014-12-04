@@ -111,7 +111,7 @@ public class AdminDao extends BaseDao {
 	}
 	
 	public Admin queryAdminByAccount(String account){
-		Admin admin =new Admin();
+		Admin admin =null;
 		sql=
 				"SELECT A.ID,A.ACCOUNT,A.PASSWORD,A.ROLE "
 				+ "FROM HUR_ADMIN A "
@@ -125,6 +125,7 @@ public class AdminDao extends BaseDao {
 			ResultSet rs=pst.executeQuery();
 			
 			while(rs.next()){
+				admin = new Admin();
 				admin.setUserid(rs.getString("ID"));
 				admin.setAccount(rs.getString("ACCOUNT"));
 				admin.setPassword(rs.getString("PASSWORD"));
