@@ -261,7 +261,7 @@ function updateContent(mod,txt){
 	    	  "sc.id":$("#sId").val(),
 	    	  "sc.comtent":$("#sContent").val(),
 	    	  "sc.charSet":$("#CharSet").val(),
-	    	  "sc.discription":$("#Discription").val(),
+	    	  "sc.description":$("#Discription").val(),
 	    	  "mod":mod
 	      },//parameters go here in object literal form
 	      type: 'POST',

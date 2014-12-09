@@ -24,7 +24,7 @@ import org.apache.tomcat.util.buf.UEncoder;
 
 public class hello {
 	private static String msg;
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) {
 		
 		
 		
@@ -36,6 +36,9 @@ public class hello {
 		//updateDB(999,param);
 		//updateDB(999,null);
 		
+		String msisdn="85288923545";
+		
+		System.out.println(msisdn.substring(3,msisdn.length()));
 		
 		System.out.println("1".endsWith("0"));
 		
@@ -45,11 +48,11 @@ public class hello {
 			
 		Calendar calendar = Calendar.getInstance();
 		//calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-120);
-		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
-		
+		//calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
+		calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-60);
 		
 		System.out.println(Calendar.getInstance().get(Calendar.MONTH)+1);
-		System.out.println(calendar.getTime());
+		System.out.println("calendar "+calendar.getTime());
 		
 		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
 		
@@ -65,6 +68,15 @@ public class hello {
 		for(String s:list){
 			System.out.println(s);
 		}
+
+		try{
+			int a = Integer.parseInt("asd");
+		}catch(Exception e){
+			for(StackTraceElement s :e.getStackTrace()){
+				System.out.println(s.toString());
+			}
+		}
+		
 		
 		
 	}

@@ -221,10 +221,6 @@ function volidateNum(val){
 	return reg.test(val);
 }
 function queryVIP(){
-	if(!volidateNum($("#Msisdn").val())){
-		$("#LMsisdn").html('門號輸入格式錯誤');
-		return
-	}
 	
 	dataList.splice(0,dataList.length);
 	 $.each(limitList,function(i,limit){
