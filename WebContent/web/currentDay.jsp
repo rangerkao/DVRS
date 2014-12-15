@@ -66,15 +66,15 @@ $(document).ready(function(){
           }
 	    });
 	}
-	var tHead=[{name:"IMSI",col:"imsi",_width:"10%"},
+	var tHead=[{name:"累計日期",col:"day",_width:"9%"},
+	           {name:"IMSI",col:"imsi",_width:"10%"},
 	           {name:"累計費用",col:"charge",_width:"9%"},
 	           {name:"最後累計檔案ID",col:"lastFileId",_width:"9%"},
 	           {name:"最後使用時間",col:"lastDataTime",_width:"9%"},
-	           {name:"累計流量",col:"volume",_width:"9%"},
+	           {name:"累計流量(byte)",col:"volume",_width:"9%"},
 	           {name:"更新時間",col:"updateDate",_width:"9%"},
 	           {name:"建立時間",col:"createDate",_width:"9%"},
 	           {name:"國家業者",col:"mccmnc",_width:"9%"},
-	           {name:"累計日期",col:"day",_width:"9%"},
 	           {name:"是否發送過每日警示",col:"alert",_width:"9%"}];
 	
 	function disableButton(){
@@ -106,7 +106,7 @@ $(document).ready(function(){
 <body>
 <div class="container-fluid max_height" style="vertical-align: middle;">
 	<div class="row max_height" align="center">
-		<h3>每月累計頁面</h3>
+		<h3>單日累計查詢</h3>
 		<div class="col-xs-4" align="right">查詢期間從</div>
 		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">到<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" ></div>
 		<div class="col-xs-4" align="right"><label for="imsi">IMSI:</label></div>

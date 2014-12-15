@@ -34,9 +34,9 @@ public class MenuControl extends BaseControl {
 		//層級三
 		List<Link> l3=new ArrayList<Link>();
 		
-		l3.add(new Link("searchList","smsQueryLink","簡訊發送查詢"));
-		l3.add(new Link("searchList","dataRateLink","資費查詢"));
-		l3.add(new Link("searchList","currentMonthLink","月份累計查詢"));
+		l3.add(new Link("searchList","smsQueryLink","超量簡訊發送查詢頁面"));
+		l3.add(new Link("searchList","dataRateLink","費率查詢"));
+		l3.add(new Link("searchList","currentMonthLink","每月累計頁面"));
 		l3.add(new Link("searchList","currentDayLink","單日累計查詢"));
 		
 		l3.add(new Link("elseList","logoutLink","登出"));

@@ -107,6 +107,7 @@ public interface IJatool {
 	
 	/**
 	 * 將util Date 轉換至sql Date
+	 * 時間HH:Mi:SS 會被裁掉
 	 * @param date
 	 * @return
 	 */

@@ -2,6 +2,7 @@ package program;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -31,6 +32,19 @@ public class hello {
 		
 		System.out.println("Hello!");
 		
+		
+		String ipAddr="221.177.44.235";
+
+		if(ipAddr.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$")){
+			String [] ips = ipAddr.split("\\.");
+			long ipNumber =0L;
+			for(int i=0;i<ips.length;i++){
+				ipNumber+=Integer.parseInt(ips[i])*Math.pow(256, 3-i);
+			}
+			System.out.println("ipNumber="+ipNumber);
+			
+		}
+
 		String param="´ú¸Õ123.33215´ú¦¸°¼°¼°¼";
 		
 		//updateDB(999,param);
@@ -63,19 +77,6 @@ public class hello {
 		System.out.println(tool.FormatDouble(0.0000D, "0.0000"));
 		
 		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
-		
-
-		for(String s:list){
-			System.out.println(s);
-		}
-
-		try{
-			int a = Integer.parseInt("asd");
-		}catch(Exception e){
-			for(StackTraceElement s :e.getStackTrace()){
-				System.out.println(s.toString());
-			}
-		}
 		
 		
 		

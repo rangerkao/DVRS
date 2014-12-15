@@ -102,6 +102,7 @@ public class SMSAction extends BaseAction {
 					set.setBracket(o.getDouble("bracket"));
 					set.setMsg(o.getString("msg"));
 					set.setSuspend(o.getBoolean("suspend"));
+					set.setPricePlanId(o.getString("pricePlanId"));
 					smsSettinglist.add(set);
 				}
 				
@@ -113,21 +114,33 @@ public class SMSAction extends BaseAction {
 					//´M§ä´¡¤JÂI
 					for(int i=0;i<smsSettinglist.size();i++){
 						SMSSetting s= smsSettinglist.get(i);
-						if(s.getBracket()>smsSetting.getBracket()){
+						if(s.getBracket()>smsSetting.getBracket()&&s.getPricePlanId()!=null && s.getPricePlanId().equals(smsSetting.getPricePlanId())){
 							smsSettinglist.add(i,smsSetting);
 							inserted=!inserted;
 							break;
 						}
 					}
 					if(!inserted){
+						for(int i=0;i<smsSettinglist.size();i++){
+							SMSSetting s= smsSettinglist.get(i);
+							if(Integer.valueOf(s.getPricePlanId())>Integer.valueOf(smsSetting.getPricePlanId())){
+								smsSettinglist.add(i,smsSetting);
+								inserted=!inserted;
+								break;
+							}
+						}
+					}
+					
+					if(!inserted){
 						smsSettinglist.add(smsSetting);
 					}
-				}else if("mod".equalsIgnoreCase(mod)){
+				}/*else if("mod".equalsIgnoreCase(mod)){
+					smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setPricePlanId(smsSetting.getPricePlanId());
 					smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setBracket(smsSetting.getBracket());
 					smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setMsg(smsSetting.getMsg());
 					smsSettinglist.get(Integer.parseInt(smsSetting.getId())-1).setSuspend(smsSetting.getSuspend());
 					
-				}else if("del".equalsIgnoreCase(mod)){
+				}*/else if("del".equalsIgnoreCase(mod)){
 					smsSettinglist.remove(Integer.parseInt(smsSetting.getId())-1);
 				}		
 				

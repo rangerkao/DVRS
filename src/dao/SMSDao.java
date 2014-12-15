@@ -89,7 +89,7 @@ public class SMSDao extends BaseDao{
 		logger.info("querySMSSetting...");
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND "
+				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
 				+ "FROM HUR_SMS_SETTING A "
 				+ "ORDER BY A.ID ";
 		
@@ -101,6 +101,7 @@ public class SMSDao extends BaseDao{
 				log.setId(rs.getString("ID"));
 				log.setBracket(rs.getDouble("BRACKET"));
 				log.setMsg(rs.getString("MEGID"));
+				log.setPricePlanId(rs.getString("PRICEPLANID"));
 	
 				String s=rs.getString("SUSPEND");
 				if("0".equals(s))
@@ -127,17 +128,18 @@ public class SMSDao extends BaseDao{
 			st.close();
 			//重新匯入資料
 			sql=
-					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
-					+ "VALUES(?,?,?,?)";
+					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,PRICEPLANID,SUSPEND) "
+					+ "VALUES(?,?,?,?,?)";
 			PreparedStatement pst = conn.prepareStatement(sql);
 			for(SMSSetting s : list){
 				pst.setString(1, s.getId());
 				pst.setDouble(2, s.getBracket());
 				pst.setString(3, s.getMsg());
+				pst.setString(4, s.getPricePlanId());
 				if(s.getSuspend())
-					pst.setString(4, "1");
+					pst.setString(5, "1");
 				else
-					pst.setString(4, "0");
+					pst.setString(5, "0");
 				pst.addBatch();
 			}
 			logger.debug("Execute sql: "+sql);
@@ -151,7 +153,7 @@ public class SMSDao extends BaseDao{
 		logger.info("queryAlertLimit...");
 		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
 		sql=
-				"SELECT A.IMSI,A.THRESHOLD,C.SERVICECODE "
+				"SELECT A.IMSI,A.THRESHOLD,C.SERVICECODE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss')  CREATE_DATE "
 				+ "FROM HUR_GPRS_THRESHOLD A,IMSI B,SERVICE C "
 				+ "WHERE A.IMSI=B.IMSI AND B.SERVICEID = c.SERVICEID ";
 		
@@ -163,6 +165,7 @@ public class SMSDao extends BaseDao{
 			g.setImsi(rs.getString("IMSI"));
 			g.setMsisdn(rs.getString("SERVICECODE"));
 			g.setThreshold(rs.getDouble("THRESHOLD"));
+			g.setCreateDate(rs.getString("CREATE_DATE"));
 			list.add(g);
 		}
 		
@@ -177,8 +180,8 @@ public class SMSDao extends BaseDao{
 		logger.info("insertAlertLimit...");
 
 		sql=
-				"INSERT INTO HUR_GPRS_THRESHOLD (IMSI,THRESHOLD) "
-				+ "VALUES(?,?)";
+				"INSERT INTO HUR_GPRS_THRESHOLD (IMSI,THRESHOLD,CREATE_DATE) "
+				+ "VALUES(?,?,sysdate)";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		

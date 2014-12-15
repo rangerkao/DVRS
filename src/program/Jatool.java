@@ -43,6 +43,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 //190
 /*import com.infotech.smpp.SMPPServicesStub;
@@ -69,6 +70,15 @@ public class Jatool implements IJatool{
 				logger.error(message);
 			}
 		}
+	}
+	
+	
+	@SuppressWarnings("unused")
+	public void InitialLog4jExample(){
+		Logger logger;
+		System.out.println("initial Log4g, property at "+DVRSmain.class.getResource(""));
+		PropertyConfigurator.configure(DVRSmain.class.getResource("").toString().replace("file:/", "")+"Log4j.properties");
+		logger =Logger.getLogger(DVRSmain.class);
 	}
 	
 	@Override

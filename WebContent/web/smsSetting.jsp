@@ -31,6 +31,7 @@ function query(){
 	    	    $.each(list,function(i,smsSetting){  
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+smsSetting.id+"</td>"+
+               					"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
                					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
                					"<td align='center' >"+smsSetting.msg+"</td>"+
                					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
@@ -63,11 +64,13 @@ function chooseRow(bu){
 	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
 	//alert(row.cells[0].innerText);
 	$("#Id").val(row.cells[0].innerText);
-	$("#Bracket").val(row.cells[1].innerText);
-	$("#LBracket").html("");
-	$("#Msg").val(row.cells[2].innerText);
-	$("#LMsg").html("");
-	$("#Suspend").prop("checked",(row.cells[3].childNodes[0].checked));//在向下一層尋找到checkbox
+	$("#ppId").val(row.cells[1].innerText);
+	$("#LppId").html("&nbsp;");
+	$("#Bracket").val(row.cells[2].innerText);
+	$("#LBracket").html("&nbsp;");
+	$("#Msg").val(row.cells[3].innerText);
+	$("#LMsg").html("&nbsp;");
+	$("#Suspend").prop("checked",(row.cells[4].childNodes[0].checked));//在向下一層尋找到checkbox
 	
 }
 var exist;
@@ -75,6 +78,11 @@ var validation;
 function validat(mod,txt){
 	exist=false;
 	validation=true;
+	
+	if($("#ppId").val()==null||$("#ppId").val()==""){
+		$("#LppId").html("此欄位不可為空!");
+		validation=false;
+	}
 	
 	if($("#Bracket").val()==null||$("#Bracket").val()==""){
 		$("#LBracket").html("此欄位不可為空!");
@@ -97,9 +105,8 @@ function validat(mod,txt){
 	
 	
 	if(mod=='add'){
-		alert('add模式');
 		$.each(smsSettinglist,function(i,smsSetting){
-			if(smsSetting.bracket==$("#Bracket").val()){
+			if((smsSetting.bracket*100)==$("#Bracket").val()&&smsSetting.pricePlanId==$("#ppId").val()){							
 				exist=true;
 			}
 		});
@@ -114,9 +121,8 @@ function validat(mod,txt){
 			validation=false;
 		}else{
 			if(mod=='mod'){
-				alert('mod模式');
 				$.each(smsSettinglist,function(i,smsSetting){
-					if(smsSetting.bracket==$("#Bracket").val() && smsSetting.id !=$("#Id").val() ){
+					if((smsSetting.bracket*100)==$("#Bracket").val() && smsSetting.id !=$("#Id").val()&&smsSetting.pricePlanId==$("#ppId").val() ){
 						exist=true;
 					}
 				});
@@ -125,7 +131,6 @@ function validat(mod,txt){
 					validation=false;
 				}
 			}else if(mod=='del'){
-				alert('del模式');
 			}
 		}
 	}
@@ -150,6 +155,7 @@ function updateSetting(mod,txt){
 	      data: {
 	    	  "smsSettinglistString":JSON.stringify(smsSettinglist),
 	    	  "smsSetting.id":$("#Id").val(),
+	    	  "smsSetting.pricePlanId":$("#ppId").val(),
 	    	  "smsSetting.bracket":($("#Bracket").val()/100),
 	    	  "smsSetting.msg":$("#Msg").val(),
 	    	  "smsSetting.suspend":$("#Suspend").is(":checked"),
@@ -168,6 +174,7 @@ function updateSetting(mod,txt){
 	    	    $.each(list,function(i,smsSetting){  
              var _tr = $(	"<tr>"+
              					"<td align='center' >"+smsSetting.id+"</td>"+
+             					"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
              					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
              					"<td align='center' >"+smsSetting.msg+"</td>"+
              					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
@@ -224,20 +231,6 @@ function queryContent(){
 	    	  //$("#table2 tr:gt(0)").remove();//移除>0之後讀tr
 	    	  smsContentlist=list;
 	    	  dataList=smsContentlist.slice(0);
-	    	  //dataList=smsContentlist;
-	    	  
-	   /*  	    $.each(list,function(i,smsContent){  
-               var _tr = $(	"<tr>"+
-               					"<td align='center' >"+smsContent.id+"</td>"+
-               					"<td align='center' >"+smsContent.comtent+"</td>"+
-               					"<td align='center' >"+smsContent.charSet+"</td>"+
-               					"<td align='center' >"+smsContent.description+"</td>"+
-               					"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow2(this)'>選擇</button></td>"+
-               				"</tr>");  
-               
-            	$("#table2").append(_tr); });
-	    	    $("#table2 tr:odd").addClass("odd_columm");//奇數欄位樣式
-	    	    $("#table2 tr:even").addClass("even_columm"); */
 	    	  },
 	      error: function() { $("#Qmsg2").html('something bad happened');  
 	      },
@@ -373,12 +366,20 @@ function validat2(mod,txt){
 			<div id="tab1" class="tab-pane">
 				<form class="form-horizontal" >
 					<div class="form-group" >
-					    <label for="Id" class="col-xs-5  control-label">設定編號:</label>
+					    <label for="Id" class="col-xs-5  control-label">設定ID:</label>
 					    <div class="col-xs-7" align="left">
 					    	<input type="text" id="Id" onkeyup="clearText('Id')" disabled="disabled"/>
 					    </div>
 					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
 					    	<label id="LId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					    </div>
+					    
+					    <label for="ppId" class="col-xs-5  control-label">資費ID:</label>
+					    <div class="col-xs-7" align="left">
+					    	<input type="text" id="ppId" onkeyup="clearText('ppId')"/>
+					    </div>
+					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+					    	<label id="LppId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 					    </div>
 					    
 					    <label for="Bracket" class="col-xs-5 control-label" >額度比例(%):</label>
@@ -410,7 +411,7 @@ function validat2(mod,txt){
 					    	<div class="btn-group" class="col-xs-12">
 								<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
 								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('add','新增')" value="新增">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('mod','修改')" value="修改">
+								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('mod','修改')" value="修改" style="display: none;">
 								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('del','刪除')" value="刪除">
 								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
 						    </div>
@@ -421,9 +422,10 @@ function validat2(mod,txt){
 				<div>
 					<table class="table-bordered table-hover" align="center" style="width: 80%" id="table1">
 						<tr class="even_columm" >
-							<td class="columnLabel" align="center" width="20%">設定編號</td>
+							<td class="columnLabel" align="center" width="20%">設定ID</td>
+							<td class="columnLabel" align="center" width="20%">資費ID</td>
 							<td class="columnLabel" align="center" width="20%">額度比例(%)</td>
-							<td class="columnLabel" align="center" width="25%">簡訊ID</td>
+							<td class="columnLabel" align="center" width="20%">簡訊ID</td>
 							<td class="columnLabel" align="center" width="20%">是否中斷數據連線</td>
 							<td width="15%"></td>
 						</tr>

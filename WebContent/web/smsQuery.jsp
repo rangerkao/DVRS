@@ -20,6 +20,14 @@ $(function() {
     });
   });
 var dataList;
+var reportName="超量簡訊發送表";
+var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
+           {name:"接收門號",col:"sendNumber",_width:"15%"},
+           {name:"簡訊ID",col:"msg",_width:"20%"},
+           {name:"發送時間",col:"sendDate",_width:"20%"},
+           {name:"發送結果",col:"result",_width:"20%"},
+           {name:"記錄時間",col:"createDate",_width:"15%"}];
+           
 function query(){
 	if(!validate()) return false;
 	$("#Qmsg").html("正在查尋，請稍待...");
@@ -50,13 +58,7 @@ function query(){
           }
 	    });
 }
-var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
-           {name:"接收門號",col:"sendNumber",_width:"15%"},
-           {name:"簡訊ID",col:"msg",_width:"20%"},
-           {name:"發送時間",col:"sendDate",_width:"20%"},
-           {name:"發送結果",col:"result",_width:"20%"},
-           {name:"記錄時間",col:"createDate",_width:"15%"}];
-           
+
 function disableButton(){
 	$(':button').attr('disabled', 'disabled');
 }
@@ -86,7 +88,7 @@ function clearDate(){
 <body>
 <div class="container-fluid max_height" style="vertical-align: middle;">
 	<div class="row max_height" align="center">
-		<h3>簡訊發送查詢頁面</h3>
+		<h3>超量簡訊發送查詢頁面</h3>
 		<div class="col-xs-4" align="right">查詢期間從</div>
 		<div class="col-xs-8" align="left">
 			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
@@ -99,6 +101,7 @@ function clearDate(){
 			<div class="btn-group" >
 				<input type="button" class="btn btn-primary btn-sm" onclick="query()" value="查詢">
 				<input type="button" class="btn btn-primary btn-sm" onclick="clearDate()" value="清除">
+				<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
 			</div>
 		</div>
 		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>

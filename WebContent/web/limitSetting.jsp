@@ -17,9 +17,10 @@ $(function(){
 
 var limitList;
 var dataList;
-var tHead=[{name:"IMSI",col:"imsi",_width:"33%"},
-           {name:"門號",col:"msisdn",_width:"33%"},
-           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"33%"}];
+var tHead=[{name:"IMSI",col:"imsi",_width:"25%"},
+           {name:"門號",col:"msisdn",_width:"25%"},
+           {name:"建立時間",col:"createDate",_width:"25%"},
+           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"25%"}];
 var reportName="VIP客戶設定";
 function query(){
 	$.ajax({

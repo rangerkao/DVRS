@@ -36,18 +36,18 @@ $(document).ready(function(){
           }
 	    });
 	}
-	var tHead=[{name:"IMSI",col:"imsi",_width:"12%"},
+	var tHead=[{name:"統計月份",col:"month",_width:"8%"},	           
+	           {name:"IMSI",col:"imsi",_width:"12%"},
 	           {name:"累計費用",col:"charge",_width:"8%"},
 	           {name:"最後累計檔案ID",col:"lastFileId",_width:"8%"},
 	           {name:"發送簡訊次數",col:"smsTimes",_width:"8%"},
 	           {name:"最後使用時間",col:"lastDataTime",_width:"8%"},
-	           {name:"累計流量",col:"volume",_width:"8%"},
-	           {name:"統計月份",col:"month",_width:"8%"},
+	           {name:"累計流量(byte)",col:"volume",_width:"8%"},	           
 	           {name:"更新時間",col:"updateDate",_width:"8%"},
 	           {name:"建立時間",col:"createDate",_width:"8%"},
 	           {name:"是否曾中斷數據",col:"everSuspend",_width:"8%"},
 	           {name:"最後警示額度",col:"lastAlertThreshold",_width:"8%"},
-	           {name:"最後警示流量",col:"lastAlertVolume",_width:"8%"}];
+	           {name:"最後警示流量(byte)",col:"lastAlertVolume",_width:"8%"}];
 	
 	function disableButton(){
 		$(':button').attr('disabled', 'disabled');
