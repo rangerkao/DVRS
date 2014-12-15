@@ -258,6 +258,79 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
+	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
+		logger.info("queryTWNMSISDN...");
+		Map<String,String> map =new HashMap<String,String>();
+		String TWNmsisdn = null;
+		
+		//方法1
+		sql=
+				"SELECT A.SERVICEID, B.SERVICECODE, A.FOLLOWMENUMBER, B.DATEACTIVATED, B.STATUS "
+				+ "FROM FOLLOWMEDATA A, SERVICE B "
+				+ "WHERE A.SERVICEID=B.SERVICEID "
+				+ "AND A.FOLLOWMENUMBER=?";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, msisdn);
+		logger.debug("Execute sql: "+sql);
+		ResultSet rs = pst.executeQuery();
+		while(rs.next()){
+			TWNmsisdn=rs.getString("SERVICECODE");
+		}
+		
+		if(rs!=null)rs.close();
+		if(pst!=null)pst.close();
+
+		//方法2
+		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
+			sql=
+					"SELECT A.SERVICEID, B.SERVICECODE, A.VALUE, B.DATEACTIVATED, B.STATUS "
+					+ "FROM NEWSERVICEORDERPARAMETERVALUE A, SERVICE B "
+					+ "WHERE A.SERVICEID=B.SERVICEID AND A.PARAMETERVALUEID=3792 "
+					+ "AND VALUE=?";
+			
+			PreparedStatement pst2 = conn2.prepareStatement(sql);
+			
+			pst2.setString(1, msisdn);
+			logger.debug("Execute sql: "+sql);
+			ResultSet rs2 = pst2.executeQuery();
+			while(rs2.next()){
+				TWNmsisdn=rs2.getString("SERVICECODE");
+			}
+			
+			if(pst2!=null) pst2.close();	
+			if(rs2!=null) rs2.close();
+		}
+		
+		//方法3
+		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
+			sql=
+					"SELECT A.ORDERID, A.OLDVALUE, A.NEWVALUE, A.COMPLETEDATE, C.SERVICEID, C.SERVICECODE, C.STATUS "
+					+ "FROM SERVICEPARAMVALUECHANGEORDER A, SERVICEORDER B, SERVICE C "
+					+ "WHERE A.ORDERID=B.ORDERID AND B.SERVICEID=C.SERVICEID "
+					+ "AND A.PARAMETERVALUEID=3792 AND C.SUBSIDIARYID=59 "
+					+ "AND A.OLDVALUE<>A.NEWVALUE "
+					+ "AND A.NEWVALUE=? "
+					+ "ORDER BY A.ORDERID DESC";
+			
+			PreparedStatement pst2 = conn2.prepareStatement(sql);
+			
+			pst2.setString(1, msisdn);
+			logger.debug("Execute sql: "+sql);
+			ResultSet rs2 = pst2.executeQuery();
+			while(rs2.next()){
+				TWNmsisdn=rs2.getString("SERVICECODE");
+			}
+			
+			if(pst2!=null) pst2.close();	
+			if(rs2!=null) rs2.close();
+		}		
+		map.put("msisdn", TWNmsisdn);
+		closeConnect();
+		return map;
+	}
+	
 	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
 		logger.info("queryIMSI...");
 		Map<String,String> map =new HashMap<String,String>();

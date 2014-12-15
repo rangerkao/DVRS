@@ -105,6 +105,9 @@ public class SMSControl extends BaseControl{
 	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
 		return smsDao.queryMSISDN(imsi);
 	}
+	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
+		return smsDao.queryTWNMSISDN(msisdn);
+	}
 	
 	
 	

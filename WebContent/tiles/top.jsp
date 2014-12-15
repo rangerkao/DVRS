@@ -115,9 +115,6 @@ function createExcel(){
 	$("#reportFrom").submit();	
 }
 
-
-
-
 </Script>
 <style type="text/css">
 

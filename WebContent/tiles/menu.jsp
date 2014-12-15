@@ -14,6 +14,12 @@ padding: none;
 </style>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
+$(document).ready(function(){
+	//$("li").css("display","none");
+	queryAuth();
+});
+
+
 var mousePos;
 function handleMouseMove(event) {
 	//alert("mouse");
@@ -82,10 +88,7 @@ var count=logOutTime/checkPeriod;
 		 $("#menuAuth").html("&nbsp;");
 	}
 	
-	$(document).ready(function(){
-		//$("li").css("display","none");
-		queryAuth();
-	});
+	
 
 	function volidateNum(val){
 		var   reg=/^\d+$/g;
@@ -97,11 +100,11 @@ var count=logOutTime/checkPeriod;
 	
 	function tqueryIMSI(){
 		
-		if($("#tMsisdn").val()==null || $("#tMsisdn").val()==""||$("#tMsisdn").val()=="請輸入門號"){
-			alert('查詢IMSI時，門號必填');
+		if($("#tText").val()==null || $("#tText").val()=="" ||$("#tText").val()=="請輸入"){
+			alert('查詢IMSI時，門號不可為空');
 			return
 		}
-		if(!volidateNum($("#tMsisdn").val())){
+		if(!volidateNum($("#tText").val())){
 			alert('門號輸入格式錯誤');
 			return
 		}
@@ -109,7 +112,7 @@ var count=logOutTime/checkPeriod;
 		$.ajax({
 		      url: '<s:url action="queryIMSI"/>',
 		      data: {
-		    	  "msisdn":$("#tMsisdn").val(),
+		    	  "msisdn":$("#tText").val(),
 		      },//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
@@ -121,7 +124,7 @@ var count=logOutTime/checkPeriod;
 		    	  if(json=="" || v.imsi==null || v.imsi==""){
 		    		  alert("查無IMSI");
 		    	  }else{
-		    		  $("#tIMSI").val(v.imsi);
+		    		  $("#tLabel").val(v.imsi);
 		    	  }
 	    	  },
 		      error: function(json) {
@@ -129,7 +132,7 @@ var count=logOutTime/checkPeriod;
 		      },
 	    	  beforeSend:function(){
     			//disableButton();
-    			$("#tIMSI").val("").css('color','#333333');
+	    		  $("#tLabel").val("");
 	          },
 	          complete:function(){
 	        	  //enableButton();
@@ -139,12 +142,12 @@ var count=logOutTime/checkPeriod;
 
 	function tqueryMSISDN(){
 		
-		if($("#tIMSI").val()==null || $("#tIMSI").val()=="" ||$("#tIMSI").val()=="請輸入IMSI"){
+		if($("#tText").val()==null || $("#tText").val()=="" ||$("#tText").val()=="請輸入"){
 			alert('查詢門號時IMSI不可為空');
 			return
 		}
 		
-		if(!volidateNum($("#tIMSI").val())){
+		if(!volidateNum($("#tText").val())){
 			alert('IMSI輸入格式錯誤');
 			return
 		}
@@ -152,7 +155,7 @@ var count=logOutTime/checkPeriod;
 		$.ajax({
 		      url: '<s:url action="queryMSISDN"/>',
 		      data: {
-		    	  "imsi":$("#tIMSI").val(),
+		    	  "imsi":$("#tText").val(),
 		      },//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
@@ -164,7 +167,7 @@ var count=logOutTime/checkPeriod;
 		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
 		    		 alert("查無門號");
 		    	  }else{
-		    		  $("#tMsisdn").val(v.msisdn).css('color','#333333');
+		    		  $("#tLabel").val(v.msisdn);
 		    	  }
 	    	  },
 		      error: function(json) {
@@ -172,13 +175,58 @@ var count=logOutTime/checkPeriod;
 		      },
 	    	  beforeSend:function(){
 	    			//disableButton();
-	    			$("#tMsisdn").val("");
+	    		  $("#tLabel").val("");
 	          },
 	          complete:function(){
 	        	  //enableButton();
 	          }
 		    });
 	}
+	
+function tqueryTWNMSISDN(){
+		
+		if($("#tText").val()==null || $("#tText").val()=="" ||$("#tText").val()=="請輸入"){
+			alert('查詢門號時不可為空');
+			return
+		}
+		
+		if(!volidateNum($("#tText").val())){
+			alert('門號輸入格式錯誤');
+			return
+		}
+
+		$.ajax({
+		      url: '<s:url action="queryTWNMSISDN"/>',
+		      data: {
+		    	  "msisdn":$("#tText").val(),
+		      },//parameters go here in object literal form
+		      type: 'POST',
+		      datatype: 'json',
+		      success: function(json) {  
+		    	  
+		    	  //jQuery.parseJSON,JSON.parse(json)
+		    	  //alert(json);
+		    	  var v=JSON.parse(json);
+		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+		    		 alert("查無門號");
+		    	  }else{
+		    		  $("#tLabel").val(v.msisdn);
+		    	  }
+	    	  },
+		      error: function(json) {
+		    	  alert('something bad happened'); 
+		      },
+	    	  beforeSend:function(){
+	    			//disableButton();
+	    		  $("#tLabel").val("");
+	          },
+	          complete:function(){
+	        	  //enableButton();
+	          }
+		    });
+	}
+	
+	
 </script>
 </head>
 <body>
@@ -190,6 +238,24 @@ var count=logOutTime/checkPeriod;
 			<label id="menuAuth"></label>
 		</div>
 		<div class="col-xs-12">
+			<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
+			<input 	type="text" id="tText" class="col-xs-12"
+						value="請輸入" style="color: #AAAAAA;" 
+						onfocus="if (this.value == '請輸入') {this.value = ''; this.style.color='#333333'}" 
+						onblur="if (this.value == '') {this.value = '請輸入'; this.style.color='#AAAAAA'}"  >
+		</div>
+		<div class="dropdown col-xs-12">
+			<button class="btn btn-primary btn-xs col-xs-12 dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+			    選擇查詢項目
+			<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu dropdown-menu-center" role="menu" aria-labelledby="dropdownMenu1">
+				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryMSISDN()" value="IMSI查詢門號"></li>
+				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"></li>
+				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN()" value="中華門號查詢香港主號"></li>
+			</ul>
+		</div>
+		<!-- <div class="col-xs-12">
 			<input 	type="text" id="tIMSI" class="col-xs-12"
 					value="請輸入IMSI" style="color: #AAAAAA;" 
 					onfocus="if (this.value == '請輸入IMSI') {this.value = ''; this.style.color='#333333'}" 
@@ -200,7 +266,7 @@ var count=logOutTime/checkPeriod;
 					onfocus="if (this.value == '請輸入門號') {this.value = ''; this.style.color='#333333'}" 
 					onblur="if (this.value == '') {this.value = '請輸入門號'; this.style.color='#AAAAAA'}" >
 			<input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"> 
-		</div>
+		</div> -->
 		
 		<ul id="menu">
 			<li>

@@ -43,6 +43,8 @@
 			<result name="limitSetting" type="tiles">limitSetting</result>
 			<result name="currentMonth" type="tiles">currentMonth</result>
 			<result name="currentDay" type="tiles">currentDay</result>
+			<result name="cardChangeHistory" type="tiles">cardChangeHistory</result>
+			<result name="numberChangeHistory" type="tiles">numberChangeHistory</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -165,6 +167,12 @@
 	        	<param name="root">result</param>
 	        </result>
         </action>
+        <action name="queryTWNMSISDN" method="queryTWNMSISDN" class="action.SMSAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
     <!-- ActionLogQuery -->
         <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
 	        <!-- 将返回类型设置为json -->
@@ -199,5 +207,19 @@
 	        	<param name="root">result</param>
 	        </result>
         </action>
+    <!-- History -->
+    	<action name="queryCardChangeHistory" method="queryCardChangeHistory" class="action.HistoryAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+        <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    
     </package>
 </struts>

@@ -11,6 +11,7 @@
 <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 <script type="text/javascript">
 $(function() {
+	dateChange=true;
     $(".datapicker").datepicker({
         showOn: "button",
         buttonImage: "source/icon.png",
@@ -19,6 +20,8 @@ $(function() {
         dateFormat: 'yy-mm-dd'
     });
   });
+var dateChange;
+var smsList;
 var dataList;
 var reportName="超量簡訊發送表";
 var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
@@ -29,13 +32,19 @@ var tHead=[{name:"紀錄ID",col:"id",_width:"10%"},
            {name:"記錄時間",col:"createDate",_width:"15%"}];
            
 function query(){
+	
+	if(!dateChange){
+		queryList();
+		return;
+	}
+	
 	if(!validate()) return false;
 	$("#Qmsg").html("正在查尋，請稍待...");
 	$.ajax({
 	      url: '<s:url action="querySMSLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
 	    	  		"dateTo":$("#dateTo").val(),
-	    	  		"msisdn":$("#MSISDN").val()
+	    	  		//"msisdn":$("#MSISDN").val()
 	    	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
@@ -44,17 +53,21 @@ function query(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  	dataList=list;
+	    	    smsList=list;
+	    	  	dataList=smsList.slice(0);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
 	      beforeSend:function(){
     		  $("#Qmsg").html("正在查詢，請稍待...");
     			disableButton();
+    			
           },
           complete:function(){
         	  enableButton();
-        	  pagination();
+        	  //pagination();
+        	  queryList();
+        	  dateChange=false;
           }
 	    });
 }
@@ -83,6 +96,21 @@ function clearDate(){
 	$("#dateTo").val("");
 }
 
+function queryList(){
+	var   reg=$("#MSISDN").val();
+	reg="^"+reg+"$"
+	reg=reg.replace("*","\\d+");
+	reg=new RegExp(reg);	
+	
+	dataList.splice(0,dataList.length);
+	 $.each(smsList,function(i,ListItem){
+		 if(reg.test(ListItem.sendNumber)||($("#MSISDN").val()==null||$("#MSISDN").val()=="")){
+			 dataList.push(ListItem);
+		 }
+	}); 
+	pagination();
+}
+
 </script>
 </head>
 <body>
@@ -91,9 +119,9 @@ function clearDate(){
 		<h3>超量簡訊發送查詢頁面</h3>
 		<div class="col-xs-4" align="right">查詢期間從</div>
 		<div class="col-xs-8" align="left">
-			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">
+			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="dateChange=true">
 			到
-			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
+			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="dateChange=true">
 		</div>
 		<div class="col-xs-4" align="right"><label>門號:</label> </div>
 		<div class="col-xs-8" align="left"><input type="text" id="MSISDN"></div>
@@ -104,7 +132,7 @@ function clearDate(){
 				<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
 			</div>
 		</div>
-		<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
+		<div class="col-xs-12"><font size="2" color="red">(查詢門號時可使用"*"取代某區段號碼進行模糊查詢)</font><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
 		<div class="col-xs-12"> 
 			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
 			<label id="nowPage"></label>

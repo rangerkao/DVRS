@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 <script type="text/javascript">
+
 $(function() {
     $(".datapicker").datepicker({
         showOn: "button",
@@ -22,6 +23,9 @@ $(function() {
 	var ds=Today.getFullYear()+ "-" + (Today.getMonth()+1) + "-" + Today.getDate();
 	$("#dateFrom").val(ds);
 	$("#dateTo").val(ds);
+	
+	dateChange=true;
+	
   });
   
 function disableButton(){
@@ -30,15 +34,27 @@ function disableButton(){
 function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
+var dateChange;
 var dataList;
+var cdrList;
 	function query(){
+		
+		alert(dateChange);
+		
+		if(!dateChange){
+			queryList();
+			return;
+		}
+		
 		if(!validate()) return false;
-		$("#Qmsg").html("タ琩碝叫祔...");
+		
+		
+		
 		$.ajax({
 	      url: '<s:url action="queryCDR"/>',
 	      data: {	"from":$("#dateFrom").val(),
   	  				"to":$("#dateTo").val(),
-  	  				"IMSI":$("#IMSI").val()
+  	  				//"IMSI":$("#IMSI").val()
   	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
@@ -48,7 +64,8 @@ var dataList;
 	    	  //alert(json);
 
 	    	  var list=$.parseJSON(json);
-	    	  dataList=list;
+	    	  cdrList=list;
+	    	  dataList=cdrList.slice(0);
 
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
@@ -59,7 +76,9 @@ var dataList;
 	        },
 	        complete:function(){
 	      	  enableButton();
-	      		pagination();
+	      		//pagination();
+	      		queryList();
+	      		dateChange=false;
 	        }
 	    });
 	}
@@ -90,6 +109,25 @@ var dataList;
 		$("#dateTo").val("");
 		$("#IMSI").val("");
 	}
+	
+	function queryList(){
+		var   reg=$("#IMSI").val();
+		reg="^"+reg+"$"
+		reg=reg.replace("*","\\d+");
+		reg=new RegExp(reg);	
+		
+		dataList.splice(0,dataList.length);
+		 $.each(cdrList,function(i,ListItem){
+			 if(reg.test(ListItem.imsi)||($("#IMSI").val()==null||$("#IMSI").val()=="")){
+				 dataList.push(ListItem);
+			 }
+		}); 
+		pagination();
+	}
+	
+	
+	
+
 </script>
 </head>
 <body>
@@ -98,14 +136,14 @@ var dataList;
 		<form class="form-horizontal" >
 		<h4>CDR琩高</h4>
 			<div class="col-xs-4" align="right">琩高戳丁眖</div>
-			<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px "><input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" ></div>
+			<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="dateChange=true"><input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="dateChange=true"></div>
 			<div class="col-xs-4" align="right"><label for="IMSI">IMSI:</label></div>
 			<div class="col-xs-2" align="left"><input type="text" id="IMSI" /></div>	
 			<div class="btn-group col-xs-6">
 				<input type="button" class="btn btn-primary btn-sm" onclick="query()" value="琩高">
 				<input type="button" class="btn btn-primary btn-sm" onclick="clearDate()" value="睲埃">
 			</div>
-			<div class="col-xs-12"><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>	
+			<div class="col-xs-12"><font size="2" color="red">(琩高IMSIㄏノ"*"琘跋琿腹絏秈︽家絢琩高)</font><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>	
 		</form>
 		<div class="col-xs-12"> 
 			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>

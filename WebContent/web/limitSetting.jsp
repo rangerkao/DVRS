@@ -7,7 +7,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 $(function(){
@@ -211,11 +210,11 @@ function validat(mod,txt){
 	}
 	return validate;
 }
-function tclearText(txt){
+function clearText(txt){
 	$("#L"+txt).html("&nbsp;");
 
-	if(!volidateNum($("#"+txt).val()))
-		$("#L"+txt).html("格式錯誤，必須為純數字");
+	/* if(!volidateNum($("#"+txt).val()))
+		$("#L"+txt).html("格式錯誤，必須為純數字"); */
 }
 function volidateNum(val){
 	var   reg=/^\d+$/g;
@@ -223,11 +222,16 @@ function volidateNum(val){
 }
 function queryVIP(){
 	
+	var   reg=$("#Msisdn").val();
+	reg="^"+reg+"$"
+	reg=reg.replace("*","\\d+");
+	reg=new RegExp(reg);	
+	
 	dataList.splice(0,dataList.length);
 	 $.each(limitList,function(i,limit){
-		if((limit.msisdn==$("#Msisdn").val())||($("#Msisdn").val()==null||$("#Msisdn").val()=="")){
-			dataList.push(limit);
-		} 
+		 if(reg.test(limit.msisdn)||($("#Msisdn").val()==null||$("#Msisdn").val()=="")){
+			 dataList.push(limit);
+		 }
 	}); 
 	pagination();
 }
@@ -253,7 +257,7 @@ function queryVIP(){
 			    	<input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" />
 			    </div>
 			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-			    	<label id="LMsisdn" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+			    	<label id="LMsisdn" >查詢時可使用"*"取代某區段號碼進行模糊查詢</label>
 			    </div>
 			    <div style="display: none;" class="col-xs-12">
 			    	<label for="Limit" class="col-xs-5 control-label">門最大上限:</label>

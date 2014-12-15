@@ -11,7 +11,10 @@
 <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 <script type="text/javascript">
 var dataList;
+var dateChange;
+var currenList;
 $(document).ready(function(){
+	dateChange=true;
 	$(".datapicker").datepicker({
         showOn: "button",
         buttonImage: "source/icon.png",
@@ -37,12 +40,17 @@ $(document).ready(function(){
 });
 	function queryCurrentDay(){
 		
+		if(!dateChange){
+			queryList();
+			return;
+		}
+		
 		if(!validate()){
 			return;
 		}
 		$.ajax({
 	      url: '<s:url action="queryCurrentDay"/>',
-	      data: {	"imsi":$("#imsi").val(),
+	      data: {	//"imsi":$("#imsi").val(),
 	    	  		"from":$("#dateFrom").val(),
   					"to":$("#dateTo").val()}, //parameters go here in object literal form
 	      type: 'POST',
@@ -52,7 +60,8 @@ $(document).ready(function(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  dataList=list;
+	    	  currenList=list;
+	    	  dataList=currenList.slice(0);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
@@ -62,7 +71,9 @@ $(document).ready(function(){
           },
           complete:function(){
         	  enableButton();
-        	  pagination();
+        	  //pagination();
+        	  queryList();
+        	  dateChange=false;
           }
 	    });
 	}
@@ -101,6 +112,21 @@ $(document).ready(function(){
 		$("#dateTo").val("");
 		$("#imsi").val("");
 	}
+	
+	function queryList(){
+		var   reg=$("#imsi").val();
+		reg="^"+reg+"$"
+		reg=reg.replace("*","\\d+");
+		reg=new RegExp(reg);	
+		
+		dataList.splice(0,dataList.length);
+		 $.each(currenList,function(i,ListItem){
+			 if(reg.test(ListItem.imsi)||($("#imsi").val()==null||$("#imsi").val()=="")){
+				 dataList.push(ListItem);
+			 }
+		}); 
+		pagination();
+	}
 </script>
 </head>
 <body>
@@ -108,7 +134,9 @@ $(document).ready(function(){
 	<div class="row max_height" align="center">
 		<h3>單日累計查詢</h3>
 		<div class="col-xs-4" align="right">查詢期間從</div>
-		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px ">到<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" ></div>
+		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="dateChange=true">
+		到
+		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="dateChange=true"></div>
 		<div class="col-xs-4" align="right"><label for="imsi">IMSI:</label></div>
 		<div class="col-xs-2" align="left"><input type="text" id="imsi" /></div>
 		<div class="btn-group col-xs-6">
@@ -116,6 +144,7 @@ $(document).ready(function(){
 				<input type="button" class="btn btn-primary btn-sm" onclick="clearDate()" value="清除">
 			</div>
 		<div class="col-xs-12">
+			<font size="2" color="red">(查詢IMSI時可使用"*"取代某區段號碼進行模糊查詢)</font>
 			<label id="Qmsg" style="height: 30px;">&nbsp;</label>
 		</div>
 		<div class="col-xs-12"> 

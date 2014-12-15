@@ -38,6 +38,8 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","dataRateLink","禣瞯琩高"));
 		l3.add(new Link("searchList","currentMonthLink","–る仓璸"));
 		l3.add(new Link("searchList","currentDayLink","虫ら仓璸琩高"));
+		l3.add(new Link("searchList","cardChangeHistoryLink","传癘魁琩高"));
+		l3.add(new Link("searchList","numberChangeHistoryLink","传腹癘魁琩高琩高"));
 		
 		l3.add(new Link("elseList","logoutLink","祅"));
 		

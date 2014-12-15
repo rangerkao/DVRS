@@ -256,7 +256,7 @@ public class SMSAction extends BaseAction {
 		return SUCCESS;
 	}
 	
-public String queryMSISDN(){
+	public String queryMSISDN(){
 		
 		try {
 			Map<String,String> map =new HashMap<String,String>();
@@ -274,6 +274,24 @@ public String queryMSISDN(){
 		}
 		
 		
+		return SUCCESS;
+	}
+	
+	public String queryTWNMSISDN(){ 
+		try {
+			Map<String,String> map =new HashMap<String,String>();
+			map=smsControl.queryTWNMSISDN(msisdn);
+			result=beanToJSONObject(map);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "queryTWNMSISDN","", SUCCESS);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Exception:"+e.getMessage());
+		}
 		return SUCCESS;
 	}
 	

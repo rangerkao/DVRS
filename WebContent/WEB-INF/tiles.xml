@@ -63,6 +63,14 @@
 	<definition name="currentDay" extends="web_base">
 		<put-attribute name="main" value="/web/currentDay.jsp" />
 	</definition>
+	
+	<definition name="cardChangeHistory" extends="web_base">
+		<put-attribute name="main" value="/web/cardChangeHistory.jsp" />
+	</definition>
+	
+	<definition name="numberChangeHistory" extends="web_base">
+		<put-attribute name="main" value="/web/numberChangeHistory.jsp" />
+	</definition>
 
 
 </tiles-definitions>

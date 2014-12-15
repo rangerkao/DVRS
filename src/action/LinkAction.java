@@ -36,67 +36,28 @@ public class LinkAction extends BaseAction{
 	private String DVRS="DVRS";
 	private String currentMonth="currentMonth";
 	private String currentDay="currentDay";
+	private String cardChangeHistory="cardChangeHistory";
+	private String numberChangeHistory="numberChangeHistory";
 	
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
 	
-	public String DVRS()  
-	{  
-	   return DVRS;        
-	}  
-	
-	public String bill()  
-	{  
-	   return BILL;        
-	}  
 	@Authority(action="admin", privilege="admin")  
-	public String admin()  
-	{  
-	   return Admin;        
-	}  
-	public String dataRate()  
-	{  
-	   return DataRate;        
-	}  
-	public String smsQuery()  
-	{  
-	   return SmsQuery;        
-	}  
-	
-	public String actionQuery()  
-	{  
-	   return ActionQuery;        
-	}  
-	
-	public String smsSetting()  
-	{  
-	   return SmsSetting;        
-	}  
-	
-	public String program()  
-	{  
-	   return Progrma;        
-	}  
-	   
-	public String cdr()  
-	{  
-	   return CDR;        
-	} 
-	public String limitSetting()  
-	{  
-	   return LimitSetting;        
-	} 
-	
-	public String currentMonth()  
-	{  
-	   return currentMonth;        
-	} 
-	
-	public String currentDay()  
-	{  
-	   return currentDay;        
-	} 
+	public String admin(){return Admin;}  
+	public String DVRS(){return DVRS;}  
+	public String bill(){return BILL;}  
+	public String dataRate(){return DataRate;}  
+	public String smsQuery(){return SmsQuery;}  
+	public String actionQuery(){return ActionQuery;}  	
+	public String smsSetting(){return SmsSetting;}  	
+	public String program(){return Progrma;}  
+	public String cdr(){return CDR;} 
+	public String limitSetting(){return LimitSetting;} 
+	public String currentMonth(){return currentMonth;} 
+	public String currentDay(){return currentDay;} 
+	public String cardChangeHistory(){return cardChangeHistory;}
+	public String numberChangeHistory(){return numberChangeHistory;}
 	
 	public String logout()  
 	{  
@@ -107,7 +68,7 @@ public class LinkAction extends BaseAction{
 		setTag("你已經登出！");
 		return LOGIN;         
 	}
-
+//*****************************************
 	public String getTag() {
 		return tag;
 	}
