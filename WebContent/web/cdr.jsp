@@ -38,9 +38,7 @@ var dateChange;
 var dataList;
 var cdrList;
 	function query(){
-		
-		alert(dateChange);
-		
+
 		if(!dateChange){
 			queryList();
 			return;

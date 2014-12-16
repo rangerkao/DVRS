@@ -1867,6 +1867,15 @@ public class DVRSmaintest implements Job{
 				int smsCount=0;
 				
 				for(String imsi:currentDayMap.get(sYearmonthday).keySet()){
+					
+					//20141216 add 斷網過後，不發送每日簡訊，避免預估斷網後，每日帶出實際累計引發爭議
+					if(currentMap.containsKey(sYearmonth) && currentMap.get(sYearmonth).containsKey(imsi)){
+						String everSuspend =(String) currentMap.get(sYearmonth).get(imsi).get("EVER_SUSPEND");
+						if("1".equals(everSuspend)){
+							continue;
+						}
+					}
+					
 					try {
 						String pricePlanID = msisdnMap.get(imsi).get("PRICEPLANID");
 						String phone=null;

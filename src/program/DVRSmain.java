@@ -1724,6 +1724,17 @@ public class DVRSmain implements Job{
 			try {
 				Statement st = conn.createStatement();
 				for(String imsi:currentDayMap.get(sYearmonthday).keySet()){
+					
+					//20141216 add 斷網過後，不發送每日簡訊，避免預估斷網後，每日帶出實際累計引發爭議
+					if(currentMap.containsKey(sYearmonth) && currentMap.get(sYearmonth).containsKey(imsi)){
+						String everSuspend =(String) currentMap.get(sYearmonth).get(imsi).get("EVER_SUSPEND");
+						if("1".equals(everSuspend)){
+							continue;
+						}
+					}
+					
+					
+					
 					//檢查門號是否存在，如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
 					if(msisdnMap.containsKey(imsi))
 						phone=(String) msisdnMap.get(imsi).get("MSISDN");
