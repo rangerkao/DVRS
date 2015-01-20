@@ -21,8 +21,8 @@ public class BillAction extends BaseAction{
 	
 	public String bill()  
 	{  
-		setBillData(billc.process(fileName));
-		
+		//setBillData(billc.process(fileName));
+		billc.process(fileName,1);
 		/*if(billData!=null)
 		System.out.println(billData.getI().getData());*/
 	   return SUCCESS;        

@@ -12,7 +12,7 @@ public class ChargeDetail {
 	private String categoryAmountSummary;//分類項費用小計
 	private String chargeItemSequence;//費用項顯示順序
 	private String chargeItemName;//費用項名
-	private Double amount;//費用額度
+	private String amount;//費用額度
 	
 	private String Data; //Bean 內容資料
 
@@ -26,15 +26,7 @@ public class ChargeDetail {
 		if(n>=9)n=9;
 		
 		switch(n){
-		case 9:
-			
-			try {
-				amount=Double.parseDouble(list.get(8));
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.out.println("ChargeDetail amount data is not NumberFormat!");
-			}
+		case 9:amount=list.get(8);
 		case 8:chargeItemName=list.get(7);
 		case 7:chargeItemSequence=list.get(6);
 		case 6:categoryAmountSummary=list.get(5);
@@ -52,7 +44,7 @@ public class ChargeDetail {
 	public ChargeDetail(String recordFlag, String accountNum,
 			String serviceCode, String categorySequence, String categoryName,
 			String categoryAmountSummary, String chargeItemSequence,
-			String chargeItemName, Double amount) {
+			String chargeItemName, String amount) {
 		super();
 		this.recordFlag = recordFlag;
 		this.accountNum = accountNum;
@@ -128,12 +120,12 @@ public class ChargeDetail {
 	public void setChargeItemName(String chargeItemName) {
 		this.chargeItemName = chargeItemName;
 	}
-
-	public Double getAmount() {
+	
+	public String getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Double amount) {
+	public void setAmount(String amount) {
 		this.amount = amount;
 	}
 

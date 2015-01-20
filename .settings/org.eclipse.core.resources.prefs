@@ -1,5 +1,5 @@
 eclipse.preferences.version=1
-encoding//WebContent/WEB-INF/classes/source/runDVRS.sh=UTF-8
-encoding//WebContent/WEB-INF/classes/source/test.sh=UTF-8
 encoding//src/action/AdminAction.java=UTF-8
 encoding//src/action/LoginAction.java=UTF-8
+encoding//src/source/runDVRS.sh=UTF-8
+encoding//src/source/test.sh=UTF-8

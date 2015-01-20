@@ -9,7 +9,7 @@ public class CurrentDay {
 	String updateDate;
 	String createDate;
 	String mccmnc;
-	String day;
+	String day; 
 	boolean alert;
 	
 	public CurrentDay(){

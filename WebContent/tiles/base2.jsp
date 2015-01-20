@@ -16,7 +16,7 @@
 						name="top" /></td>
 			</tr>
 			<tr style="height: 90%;">
-				<td  bgcolor="#AFFFD8" ><tiles:insertAttribute
+				<td  bgcolor="#AFFFD8"><tiles:insertAttribute
 						name='main' />
 				</td>
 			</tr>

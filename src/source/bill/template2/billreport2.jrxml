@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="868c74a1-0c15-4304-864c-d7429631e3aa">
+	<property name="ireport.zoom" value="1.4641000000000124"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Statement for" class="java.lang.String"/>
+	<parameter name="serviceCode" class="java.lang.String"/>
+	<parameter name="Billing Period" class="java.lang.String"/>
+	<parameter name="Account Number" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String"/>
+	<parameter name="Currency" class="java.lang.String"/>
+	<parameter name="U1total" class="java.lang.String"/>
+	<parameter name="R1" class="java.util.List"/>
+	<parameter name="R2" class="java.util.List"/>
+	<parameter name="U2total" class="java.lang.String"/>
+	<parameter name="CHNCTDiscountTime" class="java.lang.String"/>
+	<parameter name="CHNCTDiscountAmount" class="java.lang.String"/>
+	<parameter name="CHNOTDiscountTime" class="java.lang.String"/>
+	<parameter name="CHNOTDiscountAmount" class="java.lang.String"/>
+	<parameter name="MACDiscountTime" class="java.lang.String"/>
+	<parameter name="MACDiscountAmount" class="java.lang.String"/>
+	<parameter name="TotalDiscount" class="java.lang.String"/>
+	<parameter name="imageName" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="72" splitType="Stretch">
+			<staticText>
+				<reportElement x="362" y="0" width="173" height="59" isPrintWhenDetailOverflows="true" uuid="34a8cfca-e15e-4cc9-af5f-1239cb90f0b3"/>
+				<textElement>
+					<font size="8" isBold="true" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Page        of
+Statement for :
+Account Number :
+Mobile Number :
+Billing Period :
+
+
+
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="119" height="57" uuid="c0b2dc89-8249-44c2-bf29-b52066e7e7de"/>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Customer Service Number:
+Taiwan: +886 960847009
+Hong Kong: +852 66409009
+China: +86 13910489009]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="380" y="0" width="18" height="15" uuid="6fa5ff72-1a68-4b07-bf43-4c816778aaeb"/>
+				<textElement textAlignment="Center">
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="11" width="109" height="13" isPrintWhenDetailOverflows="true" uuid="ab50cdee-1240-4941-84c5-ea8002dc8209"/>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="421" y="46" width="114" height="13" isPrintWhenDetailOverflows="true" uuid="a5f2152a-d3de-41aa-aefe-38412f7734d7"/>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="427" y="35" width="100" height="13" uuid="f54d9748-2944-4b67-9500-17b44117f882"/>
+				<textElement>
+					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{serviceCode}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="409" y="0" width="18" height="15" uuid="9bdfd994-b336-42d2-8dc3-5abd714b5505"/>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="432" y="23" width="100" height="13" uuid="51d98534-50a4-41c8-86c2-3da27d9ebe5d"/>
+				<textElement>
+					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Account Number}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="49">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="49" uuid="9f9f9503-58dd-4de2-8343-f8182c00ce41"/>
+				<subreportParameter name="total">
+					<subreportParameterExpression><![CDATA[$P{U1total}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="dataList">
+					<subreportParameterExpression><![CDATA[$P{R1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageName">
+					<subreportParameterExpression><![CDATA["國際服務費(IDD Transit from Taiwan)"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Currency">
+					<subreportParameterExpression><![CDATA[$P{Currency}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="totalName">
+					<subreportParameterExpression><![CDATA["國際服務費合計"]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport2_subreport.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="49">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="49" uuid="11c555fa-1797-44bf-936c-970d6b548956"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="dataList">
+					<subreportParameterExpression><![CDATA[$P{R2}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="total">
+					<subreportParameterExpression><![CDATA[$P{U2total}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageName">
+					<subreportParameterExpression><![CDATA["全球卡境外通信費(Roaming Charges)"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Currency">
+					<subreportParameterExpression><![CDATA[$P{Currency}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="totalName">
+					<subreportParameterExpression><![CDATA["全球卡境外通信費合計"]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport2_subreport.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="680">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="118" width="555" height="25" backcolor="#CCCCCC" uuid="d90aae27-50f1-45f9-b57e-ed1f5ee105e4"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[  全球卡通信費優惠]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="13" backcolor="#CCCCCC" uuid="e9dc46c2-27ea-4621-9391-0c8f42375382"/>
+				<textElement>
+					<font fontName="新細明體" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[  全球卡通信費優惠
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="13" width="542" height="87" uuid="0bca113e-ea0c-48a5-9039-b3796a68e786"/>
+				<textElement>
+					<font fontName="新細明體" size="10"/>
+				</textElement>
+				<text><![CDATA[特別提醒: 有關全球卡通信費優惠的部份是指在香港、中國-上海，北京，廣東三省（CHNCT）、中國其他省份(CHNOT)接聽來自台灣的轉接來電。
+
+
+在香港、中國（CHNCT）接聽來自台灣的轉接來電
+在中國(CHNOT)接聽來自台灣的轉接來電
+在澳門接聽來自台灣的轉接來電]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="356" y="49" width="100" height="15" uuid="8271e228-3b73-4d19-9736-e7384ad057df"/>
+				<textElement>
+					<font fontName="新細明體" size="10"/>
+				</textElement>
+				<text><![CDATA[優惠單位數]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="463" y="49" width="84" height="15" uuid="7dbf8085-950b-4328-98f2-b14016becbdf"/>
+				<textElement>
+					<font fontName="新細明體" size="10"/>
+				</textElement>
+				<text><![CDATA[優惠金額]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="356" y="62" width="100" height="15" uuid="85d16113-59ee-4aa2-b777-9aa02b6841d0"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{CHNCTDiscountTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="463" y="62" width="84" height="15" uuid="abc25597-f1f9-4fd3-a350-947e62aff146"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{CHNCTDiscountAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="356" y="74" width="100" height="15" uuid="b60dce84-3c07-40ed-8f2a-ac37cb27f09e"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{CHNOTDiscountTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="463" y="74" width="84" height="15" uuid="402481bb-7ee7-422b-b5c6-cc9e4b3be233"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{CHNOTDiscountAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="356" y="85" width="100" height="15" uuid="02382ee4-80cb-4e3d-a009-eb054991f435"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{MACDiscountTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="463" y="85" width="84" height="15" uuid="bb51b7b4-54d7-45fa-a5be-35815d7b14e1"/>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{MACDiscountAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="287" y="118" width="100" height="25" uuid="3e3bf7ed-0270-4f70-b01b-6b12cf1953b4"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="447" y="118" width="100" height="25" uuid="7dd684dd-4753-44c8-a49f-f697a6155081"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TotalDiscount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="5" y="143" width="542" height="524" uuid="f9847b37-8a9a-4870-a5a2-39aeae87c19f"/>
+				<textElement>
+					<font fontName="新細明體" size="10"/>
+				</textElement>
+				<text><![CDATA[全球卡重要消息
+
+兩段收費
+電信收費是依據國際交換機傳送的通話紀錄的時間來計費。由於國際電信業者系統的更新，從今年五月一日開始，國際受話變成兩段收費
+ (一段為國際IDD電話、一段為國際受話)，兩段收費的總費用與原收費相同不變，但是變成兩筆通信明細。"
+這兩筆通信明細來自不同的國際交換機（一段為國際IDD交換機、一段為國際行動電話網路的交換機），因此當您掛斷電話時，這兩種不同的國際交換機接收到您掛斷電話的時間可能不相同，因而這兩筆通信明細在您的帳單中會有些微時間秒差，同時也可能產生不同的通話時間長度。
+倘若您對帳單內容有疑問，我們很樂意協助您查詢！"
+International call charges are base on the international switchboards’ recorded time frame.  Starting from 05/01/08, although the charges for receiving an international call remains the same, but due to our partner operator’s system adjustment, the charge for receiving an international call will appear in two call detail records (International IDD charge & Local airtime charge) on your call detail report.
+These two call detail records are from two different international switchboards (International IDD switchboard & Local operator switchboard).  The recorded time frame might be slightly different (in seconds) according to each switchboards system. As a result, you might experience a time difference (in seconds) in your call duration and call time.
+
+全球卡出國轉接號碼
+自2008/10/01起，因系統調整原因，全球卡出國轉接號碼+886931000300將更改為+85248500600。您的設定方式與轉接費用維持不變。
+From 2008/10/01, however the charges for forwarding calls still remain the same. But due to system adjustment, the forward to S2T access number will be change from +886931000300 to +85248500600.
+
+通信明細
+為了提供您更清楚明確的閱讀通信明細，從2008/9/1開始，全球卡通信明細陳列方式將變更，以提供您更好的電信服務。
+1. 舊有通信明細的分類方式以「合作夥伴國家」和「非合作夥伴國家」的方式排列；從2008/9/1起，通信明細分類方式將改為「國際服務費」和「全球卡境外通信費」。
+2. 所有通信明細依照上述分類後，將依通話時間排序，方便您對照所有通話的時間。若有任何問題請洽全球卡客服 +886277381258 或 +886960847009。
+國際服務費：在合作夥伴國家接聽從台灣轉接的來電的通話費
+全球卡境外通信費：包含合作夥伴國家與非合作夥伴國家的通話費
+Starting from 2008/9/1 World Card’s call detail report’s display order and column will be adjusted.
+1. World Card’s call detail report’s column will be adjusted from “Partner Networks” and “Non-Partner Network” to “Roaming Charges” and “IDD transit from Taiwan”.
+2. World Card’s call detail report display order will be adjusted according to the calls’ date and time.  Please contact your World Card customer service representative at +886277381258 or +886960847009 for further assistant.
+Roaming Charges: Includes your roaming charges in partner networks or non-partner networks.
+IDD transit from Taiwan: IDD transit from Taiwan while receiving the calls in partner networks.
+]]></text>
+			</staticText>
+		</band>
+		<band height="680">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="13" backcolor="#CCCCCC" uuid="71c33ecf-8261-488a-b4c8-854857894ffe"/>
+				<textElement>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[帳單通話項目說明：
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="18" width="93" height="622" uuid="aeca4ef5-4199-4cd7-852b-bff25716c292"/>
+				<textElement>
+					<font fontName="新細明體" size="8"/>
+				</textElement>
+				<text><![CDATA[Called Destination
+Caller Destination
+Duration
+CHNCT
+CHNOT
+FTH
+FTHA
+FTHD
+HKGPP
+Incoming
+IN_P
+IN_NP
+INA_P
+INA_NP
+IND_P
+IND_NP
+LA_P
+LA_NP
+LAA_P
+LAA_NP
+LAD_P
+LAD_NP
+Number calling/Called
+Outgoing
+SMS
+SMSA
+SMSD
+Total Charges
+UR
+URA
+VMC_P
+VMC_NP
+VMCA_P
+VMCA_NP
+VMCD_P
+VMCD_NP
+國際服務費
+全球卡境外通信費
+全球卡通信費優惠
+
+優惠單位數
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="98" y="18" width="234" height="622" uuid="76e105f3-1a28-4e36-a053-6fde798ce1e9"/>
+				<textElement>
+					<font fontName="新細明體" size="8"/>
+				</textElement>
+				<text><![CDATA[Destination of the caller
+Location of the caller
+Duration of the call
+China (Shanghai , Beijing, Gongdong)
+China (Other Providence)
+Fwd To Home Charges
+Fwd To Home Charges Adjustment
+Fwd To Home Charges Discount
+Hong Kong Peoples telecom
+Reciving an incoming call
+International Call Charges_Partner Network
+International Call Charges_Non-Partner Network
+International Call Charges Adjustment _Partner Network
+International Call Charges Adjustment_Non-Partner Network
+International Call Charges Discount_Partner Network
+International Call Charges Discount _Non-Partner Network
+Local Airtime Charges_Partner Network
+Local Airtime Charges_Non-Partner Network
+Local Airtime Charges Adjustment_Partner Network
+Local Airtime Charges Adjustment_Non-Partner Network
+Local Airtime Charges Discount_Partner Network
+Local Airtime Charges Discount_Non-Partner Network
+Number calling/Called
+Making an outgoing call
+SMS Charges
+SMS Charges Adjustment
+SMS Charges Discount
+Total Charge
+Usage Redeemable
+Usage Redeemable Adjustment
+Voice Mail Charges_Partner Network
+Voice Mail Charges_Non-Partner Network
+Voice Mail Charges Adjustment_Partner Network
+Voice Mail Charges Adjustment_Non-Partner Network
+Voice Mail Charges Discount_Partner Network
+Voice Mail Charges Discount_Non-Partner Network]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="334" y="18" width="221" height="622" uuid="2a2e88a6-ac2a-4c2c-91cc-c69652fc7bdc"/>
+				<textElement>
+					<font fontName="新細明體" size="8"/>
+				</textElement>
+				<text><![CDATA[受話端所在地
+發話端所在地
+通話時間
+中國 (上海，北京，廣東三省)
+中國其他省份
+回國轉接服務費
+回國轉接服務費調整
+回國轉接服務費扣抵
+香港萬眾電信
+接聽來電
+合作夥伴通話費_國際
+非合作夥伴通話費_國際
+調整合作夥伴通話費_國際
+調整非合作夥伴通話費_國際
+折扣合作夥伴通話費_國際
+折扣非合作夥伴通話費_國際
+合作夥伴通話費_當地
+非合作夥伴通話費_當地
+調整合作夥伴通話費_當地
+調整非合作夥伴通話費_當地
+折扣合作夥伴通話費_當地
+折扣非合作夥伴通話費_當地
+撥打號碼/接聽號碼
+撥打電話
+簡訊服務費
+簡訊服務費調整
+簡訊服務費折扣
+合計費用
+可扣抵通信費
+可扣抵通信費調整
+非合作夥伴通話費_聽取語音信箱
+合作夥伴通話費_聽取語音信箱
+調整合作夥伴通話費_聽取語音信箱
+調整非合作夥伴通話費_聽取語音信箱
+折扣合作夥伴通話費_聽取語音信箱
+折扣非合作夥伴通話費_聽取語音信箱
+在合作夥伴網路接聽來自台灣的轉接來電
+境外國際漫遊通話費用
+優惠的部份是指在香港、中國-上海，北京，廣東三省(CHNCT）、中國其他省份(CHNOT)接聽來自台灣的轉接來電
+全球卡資費是以ㄧ分鐘為一個單位(未滿一分鐘將以一分鐘收費)]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="50" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="150" height="50" uuid="cb4806b9-40e2-48b8-b22f-ef4a8f62c902"/>
+				<imageExpression><![CDATA[$P{SUBREPORT_DIR}+ $P{imageName}]]></imageExpression>
+			</image>
+		</band>
+	</pageFooter>
+</jasperReport>

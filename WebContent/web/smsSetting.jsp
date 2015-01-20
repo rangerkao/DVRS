@@ -6,7 +6,6 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var smsSettinglist;
 
@@ -30,7 +29,7 @@ function query(){
 	    	    $.each(list,function(i,smsSetting){  
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+smsSetting.id+"</td>"+
-               					"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
+               					//"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
                					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
                					"<td align='center' >"+smsSetting.msg+"</td>"+
                					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
@@ -63,13 +62,13 @@ function chooseRow(bu){
 	var row =bu.parentNode.parentNode //this 指向 button =(parent)> cell =(parent)> row
 	//alert(row.cells[0].innerText);
 	$("#Id").val(row.cells[0].innerText);
-	$("#ppId").val(row.cells[1].innerText);
-	$("#LppId").html("&nbsp;");
-	$("#Bracket").val(row.cells[2].innerText);
+	//$("#ppId").val(row.cells[1].innerText);
+	//$("#LppId").html("&nbsp;");
+	$("#Bracket").val(row.cells[1].innerText);
 	$("#LBracket").html("&nbsp;");
-	$("#Msg").val(row.cells[3].innerText);
+	$("#Msg").val(row.cells[2].innerText);
 	$("#LMsg").html("&nbsp;");
-	$("#Suspend").prop("checked",(row.cells[4].childNodes[0].checked));//在向下一層尋找到checkbox
+	$("#Suspend").prop("checked",(row.cells[3].childNodes[0].checked));//在向下一層尋找到checkbox
 	
 }
 var exist;
@@ -78,10 +77,10 @@ function validat(mod,txt){
 	exist=false;
 	validation=true;
 	
-	if($("#ppId").val()==null||$("#ppId").val()==""){
+	/* if($("#ppId").val()==null||$("#ppId").val()==""){
 		$("#LppId").html("此欄位不可為空!");
 		validation=false;
-	}
+	} */
 	
 	if($("#Bracket").val()==null||$("#Bracket").val()==""){
 		$("#LBracket").html("此欄位不可為空!");
@@ -105,7 +104,7 @@ function validat(mod,txt){
 	
 	if(mod=='add'){
 		$.each(smsSettinglist,function(i,smsSetting){
-			if((smsSetting.bracket*100)==$("#Bracket").val()&&smsSetting.pricePlanId==$("#ppId").val()){							
+			if((smsSetting.bracket*100)==$("#Bracket").val()/* &&smsSetting.pricePlanId==$("#ppId").val() */){							
 				exist=true;
 			}
 		});
@@ -121,7 +120,7 @@ function validat(mod,txt){
 		}else{
 			if(mod=='mod'){
 				$.each(smsSettinglist,function(i,smsSetting){
-					if((smsSetting.bracket*100)==$("#Bracket").val() && smsSetting.id !=$("#Id").val()&&smsSetting.pricePlanId==$("#ppId").val() ){
+					if((smsSetting.bracket*100)==$("#Bracket").val() && smsSetting.id !=$("#Id").val()/* &&smsSetting.pricePlanId==$("#ppId").val() */ ){
 						exist=true;
 					}
 				});
@@ -154,7 +153,7 @@ function updateSetting(mod,txt){
 	      data: {
 	    	  "smsSettinglistString":JSON.stringify(smsSettinglist),
 	    	  "smsSetting.id":$("#Id").val(),
-	    	  "smsSetting.pricePlanId":$("#ppId").val(),
+	    	  //"smsSetting.pricePlanId":$("#ppId").val(),
 	    	  "smsSetting.bracket":($("#Bracket").val()/100),
 	    	  "smsSetting.msg":$("#Msg").val(),
 	    	  "smsSetting.suspend":$("#Suspend").is(":checked"),
@@ -173,7 +172,7 @@ function updateSetting(mod,txt){
 	    	    $.each(list,function(i,smsSetting){  
              var _tr = $(	"<tr>"+
              					"<td align='center' >"+smsSetting.id+"</td>"+
-             					"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
+             					//"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
              					"<td align='center' >"+(smsSetting.bracket*100)+"</td>"+
              					"<td align='center' >"+smsSetting.msg+"</td>"+
              					"<td align='center' ><input type='checkbox' "+(smsSetting.suspend? "checked='checked'":"")+"disabled='disabled'></td>"+
@@ -364,65 +363,60 @@ function validat2(mod,txt){
 		
 			<div id="tab1" class="tab-pane">
 				<form class="form-horizontal" >
-					<div class="form-group" >
-					    <label for="Id" class="col-xs-5  control-label">設定ID:</label>
-					    <div class="col-xs-7" align="left">
-					    	<input type="text" id="Id" onkeyup="clearText('Id')" disabled="disabled"/>
+					<div class="col-xs-5" align="right"><label for="Id">設定ID:</label></div>
+				    <div class="col-xs-7" align="left">
+				    	<input type="text" id="Id" onkeyup="clearText('Id')" disabled="disabled"/>
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    
+				    <!-- 
+				    <div class="col-xs-5" align="right"><label for="ppId">資費ID:</label></div>
+				    <div class="col-xs-7" align="left">
+				    	<input type="text" id="ppId" onkeyup="clearText('ppId')"/>
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LppId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div> -->
+				    <div class="col-xs-5" align="right"><label for="Bracket">額度比例(%):</label></div>
+				    <div class="col-xs-7" align="left">
+				    	<input type="text" id="Bracket"  onkeyup="clearText('Bracket')" />
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LBracket" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    <div class="col-xs-5" align="right"><label for="Msg">簡訊ID：</label></div>
+				    <div class="col-xs-7" align="left">
+				    	<input type="text" id="Msg"  onkeyup="clearText('Msg')" />
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				   		<label id="LMsg" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    <div class="col-xs-5" align="right"><label for="Suspend">是否中斷數據連線：</label></div>
+				    <div class="col-xs-7" align="left">
+				    	<input type="checkbox" id="Suspend" />
+				    </div>
+				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+				   		<label id="LSuspend" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+
+				    <div class="col-xs-12">
+				    	<div class="btn-group" class="col-xs-12">
+							<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('add','新增')" value="新增">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('mod','修改')" value="修改" style="display: none;">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('del','刪除')" value="刪除">
+							<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
 					    </div>
-					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    <label for="ppId" class="col-xs-5  control-label">資費ID:</label>
-					    <div class="col-xs-7" align="left">
-					    	<input type="text" id="ppId" onkeyup="clearText('ppId')"/>
-					    </div>
-					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LppId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    <label for="Bracket" class="col-xs-5 control-label" >額度比例(%):</label>
-					    <div class="col-xs-7" align="left">
-					    	<input type="text" id="Bracket"  onkeyup="clearText('Bracket')" />
-					    </div>
-					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LBracket" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-				    	<label for="Msg" class="col-xs-5 control-label">簡訊ID：</label>
-					    <div class="col-xs-7" align="left">
-					    	<input type="text" id="Msg"  onkeyup="clearText('Msg')" />
-					    </div>
-					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-					   		<label id="LMsg" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    <label for="Suspend" class="col-xs-5 control-label">是否中斷數據連線：</label>
-					    <div class="col-xs-7" align="left">
-					    	<input type="checkbox" id="Suspend" />
-					    </div>
-					    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-					   		<label id="LSuspend" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    
-					    <div class="col-xs-12">
-					    	<div class="btn-group" class="col-xs-12">
-								<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('add','新增')" value="新增">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('mod','修改')" value="修改" style="display: none;">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('del','刪除')" value="刪除">
-								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
-						    </div>
-					    </div>
-					    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
-					</div>
+				    </div>
+				    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
 				</form>
 				<div>
 					<table class="table-bordered table-hover" align="center" style="width: 80%" id="table1">
 						<tr class="even_columm" >
 							<td class="columnLabel" align="center" width="20%">設定ID</td>
-							<td class="columnLabel" align="center" width="20%">資費ID</td>
+							<!-- <td class="columnLabel" align="center" width="20%">資費ID</td> -->
 							<td class="columnLabel" align="center" width="20%">額度比例(%)</td>
 							<td class="columnLabel" align="center" width="20%">簡訊ID</td>
 							<td class="columnLabel" align="center" width="20%">是否中斷數據連線</td>
@@ -434,61 +428,54 @@ function validat2(mod,txt){
 			<div id="tab2" class="tab-pane active">
 				<!-- 簡訊內容設定 -->
 				<form class="form-horizontal" >
-					<div class="form-group">
-				    	<label for="sId" class="col-xs-2  control-label">簡訊ID:</label>
-					    <div class="col-xs-4" align="left">
-					    	<input type="text" id="sId" onkeyup="clearText('sId')" />
-					    </div>
-					    
-					     <label for="CharSet" class="col-xs-2  control-label">編碼:</label>
-					    <div class="col-xs-4" align="left">
-					    	<input type="text" id="CharSet" onkeyup="clearText('CharSet')" />
-					    </div>
-					    
-					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LsId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LCharSet" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-					    
-					    <label for="sContent" class="col-xs-2 control-label" >簡訊內容：</label>
-					    <div class="col-xs-4" align="left">
-					    	<textarea rows="5" cols="50" id="sContent" onkeyup="clearText('sContent')"></textarea>
-					    	<div>
-								<label>參數帶入:</label>
-								<input type="button" onclick="replacetxt('{{bracket}}')" value="額度(NT****)">
-								<input type="button" onclick="replacetxt('{{customerService}}')" value="客服電話(+******)">
-							</div>
-					    </div>
-					    
-					    <label for="Discription" class="col-xs-2 control-label" >說明：</label>
-					    <div class="col-xs-4" align="left">
-					    	<textarea rows="5" cols="50" id="Discription" onkeyup="clearText('Discription')"></textarea>
-					    </div>
-					    
+					<div class="col-xs-2" align="right"><label for="sId">簡訊ID:</label></div>
+				    <div class="col-xs-4" align="left">
+				    	<input type="text" id="sId" onkeyup="clearText('sId')" />
+				    </div>				    
+				    <div class="col-xs-2" align="right"><label for="CharSet">編碼:</label></div>
+				    <div class="col-xs-4" align="left">
+				    	<input type="text" id="CharSet" onkeyup="clearText('CharSet')" />
+				    </div>
+				    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LsId" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LCharSet" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    <div class="col-xs-2" align="right"><label for="sContent">簡訊內容：</label></div>
+				    <div class="col-xs-4" align="left">
+				    	<textarea rows="5" cols="50" id="sContent" onkeyup="clearText('sContent')"></textarea>
+				    	<div>
+							<label>參數帶入:</label>
+							<input type="button" onclick="replacetxt('{{bracket}}')" value="額度(NT****)">
+							<input type="button" onclick="replacetxt('{{customerService}}')" value="客服電話(+******)">
+						</div>
+				    </div>
+				    <div class="col-xs-2" align="right"><label for="Discription">說明：</label></div>
+				    <div class="col-xs-4" align="left">
+				    	<textarea rows="5" cols="50" id="Discription" onkeyup="clearText('Discription')"></textarea>
+				    </div>
+				    
 
-					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LsContent" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LsContent" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+				    
+				    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
+				    	<label id="LDiscription" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+				    </div>
+	
+				    <div class="col-xs-12">
+				    	<div class="btn-group" class="col-xs-12">
+							<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('add','新增')" value="新增">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('mod','修改')" value="修改">
+							<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('del','刪除')" value="刪除">
+							<input type="button" class="btn btn-primary btn-sm" onclick="queryContentByID()" value="以ID查詢">
+							<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
 					    </div>
-					    
-					    <div class="col-xs-6 alert_msg" style="margin: opx;padding: 0px">
-					    	<label id="LDiscription" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-					    </div>
-		
-					    <div class="col-xs-12">
-					    	<div class="btn-group" class="col-xs-12">
-								<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('add','新增')" value="新增">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('mod','修改')" value="修改">
-								<input type="button" class="btn btn-primary btn-sm" onclick="updateContent('del','刪除')" value="刪除">
-								<input type="button" class="btn btn-primary btn-sm" onclick="queryContentByID()" value="以ID查詢">
-								<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryAdmin()" value="查詢"> -->
-						    </div>
-					    </div>
-					    <div class="col-xs-12"><label id="Qmsg2" style="height: 20px;width: 100px">&nbsp;</label></div>
-					</div>
+				    </div>
+				    <div class="col-xs-12"><label id="Qmsg2" style="height: 20px;width: 100px">&nbsp;</label></div>
 				</form>
 				<div class="col-xs-12"> 
 					<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>

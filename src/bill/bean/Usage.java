@@ -1,5 +1,7 @@
 package bill.bean;
 
+import java.util.List;
+
 public class Usage {
 	private String RecordFlag;//資料類別(識別資料格式)
 	private String AccountNum;//帳戶編號(帳單鍵值)
@@ -17,21 +19,21 @@ public class Usage {
 		
 	}
 	
-	public Usage(String[] data){
+	public Usage(List<String> list){
 		int n=0;
-		if(data!=null) n=data.length;
+		if(list!=null) n=list.size();
 		if(n>=9)n=9;
 		
 		switch(n){
-		case 9:TotalRecordCount=data[8];
-		case 8:TotalCharge=data[7];
-		case 7:CycleEndDate=data[6];
-		case 6:CycleBeginDate=data[5];
-		case 5:AccountName=data[4];
-		case 4:CustomerName=data[3];
-		case 3:ServiceCode=data[2];
-		case 2:AccountNum=data[1];
-		case 1:RecordFlag=data[0];
+		case 9:TotalRecordCount=list.get(8);
+		case 8:TotalCharge=list.get(7);
+		case 7:CycleEndDate=list.get(6);
+		case 6:CycleBeginDate=list.get(5);
+		case 5:AccountName=list.get(4);
+		case 4:CustomerName=list.get(3);
+		case 3:ServiceCode=list.get(2);
+		case 2:AccountNum=list.get(1);
+		case 1:RecordFlag=list.get(0);
 		default:
 		}
 		

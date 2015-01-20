@@ -26,12 +26,49 @@ public class SMSDao extends BaseDao{
 		// TODO Auto-generated constructor stub
 		logger = Logger.getLogger(SMSDao.class);
 	}
+	
+	Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
+	Map<String,String> imsitoServiceID = new HashMap<String,String>();
+	
+	private void setServiceIDtoIMSI() throws SQLException{
+		sql =
+				"SELECT B.IMSI,A.SERVICEID "
+				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
+				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
+				+ "AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748 "
+				+ "UNION "
+				+ "SELECT A.NEWVALUE IMSI, C.SERVICEID "
+				+ "FROM SERVICEINFOCHANGEORDER A, SERVICEORDER B, SERVICE C ,"
+				+ "		("
+				+ "			SELECT max(A.COMPLETEDATE) COMPLETEDATE, A.NEWVALUE,count(1) "
+				+ "			FROM SERVICEINFOCHANGEORDER A "
+				+ "			WHERE A.FIELDID=3713  AND A.COMPLETEDATE IS NOT NULL "
+				+ "	        AND A.OLDVALUE <> A.NEWVALUE "
+				+ "			GROUP BY A.NEWVALUE ) D "
+				+ "WHERE A.FIELDID=3713 AND A.ORDERID=B.ORDERID "
+				+ "AND B.SERVICEID=C.SERVICEID "
+				+ "AND A.OLDVALUE <> A.NEWVALUE "
+				+ "AND D.COMPLETEDATE=A.COMPLETEDATE "
+				+ "AND A.NEWVALUE=D.NEWVALUE "
+				+ "AND A.NEWVALUE IN ( SELECT A.IMSI FROM IMSI A WHERE A.SERVICEID IS NULL)";
+		
+		Statement st = conn.createStatement();
+		
+		ResultSet rs=st.executeQuery(sql);
+		
+		while(rs.next()){
+			serviceIDtoIMSI.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
+			imsitoServiceID.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
+		}
+		rs.close();
+		st.close();
+	}
 
 	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
 		
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
-				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
+				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH24:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A "
 				+ "WHERE  1=1 "
 				+ (fromDate!=null &&!"".equals(fromDate)?"AND A.SEND_DATE >=to_date('"+fromDate+"','yyyy-mm-dd') ":"")  
@@ -60,7 +97,7 @@ public class SMSDao extends BaseDao{
 	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
-				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH:mi:ss') CREATE_DATE "
+				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH24:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') CREATE_DATE "
 				+ "FROM HUR_SMS_LOG A  "
 				+ "WHERE 1=1 "
 				+ "ORDER BY A.CREATE_DATE DESC";
@@ -89,9 +126,12 @@ public class SMSDao extends BaseDao{
 		logger.info("querySMSSetting...");
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
+				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND"
+						+ "FROM HUR_SMS_SETTING A "
+						+ "ORDER BY A.ID ";
+				/*"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
 				+ "FROM HUR_SMS_SETTING A "
-				+ "ORDER BY A.ID ";
+				+ "ORDER BY A.ID ";*/
 		
 			Statement st = conn.createStatement();
 			logger.debug("Execute sql: "+sql);
@@ -101,7 +141,7 @@ public class SMSDao extends BaseDao{
 				log.setId(rs.getString("ID"));
 				log.setBracket(rs.getDouble("BRACKET"));
 				log.setMsg(rs.getString("MEGID"));
-				log.setPricePlanId(rs.getString("PRICEPLANID"));
+				//log.setPricePlanId(rs.getString("PRICEPLANID"));
 	
 				String s=rs.getString("SUSPEND");
 				if("0".equals(s))
@@ -128,18 +168,21 @@ public class SMSDao extends BaseDao{
 			st.close();
 			//重新匯入資料
 			sql=
-					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,PRICEPLANID,SUSPEND) "
-					+ "VALUES(?,?,?,?,?)";
+					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
+					+ "VALUES(?,?,?,?)";
+					/*"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND,PRICEPLANID) "
+					+ "VALUES(?,?,?,?,?)";*/
 			PreparedStatement pst = conn.prepareStatement(sql);
 			for(SMSSetting s : list){
 				pst.setString(1, s.getId());
 				pst.setDouble(2, s.getBracket());
 				pst.setString(3, s.getMsg());
-				pst.setString(4, s.getPricePlanId());
 				if(s.getSuspend())
-					pst.setString(5, "1");
+					pst.setString(4, "1");
 				else
-					pst.setString(5, "0");
+					pst.setString(4, "0");
+				
+				//pst.setString(5, s.getPricePlanId());
 				pst.addBatch();
 			}
 			logger.debug("Execute sql: "+sql);
@@ -151,21 +194,33 @@ public class SMSDao extends BaseDao{
 	
 	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
 		logger.info("queryAlertLimit...");
+		setServiceIDtoIMSI();
 		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
 		sql=
-				"SELECT A.IMSI,A.THRESHOLD,C.SERVICECODE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss')  CREATE_DATE "
+				"SELECT A.SERVICEID,A.THRESHOLD,"
+				+ "CASE "
+				+ "     WHEN C.SERVICECODE IS NULL THEN ' ' ELSE C.SERVICECODE END SERVICECODE,"
+				+ "CASE "
+				+ "     WHEN A.CREATE_DATE IS NOT NULL THEN  TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') ELSE ' ' END   CREATE_DATE , "
+				+ "CASE "
+				+ "     WHEN C.STATUS IS NULL THEN ' ' "
+				+ "     WHEN C.STATUS=1 THEN 'Normal' ELSE 'Inactive' END STATUS "
 				+ "FROM HUR_GPRS_THRESHOLD A,IMSI B,SERVICE C "
-				+ "WHERE A.IMSI=B.IMSI AND B.SERVICEID = c.SERVICEID ";
+				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND B.SERVICEID = C.SERVICEID (+)";
 		
 		Statement st = conn.createStatement();
 		logger.debug("Execute sql: "+sql);
 		ResultSet rs = st.executeQuery(sql);
 		while(rs.next()){
+			String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+			if(imsi==null || "".equals(imsi))
+				imsi=rs.getString("SERVICEID");
 			GPRSThreshold g = new GPRSThreshold();
-			g.setImsi(rs.getString("IMSI"));
+			g.setImsi(imsi);
 			g.setMsisdn(rs.getString("SERVICECODE"));
 			g.setThreshold(rs.getDouble("THRESHOLD"));
 			g.setCreateDate(rs.getString("CREATE_DATE"));
+			g.setStatus(rs.getString("STATUS"));
 			list.add(g);
 		}
 		
@@ -177,15 +232,17 @@ public class SMSDao extends BaseDao{
 	
 	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
 
+		setServiceIDtoIMSI();
+		String serviceid = imsitoServiceID.get(imsi);
 		logger.info("insertAlertLimit...");
 
 		sql=
-				"INSERT INTO HUR_GPRS_THRESHOLD (IMSI,THRESHOLD,CREATE_DATE) "
+				"INSERT INTO HUR_GPRS_THRESHOLD (SERVICEID,THRESHOLD,CREATE_DATE) "
 				+ "VALUES(?,?,sysdate)";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
-		pst.setString(1, imsi);
+		pst.setString(1, serviceid);
 		pst.setDouble(2, limit);
 		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
@@ -196,16 +253,18 @@ public class SMSDao extends BaseDao{
 	
 	public int updateAlertLimit(String imsi,Double limit) throws SQLException{
 
+		setServiceIDtoIMSI();
+		String serviceid = imsitoServiceID.get(imsi);
 		logger.info("updateAlertLimit...");
 		
 		sql=
 				"UPDATE HUR_GPRS_THRESHOLD A "
 				+ "SET A.THRESHOLD = ? "
-				+ "WHERE A.IMSI=? ";
+				+ "WHERE A.SERVICEID=? ";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		pst.setDouble(1, limit);
-		pst.setString(2, imsi);
+		pst.setString(2, serviceid);
 		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
 		pst.close();
@@ -214,15 +273,17 @@ public class SMSDao extends BaseDao{
 	}
 	
 	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
+		setServiceIDtoIMSI();
+		String serviceid = imsitoServiceID.get(imsi);
 		logger.info("deleteAlertLimit...");
 		
 		sql=
 				"DELETE HUR_GPRS_THRESHOLD A "
-				+ "WHERE A.IMSI=? ";
+				+ "WHERE A.SERVICEID=? ";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
-		pst.setString(1, imsi);
+		pst.setString(1, serviceid);
 		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
 		pst.close();

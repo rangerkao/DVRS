@@ -7,7 +7,6 @@
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <!-- Latest compiled and minified JavaScript -->
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 $(function(){
 	query();
@@ -16,10 +15,11 @@ $(function(){
 
 var limitList;
 var dataList;
-var tHead=[{name:"IMSI",col:"imsi",_width:"25%"},
-           {name:"門號",col:"msisdn",_width:"25%"},
-           {name:"建立時間",col:"createDate",_width:"25%"},
-           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"25%"}];
+var tHead=[{name:"IMSI",col:"imsi",_width:"20%"},
+           {name:"門號",col:"msisdn",_width:"20%"},
+           {name:"建立時間",col:"createDate",_width:"20%"},
+           {name:"狀態",col:"status",_width:"20%"},
+           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"20%"}];
 var reportName="VIP客戶設定";
 function query(){
 	$.ajax({
@@ -68,7 +68,7 @@ function chooseRow(bu){
 function updateLimit(mod,txt){
 	
 	if($("#IMSI").val()==null || $("#IMSI").val()==""){
-		alert("請先執行查詢IMSI，才能進行操作");
+		alert("IMSI不可為空");
 		return;
 	}
 	
@@ -122,6 +122,11 @@ function enableButton(){
 
  function queryIMSI(mod,txt){
 	
+	if(mod=='del'){
+		updateLimit(mod,txt);
+		return;
+	}
+	 
 	if($("#Msisdn").val()==null || $("#Msisdn").val()==""){
 		$("#LMsisdn").html('此欄位不可為空');
 		return
@@ -163,11 +168,12 @@ function enableButton(){
           }
 	    });
 }
+ //20150106 add 刪除可只靠imsi
 function validat(mod,txt){
 	
 	var validate = true;
 	
-	if($("#Msisdn").val()==null ||$("#Msisdn").val()==""){
+	if(mod!='del' && ($("#Msisdn").val()==null ||$("#Msisdn").val()=="")){
 		$("#LMsisdn").html('此欄位不可為空');
 		validate = false; 
 	}
@@ -176,7 +182,7 @@ function validat(mod,txt){
 		validate = false;
 	}
 	
-	if(!volidateNum($("#Msisdn").val())){
+	if(mod!='del' && !volidateNum($("#Msisdn").val())){
 		$("#LMsisdn").html('格式錯誤，必須為純數字');
 		validate = false;
 	}
@@ -197,7 +203,7 @@ function validat(mod,txt){
 		}else if(mod=='mod' || mod=='del'){
 			validate = false;
 			$.each(limitList,function(i,limit){
-				 if(limit.msisdn==$("#Msisdn").val()){
+				 if(limit.imsi==$("#IMSI").val()){
 					 validate = true;
 				 }
 			 });
@@ -229,7 +235,7 @@ function queryVIP(){
 	
 	dataList.splice(0,dataList.length);
 	 $.each(limitList,function(i,limit){
-		 if(reg.test(limit.msisdn)||($("#Msisdn").val()==null||$("#Msisdn").val()=="")){
+		 if((reg.test(limit.msisdn)||($("#Msisdn").val()==null||$("#Msisdn").val()==""))&&($("input[name='Status']:checked").val()==limit.status||$("input[name='Status']:checked").val()==undefined)){
 			 dataList.push(limit);
 		 }
 	}); 
@@ -242,44 +248,55 @@ function queryVIP(){
 
 <div class="container-fluid max_height" style="vertical-align: middle;">
 	<div class="row max_height" align="center">
-		<form class="form-horizontal" role="form">
-		<h3>警示上限設定頁面</h3>
-			<div class="form-group">
-			    <label for="IMSI" class="col-xs-5  control-label" style="display: none;">IMSI:</label>
-			    <div class="col-xs-7" align="left" style="display: none;" >
-			    	<input type="text" id="IMSI" onkeyup="clearText('IMSI')" disabled="disabled"/>
-			    </div>
-			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-			    	<label id="LIMSI" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-			    </div>
-			    <label for="Msisdn" class="col-xs-5 control-label" >門號:<font color="red">*</font></label>
+		<form class="form-horizontal" >
+			<h3>警示上限設定頁面</h3>
+			<div class="col-xs-5" align="right"><label for="IMSI">IMSI:</label></div>
+		    <div class="col-xs-7" align="left" >
+		    	<input type="text" id="IMSI" onkeyup="clearText('IMSI')" disabled="disabled"/>
+		    </div>
+		    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+		    	<label id="LIMSI" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+		    </div>
+		    <div class="col-xs-5" align="right"><label for="Msisdn">門號:<font color="red">*</font></label></div>
+		    <div class="col-xs-7" align="left">
+		    	<input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" />
+		    </div>
+		    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
+		    	<label id="LMsisdn" >查詢時可使用"*"取代某區段號碼進行模糊查詢</label>
+		    </div>
+		    <div class="col-xs-5" align="right"><label for="Status">狀態:</label></div>
+		    <div class="col-xs-7" align="left">
+			    <label class="radio-inline">
+					<input type="radio" name="Status" id="Status1" value="Normal"> Normal
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="Status" id="Status2" value="Inactive"> Inactive
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="Status" id="Status3" value=" "> 空值
+				</label>
+		    </div>
+		    <div style="display: none;" class="col-xs-12">
+		    	<div class="col-xs-5" align="right"><label for="Limit">門最大上限:</label></div>
 			    <div class="col-xs-7" align="left">
-			    	<input type="text" id="Msisdn" onkeyup="clearText('Msisdn')" />
+			    	<input type="text" id="Limit"  onkeyup="clearText('Limit')" />
 			    </div>
 			    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-			    	<label id="LMsisdn" >查詢時可使用"*"取代某區段號碼進行模糊查詢</label>
+			    	<label id="LLimit" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 			    </div>
-			    <div style="display: none;" class="col-xs-12">
-			    	<label for="Limit" class="col-xs-5 control-label">門最大上限:</label>
-				    <div class="col-xs-7" align="left">
-				    	<input type="text" id="Limit"  onkeyup="clearText('Limit')" />
-				    </div>
-				    <div class="col-xs-12 alert_msg" style="margin: opx;padding: 0px">
-				    	<label id="LLimit" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-				    </div>
+		    </div>
+		    <div class="col-xs-12">
+		    	<div class="btn-group" class="col-xs-12">
+			    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢"> 
+					<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
 			    </div>
-			    <div class="col-xs-12">
-			    	<div class="btn-group" class="col-xs-12">
-				    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">
-						<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢"> 
-						<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
-				    </div>
-			    </div>
-			    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
-			</div>
+		    </div>
+		    <div class="col-xs-12"><label id="Qmsg" style="height: 20px;width: 100px">&nbsp;</label></div>
+
 		</form>
 		<div class="col-xs-12"> 
 			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>

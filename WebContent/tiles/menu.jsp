@@ -238,7 +238,7 @@ function tqueryTWNMSISDN(){
 			<label id="menuAuth"></label>
 		</div>
 		<div class="col-xs-12">
-			<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
+			<!-- <input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled"> -->
 			<input 	type="text" id="tText" class="col-xs-12"
 						value="請輸入" style="color: #AAAAAA;" 
 						onfocus="if (this.value == '請輸入') {this.value = ''; this.style.color='#333333'}" 
@@ -254,6 +254,9 @@ function tqueryTWNMSISDN(){
 				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"></li>
 				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN()" value="中華門號查詢香港主號"></li>
 			</ul>
+		</div>
+		<div class="col-xs-12">
+			<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
 		</div>
 		<!-- <div class="col-xs-12">
 			<input 	type="text" id="tIMSI" class="col-xs-12"

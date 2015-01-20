@@ -8,6 +8,7 @@ public class GPRSThreshold {
 	Double threshold;
 	String msisdn;
 	String createDate;
+	String status;
 	
 	
 	public GPRSThreshold(){
@@ -18,12 +19,13 @@ public class GPRSThreshold {
 
 
 	public GPRSThreshold(String imsi, Double threshold, String msisdn,
-			String createDate) {
+			String createDate,String status) {
 		super();
 		this.imsi = imsi;
 		this.threshold = threshold;
 		this.msisdn = msisdn;
 		this.createDate = createDate;
+		this.status = status;
 	}
 
 
@@ -69,6 +71,20 @@ public class GPRSThreshold {
 
 	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
+	}
+
+
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 	

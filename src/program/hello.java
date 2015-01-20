@@ -2,7 +2,9 @@ package program;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,6 +34,26 @@ public class hello {
 		
 		System.out.println("Hello!");
 		
+		System.out.println("\t:\t1\t2\t3\t4\t5\t6\t7\t8\t9");
+		for(int i=1;i<=9;i++){
+			System.out.print(i+"\t:");
+			for(int j=1;j<=9;j++)
+				System.out.print("\t"+(i*j));
+			System.out.println();
+		}
+		
+		
+		String ip ="";
+    	
+    	try {
+			ip=InetAddress.getLocalHost().getHostAddress()+"";
+		} catch (UnknownHostException e) {
+			ip="unknow";
+			e.printStackTrace();
+		}
+    	System.out.println(ip);
+		
+		System.out.println(new Date(new Date().getTime()+600000));
 		
 		String ipAddr="221.177.44.235";
 

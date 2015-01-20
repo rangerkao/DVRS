@@ -9,9 +9,10 @@
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var currentList;
+var everQuery=false;
 var dataList;
 $(document).ready(function(){
-	queryCurrentMonth();
+	//queryCurrentMonth();
 });
 	function queryCurrentMonth(){			
 		$.ajax({
@@ -62,6 +63,13 @@ $(document).ready(function(){
 	}
 	
 	function queryList(){
+		
+		if(!everQuery){
+			queryCurrentMonth();
+			everQuery=true;
+		}
+		
+		
 		var   reg=$("#imsi").val();
 		reg="^"+reg+"$"
 		reg=reg.replace("*","\\d+");

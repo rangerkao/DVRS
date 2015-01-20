@@ -1,5 +1,7 @@
 package bill.bean;
 
+import java.util.List;
+
 public class Charge {
 
 	private String RecordFlag;//資料類別(識別資料格式)
@@ -22,25 +24,25 @@ public class Charge {
 		
 	}
 	
-	public Charge(String [] data){
+	public Charge(List<String> list){
 		int n=0;
-		if(data!=null) n=data.length;
+		if(list!=null) n=list.size();
 		if(n>=13)n=13;
 		
 		switch(n){
-		case 13:TotalChargeCount=data[12];
-		case 12:TotalAmount=data[11];
-		case 11:Priceplan=data[10];
-		case 10:CycleEndDate=data[9];
-		case 9:CycleBeginDate=data[8];
-		case 8:AccountName=data[7];
-		case 7:CustomerName=data[6];
-		case 6:BillingAddress=data[5];
-		case 5:Addressee=data[4];
-		case 4:PostalCode=data[3];
-		case 3:ServiceCode=data[2];
-		case 2:AccountNum=data[1];
-		case 1:RecordFlag=data[0];
+		case 13:TotalChargeCount=list.get(12);
+		case 12:TotalAmount=list.get(11);
+		case 11:Priceplan=list.get(10);
+		case 10:CycleEndDate=list.get(9);
+		case 9:CycleBeginDate=list.get(8);
+		case 8:AccountName=list.get(7);
+		case 7:CustomerName=list.get(6);
+		case 6:BillingAddress=list.get(5);
+		case 5:Addressee=list.get(4);
+		case 4:PostalCode=list.get(3);
+		case 3:ServiceCode=list.get(2);
+		case 2:AccountNum=list.get(1);
+		case 1:RecordFlag=list.get(0);
 		default:
 		}
 		

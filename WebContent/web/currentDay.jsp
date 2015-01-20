@@ -6,10 +6,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" defer="defer">
 var dataList;
 var dateChange;
 var currenList;

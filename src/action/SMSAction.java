@@ -102,7 +102,7 @@ public class SMSAction extends BaseAction {
 					set.setBracket(o.getDouble("bracket"));
 					set.setMsg(o.getString("msg"));
 					set.setSuspend(o.getBoolean("suspend"));
-					set.setPricePlanId(o.getString("pricePlanId"));
+					//set.setPricePlanId(o.getString("pricePlanId"));
 					smsSettinglist.add(set);
 				}
 				
@@ -114,13 +114,13 @@ public class SMSAction extends BaseAction {
 					//´M§ä´¡¤JÂI
 					for(int i=0;i<smsSettinglist.size();i++){
 						SMSSetting s= smsSettinglist.get(i);
-						if(s.getBracket()>smsSetting.getBracket()&&s.getPricePlanId()!=null && s.getPricePlanId().equals(smsSetting.getPricePlanId())){
+						if(s.getBracket()>smsSetting.getBracket()/*&&s.getPricePlanId()!=null && s.getPricePlanId().equals(smsSetting.getPricePlanId())*/){
 							smsSettinglist.add(i,smsSetting);
 							inserted=!inserted;
 							break;
 						}
 					}
-					if(!inserted){
+					/*if(!inserted){
 						for(int i=0;i<smsSettinglist.size();i++){
 							SMSSetting s= smsSettinglist.get(i);
 							if(Integer.valueOf(s.getPricePlanId())>Integer.valueOf(smsSetting.getPricePlanId())){
@@ -129,7 +129,7 @@ public class SMSAction extends BaseAction {
 								break;
 							}
 						}
-					}
+					}*/
 					
 					if(!inserted){
 						smsSettinglist.add(smsSetting);
@@ -214,7 +214,7 @@ public class SMSAction extends BaseAction {
 				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}
 			
-			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update","msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS+"sendSMS:"+sendSMS, SUCCESS);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update","imsi:"+imsi+" ; msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS, SUCCESS);
 				
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

@@ -16,6 +16,11 @@ public class InvoiceDetail {
 	public InvoiceDetail(){
 		
 	}
+			
+	public InvoiceDetail(String chargeItemName,String amount){
+		this.chargeItemName = chargeItemName;
+		this.amount = amount;
+	}
 	
 	public InvoiceDetail(List<String> list){
 		int n=0;

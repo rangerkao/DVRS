@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport2__subreport" pageWidth="595" pageHeight="802" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0345e82c-69e8-4ce9-a996-9eec471a820c">
+	<property name="ireport.zoom" value="1.610510000000013"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Statement for" class="java.lang.String"/>
+	<parameter name="Billing Period" class="java.lang.String"/>
+	<parameter name="Currency" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="prePageCount" class="java.lang.Integer"/>
+	<parameter name="imageName" class="java.lang.String"/>
+	<parameter name="customerServiceNumber" class="java.lang.String"/>
+	<field name="serviceCode" class="java.lang.String"/>
+	<field name="voiceUsageCharges" class="java.util.List"/>
+	<field name="smsCharges" class="java.util.List"/>
+	<field name="gprsUsageCharges" class="java.util.List"/>
+	<field name="d" class="java.util.List"/>
+	<field name="totalCurrentCharge" class="java.lang.Double"/>
+	<field name="totalUsageCharge" class="java.lang.Double"/>
+	<field name="priceplan" class="java.lang.String"/>
+	<field name="mmsCharges" class="java.util.List"/>
+	<variable name="variable1" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{voiceUsageCharges}.size()!=0 || $F{smsCharges}.size()!=0 || $F{gprsUsageCharges}.size()!=0]]></variableExpression>
+	</variable>
+	<variable name="pageCount1" class="java.lang.Integer" incrementType="Page" calculation="Highest">
+		<variableExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></variableExpression>
+	</variable>
+	<variable name="variable2" class="java.lang.Integer" resetType="Group" resetGroup="ServiceCode" incrementType="Page">
+		<variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<group name="ServiceCode" isReprintHeaderOnEachPage="true" footerPosition="StackAtBottom">
+		<groupExpression><![CDATA[$F{serviceCode}]]></groupExpression>
+		<groupHeader>
+			<band height="94">
+				<printWhenExpression><![CDATA[$V{variable2}==0]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="404" y="62" width="130" height="12" uuid="d4281771-97ed-4c8a-9f13-afe9f43e5c87"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{priceplan}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="361" y="16" width="173" height="46" isPrintWhenDetailOverflows="true" uuid="421d832c-254e-4134-a0aa-35e2be3b1143"/>
+					<textElement>
+						<font size="8" isBold="false" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Page        of
+Statement for :
+Mobile Number :
+Billing Period :
+
+
+
+]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="420" y="50" width="114" height="15" isPrintWhenDetailOverflows="true" uuid="269f5dee-edd3-4ecd-b720-b00bd485d660"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="361" y="74" width="173" height="15" uuid="e7f21645-8b63-4140-be2c-22fc67be235a"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Currency : "+$P{Currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="419" y="27" width="109" height="15" isPrintWhenDetailOverflows="true" uuid="ff47260e-9181-4b4f-8a03-9536883c8c42"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement x="408" y="16" width="18" height="15" uuid="fbb156b4-b949-4a38-b8cd-1ed87ea5c19e"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
+				</textField>
+				<image>
+					<reportElement x="0" y="0" width="150" height="50" isPrintWhenDetailOverflows="true" uuid="82d18a80-abbd-4b24-85bc-6fd5176af9b7"/>
+					<imageExpression><![CDATA[$P{SUBREPORT_DIR}+ $P{imageName}]]></imageExpression>
+				</image>
+				<textField>
+					<reportElement x="426" y="38" width="100" height="15" uuid="3dee4ea7-291b-40d0-b748-46a8d3149674"/>
+					<textElement>
+						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{serviceCode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="379" y="16" width="18" height="15" uuid="863f448b-fb3a-4df7-b60f-9758843131a3"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="50" width="108" height="15" isPrintWhenDetailOverflows="true" uuid="bb7e0aa2-4076-4cdd-904c-4cc51e89eab9"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Customer Service Number:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="361" y="62" width="43" height="12" uuid="18abfb8f-46ca-4ccd-ac6f-f5603767993e"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Rate Plan : ]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="108" y="50" width="162" height="15" uuid="23e061e7-69c4-4040-a060-e0d91377a0b2"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{customerServiceNumber}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="94">
+				<printWhenExpression><![CDATA[$V{variable2}>0]]></printWhenExpression>
+				<staticText>
+					<reportElement x="361" y="16" width="173" height="60" isPrintWhenDetailOverflows="true" uuid="928820f3-8711-4882-938c-8a7dc15efc27"/>
+					<textElement>
+						<font size="8" isBold="false" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Page        of
+Statement for :
+Mobile Number :
+Billing Period :
+Currency :
+
+
+
+]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="419" y="27" width="109" height="15" isPrintWhenDetailOverflows="true" uuid="43b29e10-546e-49b0-8fa6-1cf3a380f647"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="426" y="38" width="100" height="15" uuid="88b8469b-6789-4d0e-bf46-7a8d3bd7a67e"/>
+					<textElement>
+						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{serviceCode}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="50" width="108" height="15" isPrintWhenDetailOverflows="true" uuid="61ff847c-2fa7-427b-99d6-68c48203426a"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<text><![CDATA[Customer Service Number:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="420" y="50" width="114" height="15" isPrintWhenDetailOverflows="true" uuid="796f8ef5-9cdc-42d1-9481-97b69206aeff"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement x="408" y="16" width="18" height="15" uuid="20b8b904-d1ac-4ddd-b28c-b6e2a658d0f5"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="379" y="16" width="18" height="15" uuid="9d2e36db-a981-4d02-bfd3-16ba9e50ca3b"/>
+					<textElement textAlignment="Center">
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="402" y="62" width="116" height="15" uuid="2f4cd677-d256-42a5-b3bb-10c379c642df"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+				</textField>
+				<image>
+					<reportElement x="0" y="0" width="150" height="50" isPrintWhenDetailOverflows="true" uuid="52c192bf-1e02-49fc-b82c-bda25bfac402"/>
+					<imageExpression><![CDATA[$P{SUBREPORT_DIR}+$P{imageName}]]></imageExpression>
+				</image>
+				<textField>
+					<reportElement x="108" y="50" width="162" height="15" uuid="92c4fadd-cfe1-4f76-a465-917e2a629852"/>
+					<textElement>
+						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{customerServiceNumber}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="100">
+			<subreport>
+				<reportElement x="0" y="0" width="595" height="100" uuid="bd9e6f5c-2348-4f87-b5e3-c69303d19488"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="prePageCount">
+					<subreportParameterExpression><![CDATA[$P{prePageCount}+$V{PAGE_NUMBER}-1]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="priceplan">
+					<subreportParameterExpression><![CDATA[$F{priceplan}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Statement for">
+					<subreportParameterExpression><![CDATA[$P{Statement for}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageCount1">
+					<subreportParameterExpression><![CDATA[$V{pageCount1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Billing Period">
+					<subreportParameterExpression><![CDATA[$P{Billing Period}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Currency">
+					<subreportParameterExpression><![CDATA[$P{Currency}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="totalCurrentCharge">
+					<subreportParameterExpression><![CDATA[$F{totalCurrentCharge}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{d})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_charge.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="39">
+			<printWhenExpression><![CDATA[$V{variable1}]]></printWhenExpression>
+			<subreport>
+				<reportElement x="0" y="0" width="595" height="39" uuid="c8d191b7-bd9c-4eb5-8252-5e25a12e8e2f"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="voiceUsageCharges">
+					<subreportParameterExpression><![CDATA[$F{voiceUsageCharges}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="gprsUsageCharges">
+					<subreportParameterExpression><![CDATA[$F{gprsUsageCharges}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="prePageCount">
+					<subreportParameterExpression><![CDATA[$P{prePageCount}+$V{PAGE_NUMBER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="mmsCharges">
+					<subreportParameterExpression><![CDATA[$F{mmsCharges}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Statement for">
+					<subreportParameterExpression><![CDATA[$P{Statement for}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="totalUsageCharge">
+					<subreportParameterExpression><![CDATA[$F{totalUsageCharge}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="serviceCode">
+					<subreportParameterExpression><![CDATA[$F{serviceCode}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Billing Period">
+					<subreportParameterExpression><![CDATA[$P{Billing Period}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Currency">
+					<subreportParameterExpression><![CDATA[$P{Currency}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="smsCharges">
+					<subreportParameterExpression><![CDATA[$F{smsCharges}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_usage.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

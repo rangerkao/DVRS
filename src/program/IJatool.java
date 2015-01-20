@@ -55,6 +55,10 @@ public interface IJatool {
 	 * 
 	 * @param logger
 	 * @param DriverClass
+	 * 		oracle:oracle.jdbc.driver.OracleDriver
+	 * 		postgresql:org.postgresql.Driver
+	 * 		mySQL: com.mysql.jdbc.Driver
+	 * 		MsSQL:com.microsoft.jdbc.sqlserver.SQLServerDriver
 	 * @param URL
 	 * @param UserName
 	 * @param PassWord
@@ -64,6 +68,21 @@ public interface IJatool {
 	 */
 	Connection connDB(Logger logger,String DriverClass,String URL,String UserName,String PassWord) throws ClassNotFoundException, SQLException;
 	
+	
+	/**
+	 * 
+	 * @param DBType
+	 * 		oracle:oracle:thin
+	 * 		postgresql:postgresql
+	 * 		mySQL: mysql
+	 * 		MsSQL:microsoft:sqlserver
+	 * @param ip
+	 * @param port
+	 * @param DB
+	 * @param charSet
+	 * @return
+	 */
+	String parseDBURL(String DBType,String ip,String port,String DB,String charSet);
 	
 	/**
 	 * 肚癳戈WSDL Server
@@ -214,5 +233,26 @@ public interface IJatool {
 	 * @return
 	 */
 	List<String> regularFind(String content,String regex);
+	
+	
+	
+	
+	/**
+	 * 
+	 * @param value
+	 * @param method
+	 * 
+	 * 			ROUND_CEILING 	计タ 	ROUND_UP
+	 * 							计璽	
+	 * 
+	 * 			ROUND_HALF_EVEN 绰案计
+	 * 
+	 * 			ROUND_HALF_UP	计5 ROUND_UP
+	 * 			ROUND_HALF_DOWN	计6 ROUND_UP
+	 * 
+	 * @param digit 计计
+	 * @return
+	 */
+	Double roundUpOrDdown(Double value,String method,int digit);
 	
 }

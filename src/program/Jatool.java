@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -385,10 +386,10 @@ public class Jatool implements IJatool{
 			form="0.00";
 		}
 			
-		DecimalFormat df = new DecimalFormat(form);   
-		String str=df.format(value);
+		/*DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);*/
 		
-		return Double.valueOf(str);
+		return Double.valueOf(new DecimalFormat(form).format(value));
 	}
 	
 	@Override
@@ -410,7 +411,8 @@ public class Jatool implements IJatool{
 
 	@Override
 	public void readtxt(String filePath) {
-		
+		//String filePath =BillReport.class.getClassLoader().getResource("").toString().replace("file:", "")+ "source/";
+
 		BufferedReader reader = null;
 
 		try {
@@ -487,5 +489,33 @@ public class Jatool implements IJatool{
 		}
 		
 		return list;
+	}
+
+
+	@Override
+	public String parseDBURL(String DBType, String ip, String port, String DB,
+			String charSet) {
+		String URL="jdbc:"+DBType+":@"+ip+":"+port+":"+DB+"";
+		
+		if(charSet!=null &&!"".equals(charSet))
+			URL+="?characterEncoding="+charSet;
+		
+		return null;
+	}
+	
+	@Override
+	public Double roundUpOrDdown(Double value,String method,int digit){
+		
+		Double result = 0D;
+		
+		if("ROUND_HALF_UP".equals(method))		result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_HALF_UP).doubleValue();
+		if("ROUND_HALF_DOWN".equals(method))	result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+		if("ROUND_HALF_EVEN".equals(method))	result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+		if("ROUND_CEILING".equals(method))		result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_CEILING).doubleValue();
+		if("ROUND_FLOOR".equals(method))		result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_FLOOR).doubleValue();
+		if("ROUND_UP".equals(method))			result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_UP).doubleValue();
+		if("ROUND_DOWN".equals(method))			result =new BigDecimal(value).setScale(digit, BigDecimal.ROUND_DOWN).doubleValue();
+		
+		return result;
 	}
 }
