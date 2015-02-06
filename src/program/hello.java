@@ -69,6 +69,7 @@ public class hello {
 
 		String param="´ú¸Õ123.33215´ú¦¸°¼°¼°¼";
 		
+		query();
 		//updateDB(999,param);
 		//updateDB(999,null);
 		
@@ -80,8 +81,10 @@ public class hello {
 		
 		Jatool tool =new Jatool();
 		
-		Date d =new Date(new Date().getTime()-1000*60*60);
-			
+		Date d =new Date(new Date().getTime()-1000*60*60*24);
+		System.out.println("day : "+d);
+		
+		
 		Calendar calendar = Calendar.getInstance();
 		//calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-120);
 		//calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
@@ -101,6 +104,15 @@ public class hello {
 		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
 		
 		
+		/*for(int i =1000 ;i<2000;i++){
+			
+			String t=String.valueOf(i);
+			for(int j=4-t.length();j>0;j--){
+				t="0"+t;
+			}
+			System.out.println("88698909"+t);
+		}*/
+
 		
 	}
 
@@ -180,6 +192,92 @@ public class hello {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+	
+		}
+	}
+	
+	static void query(){
+		Connection conn=getConnection();
+		
+		String sql = "select ch_name from MARKETING_DB_COUNTRY A ";
+
+		if(conn==null){
+			System.out.println("connection is null");
+			
+		}else{
+
+			Statement st = null ;
+			ResultSet rs = null ;
+			PreparedStatement ps = null ;
+			try {
+
+				st=conn.createStatement();
+				rs=st.executeQuery(sql);
+				
+				while(rs.next()){
+					String rss=rs.getString("ch_name");
+					
+					if(rss!=null){
+						rss=new String(rss.getBytes("ISO8859-1"),"BIG5");
+						System.out.println(rss);
+					}
+				}
+				
+				Map<String,String> setcountry = new HashMap<String,String>();
+				
+				
+	
+
+				
+				sql = "update MARKETING_DB_DATA A set A.country=? where country=? ";
+				
+				ps = conn.prepareStatement(sql);
+				
+				for(String s : setcountry.keySet()){
+					ps.setString(1, setcountry.get(s));
+					ps.setString(2, new String(s.getBytes("BIG5"),"ISO8859-1"));
+					System.out.println("effected row "+ps.executeUpdate());
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}finally{
+				if(ps!=null){
+					try {
+						ps.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				if(st!=null){
+					try {
+						st.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				if(rs!=null){
+					try {
+						rs.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			
 	
 		}
 	}

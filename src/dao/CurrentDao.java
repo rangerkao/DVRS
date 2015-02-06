@@ -28,7 +28,7 @@ public class CurrentDao extends BaseDao {
 	Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
 	private void setServiceIDtoIMSI() throws SQLException{
-		sql =
+		/*sql =
 				"SELECT B.IMSI,A.SERVICEID "
 				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
 				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
@@ -47,9 +47,32 @@ public class CurrentDao extends BaseDao {
 				+ "AND A.OLDVALUE <> A.NEWVALUE "
 				+ "AND D.COMPLETEDATE=A.COMPLETEDATE "
 				+ "AND A.NEWVALUE=D.NEWVALUE "
-				+ "AND A.NEWVALUE IN ( SELECT A.IMSI FROM IMSI A WHERE A.SERVICEID IS NULL)";
+				+ "AND A.NEWVALUE IN ( SELECT A.IMSI FROM IMSI A WHERE A.SERVICEID IS NULL)";*/
 		
-		Statement st = conn.createStatement();
+		sql =
+				"SELECT A.SERVICEID,A.FIELDVALUE IMSI "
+				+ "FROM( "
+				+ "		SELECT A.SERVICEID,B.NEWVALUE FIELDVALUE,A.COMPLETEDATE "
+				+ "		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "		WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "		UNION "
+				+ "		SELECT A.SERVICEID,B.FIELDVALUE,A.COMPLETEDATE "
+				+ "		FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "		WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
+				
+				+ "    (SELECT SERVICEID,MAX(COMPLETEDATE) COMPLETEDATE "
+				+ "		FROM( "
+				+ "			SELECT A.SERVICEID,B.NEWVALUE,A.COMPLETEDATE "
+				+ "			FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "			WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "	     	UNION "
+				+ "        	SELECT A.SERVICEID,B.FIELDVALUE,A.COMPLETEDATE "
+				+ "         FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "         WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
+				+ "	  	GROUP BY SERVICEID )B "
+				+ "WHERE A.SERVICEID=B.SERVICEID AND A.COMPLETEDATE =B.COMPLETEDATE ";
+		
+		Statement st = conn2.createStatement();
 		
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -108,28 +131,32 @@ public class CurrentDao extends BaseDao {
 		
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi) throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to) throws SQLException{
 		
 		setServiceIDtoIMSI();
-		
-		String serviceid = imsitoServiceID.get(imsi);
+		String serviceid = null;
+		if(imsi!=null &&!"".equals(imsi))
+			serviceid=imsitoServiceID.get(imsi);
 		sql=
 				"SELECT A.MONTH,A.SERVICEID,A.CHARGE,A.VOLUME,A.SMS_TIMES,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME,A.EVER_SUSPEND,A.LAST_FILEID "
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
-				+ "FROM HUR_CURRENT A "
-				+ "WHERE A.SERVICEID = ? "
+				+ "FROM HUR_CURRENT A where 1=1 "
+				+ (serviceid!=null &&!"".equals(serviceid)?"AND A.SERVICEID =  "+serviceid+" ":"")
+				+ (from!=null &&!"".equals(from)?"AND A.MONTH >=  "+from+" ":"")
+				+ (to!=null &&!"".equals(to)?"AND A.MONTH <=  "+to+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 		
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
 		
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
+			Statement pst = conn.createStatement();
 			
-			pst.setString(1, serviceid);
-			
-			ResultSet rs=pst.executeQuery();
+			ResultSet rs=pst.executeQuery(sql);
 			
 			while(rs.next()){
+				imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+				if(imsi==null || "".equals(imsi))
+					imsi=rs.getString("SERVICEID");
 				CurrentMonth c = new CurrentMonth();
 				c.setMonth(rs.getString("MONTH"));
 				c.setImsi(imsi);
@@ -205,7 +232,7 @@ public class CurrentDao extends BaseDao {
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
 				+ "FROM HUR_CURRENT_DAY A, HUR_MCCMNC B "
 				+ "WHERE A.MCCMNC=B.MCCMNC "
-				+ (serviceid!=null &&!"".equals(serviceid)?"AND A.IMSI =  "+serviceid+" ":"")
+				+ (serviceid!=null &&!"".equals(serviceid)?"AND A.SERVICEID =  "+serviceid+" ":"")
 				+ (from!=null &&!"".equals(from)?"AND A.DAY >=  "+from+" ":"")
 				+ (to!=null &&!"".equals(to)?"AND A.DAY <=  "+to+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";

@@ -126,7 +126,7 @@ public class SMSDao extends BaseDao{
 		logger.info("querySMSSetting...");
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND"
+				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND "
 						+ "FROM HUR_SMS_SETTING A "
 						+ "ORDER BY A.ID ";
 				/*"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "

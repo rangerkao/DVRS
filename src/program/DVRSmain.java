@@ -2686,10 +2686,10 @@ public class DVRSmain implements Job{
 
 		IniProgram();
 
-		DVRSmain rf =new DVRSmain();
-		rf.process();
+		//DVRSmain rf =new DVRSmain();
+		//rf.process();
 		
-		//regularTimeRun();
+		regularTimeRun();
 
 	}
 	

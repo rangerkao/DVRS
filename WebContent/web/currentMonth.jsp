@@ -6,6 +6,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var currentList;
@@ -13,12 +14,28 @@ var everQuery=false;
 var dataList;
 $(document).ready(function(){
 	//queryCurrentMonth();
+	everQuery=false;
+	$(".datapicker").datepicker({
+        showOn: "button",
+        buttonImage: "source/icon.png",
+        buttonImageOnly: true,
+        buttonText: "Select date",
+        dateFormat: 'yy-mm'
+    });
+    var Today=new Date();
+    var month=Today.getMonth()+1;
+    
+    if(month<10)
+    	month="0"+month;
 });
 	function queryCurrentMonth(){			
 		$.ajax({
 	      url: '<s:url action="queryCurrentMonth"/>',
 	      data: {
-	    	  //"imsi":$("#imsi").val()
+	    	  "from":$("#dateFrom").val(),
+				"to":$("#dateTo").val()
+	    		  
+	    	  //"imsi":$("#imsi").val() 	 
 	    	  }, //parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
@@ -89,9 +106,13 @@ $(document).ready(function(){
 <div class="container-fluid max_height" style="vertical-align: middle;">
 	<div class="row max_height" align="center">
 		<h3>每月累計頁面</h3>
-		<div class="col-xs-5" align="right"><label>IMSI:</label></div>
-		<div class="col-xs-7" align="left"><input type="text" id="imsi"></div>
-		<div class="col-xs-12" align="center"><input type="button" value="查詢" onclick="queryList()" class="btn btn-primary btn-sm"></div>
+		<div class="col-xs-4" align="right">查詢期間從</div>
+		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="everQuery=false">
+		到
+		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="everQuery=false"></div>
+		<div class="col-xs-4" align="right"><label>IMSI:</label></div>
+		<div class="col-xs-2" align="left"><input type="text" id="imsi"></div>
+		<div class="col-xs-6" align="left"><input type="button" value="查詢" onclick="queryList()" class="btn btn-primary btn-sm"></div>
 		<div class="col-xs-12">
 			<font size="2" color="red">(查詢IMSI時可使用"*"取代某區段號碼進行模糊查詢)</font>
 			<label id="Qmsg" style="height: 30px;">&nbsp;</label>

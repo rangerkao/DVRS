@@ -21,11 +21,11 @@ public class CurrentControl extends BaseControl {
 		return currentDao.queryCurrentMonth();
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi) throws SQLException{
-		if(imsi==null || "".equals(imsi))
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to) throws SQLException{
+		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to)))
 			return currentDao.queryCurrentMonth();
 		
-		return currentDao.queryCurrentMonth(imsi);
+		return currentDao.queryCurrentMonth(imsi,from,to);
 	}
 	
 	public List<CurrentDay> queryCurrentDay() throws SQLException{

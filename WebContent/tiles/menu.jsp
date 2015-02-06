@@ -233,8 +233,8 @@ function tqueryTWNMSISDN(){
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: top;">
 		<div class="col-xs-12">
-			<label id="x" style="display: none;">x.index</label>
-			<label id="y" style="display: none;">y.index</label>
+			<label id="x" >x.index</label>
+			<label id="y" >y.index</label>
 			<label id="menuAuth"></label>
 		</div>
 		<div class="col-xs-12">

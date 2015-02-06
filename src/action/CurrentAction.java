@@ -29,7 +29,8 @@ public class CurrentAction extends BaseAction {
 	public String queryCurrentMonth(){
 		
 		try {
-			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi);
+			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to);
+			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""));
 			
 			result = beanToJSONArray(list);
 		
