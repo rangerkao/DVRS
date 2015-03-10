@@ -18,7 +18,7 @@ public class HistoryDao extends BaseDao {
 		logger = Logger.getLogger(HistoryDao.class);
 	}
 
-	public List<Map<String,String>> queryCardChangeHistory() throws SQLException{
+	public List<Map<String,String>> queryCardChangeHistory(String imsi) throws SQLException{
 		List<Map<String,String>> result = new ArrayList<Map<String,String>>();
 		
 		sql = "SELECT C.SUBSIDIARYID, C.SERVICECODE, C.SERVICEID, C.STATUS, C.PRICEPLANID, "
@@ -34,8 +34,19 @@ public class HistoryDao extends BaseDao {
 		ResultSet rs = st.executeQuery(sql);
 		logger.info("Execute SQL : "+sql);
 		
+		if(imsi!=null &&!"".equals(imsi)){
+			imsi = imsi.replace("/", "");
+		}
 		
 		while(rs.next()){
+			
+			String oldvalue = rs.getString("OLDVALUE");
+			String newvalue = rs.getString("NEWVALUE");
+			if(imsi!=null &&!"^$".equals(imsi)){
+				if((oldvalue==null&&!newvalue.matches(imsi)) || (!oldvalue.matches(imsi)&& newvalue==null)||(!oldvalue.matches(imsi)&&!newvalue.matches(imsi)) )
+					continue;
+			}
+			
 			Map<String,String> map = new HashMap<String,String>();
 			map.put("oldvalue", rs.getString("OLDVALUE"));
 			map.put("newvalue", rs.getString("NEWVALUE"));
@@ -46,7 +57,7 @@ public class HistoryDao extends BaseDao {
 		return result;
 	}
 	
-	public List<Map<String,String>> queryNumberChangeHistory() throws SQLException{
+	public List<Map<String,String>> queryNumberChangeHistory(String imsi) throws SQLException{
 		List<Map<String,String>> result = new ArrayList<Map<String,String>>();
 		
 		sql = "SELECT A.ORDERID, A.OLDVALUE, A.NEWVALUE, A.COMPLETEDATE, C.SERVICEID, C.SERVICECODE, C.STATUS "
@@ -60,8 +71,18 @@ public class HistoryDao extends BaseDao {
 		ResultSet rs = st.executeQuery(sql);
 		logger.info("Execute SQL : "+sql);
 		
-		
+		if(imsi!=null &&!"".equals(imsi)){
+			imsi = imsi.replace("/", "");
+		}
 		while(rs.next()){
+			
+			String oldvalue = rs.getString("OLDVALUE");
+			String newvalue = rs.getString("NEWVALUE");
+			if(imsi!=null &&!"^$".equals(imsi)){
+				if((oldvalue==null&&!newvalue.matches(imsi)) || (!oldvalue.matches(imsi)&& newvalue==null)||(!oldvalue.matches(imsi)&&!newvalue.matches(imsi)) )
+					continue;
+			}
+			
 			Map<String,String> map = new HashMap<String,String>();
 			map.put("orderid", rs.getString("ORDERID"));
 			map.put("oldvalue", rs.getString("OLDVALUE"));

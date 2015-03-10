@@ -20,7 +20,7 @@
 	<field name="subTotalDuration" class="java.lang.String"/>
 	<field name="subTotalCharges" class="java.lang.String"/>
 	<variable name="CallingOrCalled" class="java.lang.String">
-		<variableExpression><![CDATA[($F{callType}.equals("Incoming")?$F{callee}:$F{caller})]]></variableExpression>
+		<variableExpression><![CDATA[(!$F{callType}.equals("Incoming")?$F{callee}:$F{caller})]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>

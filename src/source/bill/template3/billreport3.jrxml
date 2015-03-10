@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport3" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="40" bottomMargin="0" isTitleNewPage="true" uuid="ac2e0ac2-f70f-46fe-a5db-76ba23eb8e35">
-	<property name="ireport.zoom" value="0.9090909090909197"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.zoom" value="3.4522712143931447"/>
+	<property name="ireport.x" value="1161"/>
+	<property name="ireport.y" value="625"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\src\\source\\bill\\template3\\"]]></defaultValueExpression>
 	</parameter>
@@ -22,8 +22,10 @@
 	<parameter name="D" class="java.util.List"/>
 	<parameter name="U1total" class="java.lang.String"/>
 	<parameter name="U2total" class="java.lang.String"/>
+	<parameter name="R" class="java.util.List"/>
+	<parameter name="BS" class="java.util.List"/>
 	<parameter name="R1" class="java.util.List"/>
-	<parameter name="R2" class="java.util.List"/>
+	<parameter name="PaymentMethod" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -39,7 +41,7 @@
 客戶服務專線：02-25683288]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="198" y="38" width="100" height="16" uuid="1565f894-009d-4eed-9e0d-a575abddf0bd"/>
+				<reportElement x="227" y="29" width="100" height="16" uuid="1565f894-009d-4eed-9e0d-a575abddf0bd"/>
 				<textElement>
 					<font fontName="新細明體" isBold="true"/>
 				</textElement>
@@ -129,11 +131,11 @@
 				<text><![CDATA[繳款截止日]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="413" y="188" width="135" height="15" uuid="815095d9-7d7b-4243-a2a0-c5d23542634b"/>
-				<textElement textAlignment="Right">
+				<reportElement x="428" y="188" width="61" height="13" uuid="815095d9-7d7b-4243-a2a0-c5d23542634b"/>
+				<textElement textAlignment="Left">
 					<font fontName="新細明體" size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[預定繳款方式：信用卡轉帳繳款]]></text>
+				<text><![CDATA[預定繳款方式：]]></text>
 			</staticText>
 			<line>
 				<reportElement x="9" y="241" width="539" height="1" uuid="de35795c-9bf9-40f4-8c31-c92ce3db2d64"/>
@@ -180,9 +182,6 @@
 				</textElement>
 				<text><![CDATA[金   額(元)  ]]></text>
 			</staticText>
-			<line>
-				<reportElement x="9" y="510" width="539" height="1" uuid="65919667-9250-424c-9527-9fdc3473475f"/>
-			</line>
 			<staticText>
 				<reportElement mode="Opaque" x="9" y="511" width="539" height="13" backcolor="#CCCCCC" uuid="39e3b18c-0725-4c71-9281-39af400b69ae"/>
 				<textElement verticalAlignment="Middle">
@@ -268,28 +267,28 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{AccountBalance}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new DecimalFormat("#,##0").format(Double.valueOf($P{AccountBalance}))]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="112" y="169" width="71" height="18" uuid="9994f0d2-81d3-43e2-951c-c6de2cecabae"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{PaymentPosted}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new DecimalFormat("#,##0").format(Double.valueOf($P{PaymentPosted}))]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="208" y="169" width="71" height="18" uuid="3c67863b-e592-406f-bb95-db407262e81b"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{TotalAmount}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new DecimalFormat("#,##0").format(Double.valueOf($P{TotalAmount}))]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="321" y="168" width="100" height="20" uuid="ab0dbf96-efa3-4175-9ef1-d8ca2d580728"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{TotalAmountDue}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new DecimalFormat("#,##0").format(Double.valueOf($P{TotalAmountDue}))]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="436" y="167" width="100" height="20" uuid="570feb3d-5849-4e7c-b6d9-869878f1a4b9"/>
@@ -317,14 +316,24 @@
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{TotalAmount}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new DecimalFormat("#,##0").format(Double.valueOf($P{TotalAmount}))]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="278" y="228" width="1" height="283" uuid="63766f57-d664-4ae5-b176-315e2b4f374d"/>
 			</line>
+			<line>
+				<reportElement x="9" y="510" width="539" height="1" uuid="65919667-9250-424c-9527-9fdc3473475f"/>
+			</line>
 			<rectangle>
 				<reportElement mode="Transparent" x="9" y="228" width="539" height="297" uuid="9e600fe6-1540-4d98-89a2-8cc87c49a6a3"/>
 			</rectangle>
+			<textField>
+				<reportElement x="489" y="188" width="66" height="13" uuid="ec77aba4-39da-4357-9115-95fe684af5f5"/>
+				<textElement>
+					<font fontName="新細明體" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[("2".equals($P{PaymentMethod})?"信用卡轉帳繳款":"銀行匯款")]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<detail>
@@ -406,6 +415,9 @@
 				<subreportParameter name="priceplan">
 					<subreportParameterExpression><![CDATA[$P{Priceplan}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="BS">
+					<subreportParameterExpression><![CDATA[$P{BS}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="R1">
 					<subreportParameterExpression><![CDATA[$P{R1}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -421,8 +433,8 @@
 				<subreportParameter name="SUBREPORT_DIR">
 					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="R2">
-					<subreportParameterExpression><![CDATA[$P{R2}]]></subreportParameterExpression>
+				<subreportParameter name="R">
+					<subreportParameterExpression><![CDATA[$P{R}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="serviceCode">
 					<subreportParameterExpression><![CDATA[$P{ServiceCode}]]></subreportParameterExpression>

@@ -2531,6 +2531,8 @@ public class DVRSmaintest implements Job{
 			logger.error("Error at sendMail",e);
 		} catch (IOException e) {
 			logger.error("Error at sendMail",e);
+		} catch (Exception e) {
+			logger.error("Error at sendMail",e);
 		}
 	}
 

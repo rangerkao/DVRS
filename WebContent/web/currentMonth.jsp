@@ -4,6 +4,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<%-- <style type="text/css">
+.ui-datepicker-calendar {
+display: none;
+}
+</style> --%>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
@@ -21,6 +26,7 @@ $(document).ready(function(){
         buttonImageOnly: true,
         buttonText: "Select date",
         dateFormat: 'yy-mm'
+        
     });
     var Today=new Date();
     var month=Today.getMonth()+1;
@@ -28,13 +34,13 @@ $(document).ready(function(){
     if(month<10)
     	month="0"+month;
 });
-	function queryCurrentMonth(){			
+	function queryCurrentMonth(imsi){			
 		$.ajax({
 	      url: '<s:url action="queryCurrentMonth"/>',
 	      data: {
 	    	  "from":$("#dateFrom").val(),
-				"to":$("#dateTo").val()
-	    		  
+				"to":$("#dateTo").val(),
+	    		"imsi":imsi
 	    	  //"imsi":$("#imsi").val() 	 
 	    	  }, //parameters go here in object literal form
 	      type: 'POST',
@@ -81,23 +87,25 @@ $(document).ready(function(){
 	
 	function queryList(){
 		
-		if(!everQuery){
-			queryCurrentMonth();
-			everQuery=true;
-		}
-		
 		
 		var   reg=$("#imsi").val();
 		reg="^"+reg+"$"
 		reg=reg.replace("*","\\d+");
 		reg=new RegExp(reg);	
 		
-		dataList.splice(0,dataList.length);
+		queryCurrentMonth(reg);
+		
+		/* if(!everQuery){
+			queryCurrentMonth();
+			everQuery=true;
+		} */
+	
+		/* dataList.splice(0,dataList.length);
 		 $.each(currentList,function(i,ListItem){
 			 if(reg.test(ListItem.imsi)||($("#imsi").val()==null||$("#imsi").val()=="")){
 				 dataList.push(ListItem);
 			 }
-		}); 
+		});  */
 		pagination();
 	}
 </script>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport3_usage" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty" uuid="4472859e-c4c9-4f44-9da4-f0f264a3c403">
+	<property name="ireport.zoom" value="2.357947691000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="data" class="java.util.List"/>
+	<parameter name="CategoryName" class="java.lang.String"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\src\\source\\bill\\template3\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="total" class="java.lang.String"/>
+	<parameter name="Currency" class="java.lang.String"/>
+	<field name="r1VoiceUsageCharges" class="java.util.List"/>
+	<field name="r1SmsCharges" class="java.util.List"/>
+	<group name="default" footerPosition="StackAtBottom">
+		<groupFooter>
+			<band height="25">
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="555" height="25" backcolor="#CCCCCC" uuid="9d431b14-ede1-4db7-9bd4-692f71fdc211"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="新細明體" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[  通話費合計]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="447" y="0" width="100" height="25" uuid="4e99c351-2c55-4097-b573-3f954d237dde"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new DecimalFormat("#,##0.00").format(Double.valueOf($P{total}))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="308" y="0" width="100" height="25" uuid="ce3c5a55-fbd3-4ba2-b81e-212705d20a26"/>
+					<textElement verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="4" y="0" width="100" height="20" uuid="84a22c3b-a39b-4653-84cc-1b9ea96fcbe8"/>
+				<textElement>
+					<font fontName="新細明體" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{CategoryName}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{r1SmsCharges}.size()>0]]></printWhenExpression>
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="50" uuid="ade91055-ee38-45ce-89c6-6636ea02cec9"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{r1SmsCharges})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_usage_sms.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$F{r1VoiceUsageCharges}.size()>0]]></printWhenExpression>
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="50" uuid="6914c92c-2caa-4899-9794-1d25de1a1b60"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{r1VoiceUsageCharges})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_usage_voice.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

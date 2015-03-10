@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport2__subreport" pageWidth="595" pageHeight="802" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0345e82c-69e8-4ce9-a996-9eec471a820c">
-	<property name="ireport.zoom" value="1.610510000000013"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.zoom" value="2.8531167061100264"/>
+	<property name="ireport.x" value="631"/>
+	<property name="ireport.y" value="96"/>
 	<parameter name="Statement for" class="java.lang.String"/>
 	<parameter name="Billing Period" class="java.lang.String"/>
 	<parameter name="Currency" class="java.lang.String"/>
@@ -36,52 +36,45 @@
 		<groupHeader>
 			<band height="94">
 				<printWhenExpression><![CDATA[$V{variable2}==0]]></printWhenExpression>
-				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="404" y="62" width="130" height="12" uuid="d4281771-97ed-4c8a-9f13-afe9f43e5c87"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{priceplan}]]></textFieldExpression>
-				</textField>
 				<staticText>
-					<reportElement x="361" y="16" width="173" height="46" isPrintWhenDetailOverflows="true" uuid="421d832c-254e-4134-a0aa-35e2be3b1143"/>
+					<reportElement x="361" y="11" width="173" height="12" uuid="d0f8f63e-0fb9-4846-983e-ed5a4fe970c2"/>
 					<textElement>
-						<font size="8" isBold="false" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true"/>
 					</textElement>
-					<text><![CDATA[Page        of
-Statement for :
-Mobile Number :
-Billing Period :
-
-
-
-]]></text>
+					<text><![CDATA[Page        of]]></text>
 				</staticText>
-				<textField>
-					<reportElement x="420" y="50" width="114" height="15" isPrintWhenDetailOverflows="true" uuid="269f5dee-edd3-4ecd-b720-b00bd485d660"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="361" y="57" width="173" height="12" uuid="d4281771-97ed-4c8a-9f13-afe9f43e5c87"/>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Rate Plan : "+$F{priceplan}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" x="361" y="74" width="173" height="15" uuid="e7f21645-8b63-4140-be2c-22fc67be235a"/>
+					<reportElement positionType="Float" x="361" y="46" width="173" height="12" isPrintWhenDetailOverflows="true" uuid="269f5dee-edd3-4ecd-b720-b00bd485d660"/>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Billing Period : "+$P{Billing Period}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="361" y="68" width="173" height="12" uuid="e7f21645-8b63-4140-be2c-22fc67be235a"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Currency : "+$P{Currency}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement x="419" y="27" width="109" height="15" isPrintWhenDetailOverflows="true" uuid="ff47260e-9181-4b4f-8a03-9536883c8c42"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="RelativeToBandHeight" x="416" y="23" width="118" height="12" isPrintWhenDetailOverflows="true" uuid="ff47260e-9181-4b4f-8a03-9536883c8c42"/>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Report">
-					<reportElement x="408" y="16" width="18" height="15" uuid="fbb156b4-b949-4a38-b8cd-1ed87ea5c19e"/>
+					<reportElement x="405" y="11" width="18" height="12" uuid="fbb156b4-b949-4a38-b8cd-1ed87ea5c19e"/>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
 				</textField>
@@ -90,16 +83,16 @@ Billing Period :
 					<imageExpression><![CDATA[$P{SUBREPORT_DIR}+ $P{imageName}]]></imageExpression>
 				</image>
 				<textField>
-					<reportElement x="426" y="38" width="100" height="15" uuid="3dee4ea7-291b-40d0-b748-46a8d3149674"/>
+					<reportElement positionType="Float" x="361" y="35" width="173" height="12" uuid="3dee4ea7-291b-40d0-b748-46a8d3149674"/>
 					<textElement>
-						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{serviceCode}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Mobile Number  : "+$F{serviceCode}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="379" y="16" width="18" height="15" uuid="863f448b-fb3a-4df7-b60f-9758843131a3"/>
+					<reportElement x="376" y="11" width="18" height="12" uuid="863f448b-fb3a-4df7-b60f-9758843131a3"/>
 					<textElement textAlignment="Center">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
 				</textField>
@@ -110,13 +103,6 @@ Billing Period :
 					</textElement>
 					<text><![CDATA[Customer Service Number:]]></text>
 				</staticText>
-				<staticText>
-					<reportElement positionType="Float" x="361" y="62" width="43" height="12" uuid="18abfb8f-46ca-4ccd-ac6f-f5603767993e"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<text><![CDATA[Rate Plan : ]]></text>
-				</staticText>
 				<textField>
 					<reportElement x="108" y="50" width="162" height="15" uuid="23e061e7-69c4-4040-a060-e0d91377a0b2"/>
 					<textElement>
@@ -124,38 +110,24 @@ Billing Period :
 					</textElement>
 					<textFieldExpression><![CDATA[$P{customerServiceNumber}]]></textFieldExpression>
 				</textField>
+				<staticText>
+					<reportElement x="361" y="23" width="55" height="12" uuid="95512829-05f5-43b9-9959-9ab9251af84c"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Statement for : ]]></text>
+				</staticText>
 			</band>
 			<band height="94">
 				<printWhenExpression><![CDATA[$V{variable2}>0]]></printWhenExpression>
 				<staticText>
-					<reportElement x="361" y="16" width="173" height="60" isPrintWhenDetailOverflows="true" uuid="928820f3-8711-4882-938c-8a7dc15efc27"/>
+					<reportElement x="361" y="11" width="173" height="12" uuid="0f153af9-2a99-4ed5-980d-999a504e4f26"/>
 					<textElement>
-						<font size="8" isBold="false" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="新細明體" size="8" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Page        of
-Statement for :
-Mobile Number :
-Billing Period :
-Currency :
-
-
-
 ]]></text>
 				</staticText>
-				<textField>
-					<reportElement x="419" y="27" width="109" height="15" isPrintWhenDetailOverflows="true" uuid="43b29e10-546e-49b0-8fa6-1cf3a380f647"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="426" y="38" width="100" height="15" uuid="88b8469b-6789-4d0e-bf46-7a8d3bd7a67e"/>
-					<textElement>
-						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{serviceCode}]]></textFieldExpression>
-				</textField>
 				<staticText>
 					<reportElement x="0" y="50" width="108" height="15" isPrintWhenDetailOverflows="true" uuid="61ff847c-2fa7-427b-99d6-68c48203426a"/>
 					<textElement>
@@ -163,33 +135,19 @@ Currency :
 					</textElement>
 					<text><![CDATA[Customer Service Number:]]></text>
 				</staticText>
-				<textField>
-					<reportElement x="420" y="50" width="114" height="15" isPrintWhenDetailOverflows="true" uuid="796f8ef5-9cdc-42d1-9481-97b69206aeff"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
-				</textField>
 				<textField evaluationTime="Report">
-					<reportElement x="408" y="16" width="18" height="15" uuid="20b8b904-d1ac-4ddd-b28c-b6e2a658d0f5"/>
+					<reportElement x="408" y="11" width="18" height="12" uuid="20b8b904-d1ac-4ddd-b28c-b6e2a658d0f5"/>
 					<textElement>
 						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="379" y="16" width="18" height="15" uuid="9d2e36db-a981-4d02-bfd3-16ba9e50ca3b"/>
+					<reportElement x="379" y="11" width="18" height="12" uuid="9d2e36db-a981-4d02-bfd3-16ba9e50ca3b"/>
 					<textElement textAlignment="Center">
 						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+$P{prePageCount}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement positionType="Float" x="402" y="62" width="116" height="15" uuid="2f4cd677-d256-42a5-b3bb-10c379c642df"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
 				</textField>
 				<image>
 					<reportElement x="0" y="0" width="150" height="50" isPrintWhenDetailOverflows="true" uuid="52c192bf-1e02-49fc-b82c-bda25bfac402"/>
@@ -202,6 +160,41 @@ Currency :
 					</textElement>
 					<textFieldExpression><![CDATA[$P{customerServiceNumber}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement positionType="Float" x="361" y="35" width="173" height="12" uuid="44b1a839-eb82-4aea-8314-90a66cdea831"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Mobile Number  : "+$F{serviceCode}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="RelativeToBandHeight" x="416" y="23" width="118" height="12" isPrintWhenDetailOverflows="true" uuid="92e6c438-66de-47eb-a70c-7ea1d8e76757"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="361" y="59" width="173" height="12" uuid="79b9dc77-1cf0-4607-a6c0-591d1c379486"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Currency : "+$P{Currency}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="361" y="47" width="173" height="12" isPrintWhenDetailOverflows="true" uuid="81d967fe-2b6b-4ab5-92fd-212ce05de048"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Billing Period : "+$P{Billing Period}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="361" y="23" width="55" height="12" uuid="084d2339-7e86-44c6-b168-9de9bb691f3c"/>
+					<textElement>
+						<font fontName="新細明體" size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Statement for : ]]></text>
+				</staticText>
 			</band>
 		</groupHeader>
 	</group>
@@ -217,6 +210,9 @@ Currency :
 				</subreportParameter>
 				<subreportParameter name="prePageCount">
 					<subreportParameterExpression><![CDATA[$P{prePageCount}+$V{PAGE_NUMBER}-1]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="d">
+					<subreportParameterExpression><![CDATA[$F{d}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="priceplan">
 					<subreportParameterExpression><![CDATA[$F{priceplan}]]></subreportParameterExpression>
@@ -236,7 +232,7 @@ Currency :
 				<subreportParameter name="totalCurrentCharge">
 					<subreportParameterExpression><![CDATA[$F{totalCurrentCharge}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{d})]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></dataSourceExpression>
 				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_charge.jasper"]]></subreportExpression>
 			</subreport>
 		</band>

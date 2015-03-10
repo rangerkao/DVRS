@@ -1,6 +1,7 @@
 package control;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import dao.CurrentDao;
@@ -22,6 +23,7 @@ public class CurrentControl extends BaseControl {
 	}
 	
 	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to) throws SQLException{
+		System.out.println("ctr queryCurrentMonth..."+","+new Date());
 		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to)))
 			return currentDao.queryCurrentMonth();
 		

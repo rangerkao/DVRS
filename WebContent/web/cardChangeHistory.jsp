@@ -9,7 +9,6 @@
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
-	queryDataRate();
 });
 var historyList;
 var dataList;
@@ -19,9 +18,14 @@ var tHead=[{name:"侣腹",col:"oldvalue",_width:"25%"},
            {name:"ЧΘ丁",col:"completedate",_width:"25%"}];
 var reportName="传菌";
 	function queryDataRate(){
+		var   reg=$("#imsi").val();
+		reg="^"+reg+"$"
+		reg=reg.replace("*","\\d+");
+		reg=new RegExp(reg);	
+		
 		$.ajax({
 	      url: '<s:url action="queryCardChangeHistory"/>',
-	      data: {}, //parameters go here in object literal form
+	      data: {"imsi" : reg }, //parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
@@ -74,7 +78,7 @@ var reportName="传菌";
 		<h3>传菌琩高</h3>
 		<div class="col-xs-5" align="right"><label>IMSI:</label></div>
 		<div class="col-xs-7" align="left"><input type="text" id="imsi"></div>
-		<div class="col-xs-12" align="center"><input type="button" value="琩高" onclick="queryList()" class="btn btn-primary btn-sm"></div>
+		<div class="col-xs-12" align="center"><input type="button" value="琩高" onclick="queryDataRate()" class="btn btn-primary btn-sm"></div>
 		<div class="col-xs-12"><font size="2" color="red">(琩高IMSIㄏノ"*"琘跋琿腹絏秈︽家絢琩高)</font><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>
 		<div class="col-xs-12"> 
 			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>

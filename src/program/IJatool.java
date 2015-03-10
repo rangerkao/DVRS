@@ -32,7 +32,7 @@ public interface IJatool {
 	 * @throws IOException 
 	 * @throws Exception
 	 */
-	void sendMail(Logger logger,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException;
+	void sendMail(Logger logger,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException, Exception;
 	
 	/**
 	 * 發送郵件
@@ -48,7 +48,7 @@ public interface IJatool {
 	 * @throws IOException 
 	 * @throws Exception
 	 */
-	void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException;
+	void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException, Exception;
 	
 	/**
 	 * DB連線

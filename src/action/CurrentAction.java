@@ -1,6 +1,7 @@
 package action;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import bean.CurrentDay;
@@ -29,11 +30,11 @@ public class CurrentAction extends BaseAction {
 	public String queryCurrentMonth(){
 		
 		try {
-			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to);
+			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to+","+new Date());
 			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""));
-			
+			System.out.println("Get return data:"+","+new Date());
 			result = beanToJSONArray(list);
-		
+			System.out.println("parse to Json end,"+new Date());
 		
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

@@ -7,8 +7,7 @@
 
 	<package name="default" extends="struts-default">
 		<result-types>
-			<result-type name="tiles"
-				class="org.apache.struts2.views.tiles.TilesResult" />
+			<result-type name="tiles"  class="org.apache.struts2.views.tiles.TilesResult" />
 		</result-types>
 		
 		<!-- Interceptor -->
@@ -55,6 +54,15 @@
 		<action name="billReport" method="bill" class="action.BillAction">
 			<result name="success" type="tiles">bill</result>
 		</action>
+		
+		<!-- Catche -->
+    	<action name="flushCatche" method="flushCatche" class="catche.CatchAction">
+	        <result name="success" type="tiles">catche</result>
+        </action>
+        
+        <action name="reloadCatche" method="reloadCatche" class="catche.CatchAction">
+	        <result name="success" type="tiles">catche</result>
+        </action>
 		
 		<!-- Escel 下載 -->
         <action name="createExcel"  method="createExcel" class="action.Excel">  
@@ -215,6 +223,13 @@
 	        </result>
         </action>
         <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction">
+	        <!-- 将返回类型设置为json -->
+	        <result type="json">
+	        	<param name="root">result</param>
+	        </result>
+        </action>
+    <!-- Catche -->
+    	<action name="flushCatche" method="flushCatche" class="catche.CatchAction">
 	        <!-- 将返回类型设置为json -->
 	        <result type="json">
 	        	<param name="root">result</param>

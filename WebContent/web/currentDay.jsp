@@ -38,10 +38,15 @@ $(document).ready(function(){
 });
 	function queryCurrentDay(){
 		
-		if(!dateChange){
+		/* if(!dateChange){
 			queryList();
 			return;
-		}
+		} */
+		
+		var   reg=$("#imsi").val();
+		reg="^"+reg+"$"
+		reg=reg.replace("*","\\d+");
+		reg=new RegExp(reg);
 		
 		if(!validate()){
 			return;
@@ -49,6 +54,7 @@ $(document).ready(function(){
 		$.ajax({
 	      url: '<s:url action="queryCurrentDay"/>',
 	      data: {	//"imsi":$("#imsi").val(),
+	    	  		"imsi" : reg,
 	    	  		"from":$("#dateFrom").val(),
   					"to":$("#dateTo").val()}, //parameters go here in object literal form
 	      type: 'POST',
@@ -70,7 +76,8 @@ $(document).ready(function(){
           complete:function(){
         	  enableButton();
         	  //pagination();
-        	  queryList();
+        	  /* queryList(); */
+        	  pagination();
         	  dateChange=false;
           }
 	    });

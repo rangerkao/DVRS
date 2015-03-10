@@ -31,7 +31,7 @@ public class AuthenticationInterceptor extends AbstractInterceptor{
 		//透過invocation獲得呼叫的context
 		//取得session
 		Map<String,Object> session=invocation.getInvocationContext().getSession();
-		
+		/*
 		//取得Action的name
 		String aName=invocation.getAction().getClass().getName();
 		System.out.println("ActionInvocation called by "+aName);
@@ -58,7 +58,7 @@ public class AuthenticationInterceptor extends AbstractInterceptor{
 			System.out.println("Action "+actionName+" Is need privilege "+privilege);
 		}
 		
-		
+		*/
 		
 		
 		User user =(User) session.get("s2tUser");

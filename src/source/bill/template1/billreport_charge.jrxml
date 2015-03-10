@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="bill2_charge" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="76d8b797-b567-419f-b743-76d9cb33953d">
-	<property name="ireport.zoom" value="1.4641000000000006"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="2.853116706110003"/>
+	<property name="ireport.x" value="661"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="totalCurrentCharge" class="java.lang.Double"/>
 	<parameter name="Currency" class="java.lang.String"/>
@@ -11,35 +11,7 @@
 	<parameter name="prePageCount" class="java.lang.Integer"/>
 	<parameter name="priceplan" class="java.lang.String"/>
 	<parameter name="pageCount1" class="java.lang.Integer"/>
-	<field name="categoryName" class="java.lang.String"/>
-	<field name="amount" class="java.lang.String"/>
-	<field name="chargeItemName" class="java.lang.String"/>
-	<field name="serviceCode" class="java.lang.String"/>
-	<variable name="CategoryCount" class="java.lang.Double" resetType="Group" resetGroup="chargeCategory" calculation="Sum">
-		<variableExpression><![CDATA[Double.valueOf($F{amount})]]></variableExpression>
-		<initialValueExpression><![CDATA[Double.valueOf("0.00")]]></initialValueExpression>
-	</variable>
-	<group name="chargeCategory">
-		<groupExpression><![CDATA[$F{serviceCode}]]></groupExpression>
-		<groupHeader>
-			<band height="15">
-				<textField>
-					<reportElement mode="Opaque" x="0" y="0" width="555" height="15" backcolor="#CCCCCC" uuid="6a24f52c-a9f7-46e7-b1fc-b884d074a87a"/>
-					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{categoryName}]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="chargeCategory">
-					<reportElement x="425" y="0" width="100" height="15" uuid="1189ac7e-fb7c-402b-a7d7-00267eca0f94"/>
-					<textElement textAlignment="Right">
-						<font size="8" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{CategoryCount}==null?"0.00":new DecimalFormat("0.00").format($V{CategoryCount})]]></textFieldExpression>
-				</textField>
-			</band>
-		</groupHeader>
-	</group>
+	<parameter name="d" class="java.util.List"/>
 	<group name="default" footerPosition="StackAtBottom">
 		<groupFooter>
 			<band height="20">
@@ -71,21 +43,39 @@
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="16">
-			<textField>
-				<reportElement x="345" y="0" width="80" height="15" uuid="4ddb5176-5a72-453b-be7c-23691c29818f"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{amount}==null?"0.00":new DecimalFormat("#,##0.00").format(Double.valueOf($F{amount}))]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="57" y="0" width="288" height="15" uuid="3e902db8-435b-4369-9541-a7f397571af0"/>
-				<textElement>
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[($F{chargeItemName}==null?"":$F{chargeItemName})]]></textFieldExpression>
-			</textField>
+		<band height="34">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="34" uuid="1e141970-e069-45e1-a97b-be29753b8f89"/>
+				<subreportParameter name="SUBREPORT_DIR">
+					<subreportParameterExpression><![CDATA[$P{SUBREPORT_DIR}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="prePageCount">
+					<subreportParameterExpression><![CDATA[$P{prePageCount}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="d">
+					<subreportParameterExpression><![CDATA[$P{d}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="priceplan">
+					<subreportParameterExpression><![CDATA[$P{priceplan}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Statement for">
+					<subreportParameterExpression><![CDATA[$P{Statement for}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pageCount1">
+					<subreportParameterExpression><![CDATA[$P{pageCount1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Billing Period">
+					<subreportParameterExpression><![CDATA[$P{Billing Period}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="Currency">
+					<subreportParameterExpression><![CDATA[$P{Currency}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="totalCurrentCharge">
+					<subreportParameterExpression><![CDATA[$P{totalCurrentCharge}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{d})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "billreport_charge_detail.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 </jasperReport>

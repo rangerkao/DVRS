@@ -72,5 +72,8 @@
 		<put-attribute name="main" value="/web/numberChangeHistory.jsp" />
 	</definition>
 
+	<definition name="catche" extends="web_base">
+		<put-attribute name="main" value="/web/Catche.jsp" />
+	</definition>
 
 </tiles-definitions>

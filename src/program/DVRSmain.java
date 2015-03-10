@@ -4,6 +4,7 @@ package program;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -97,6 +98,7 @@ public class DVRSmain implements Job{
 	private static Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
 	private static String DEFAULT_PHONE=null;
 	private static Boolean TEST_MODE=true;
+	private static String HKNetReceiver;
 	
 	//多排程處理
 	private static boolean executing =false;
@@ -200,7 +202,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setLastFileID Got a SQLException", e);
 			//send mail
-			sendMail("At setLastFileID occur SQLException error!");
+			sendErrorMail("At setLastFileID occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -267,7 +269,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setCurrentMap occur SQLException error", e);
 			//send mail
-			sendMail("At setCurrentMap occur SQLException error!");
+			sendErrorMail("At setCurrentMap occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -311,7 +313,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setoldChargeMap occur SQLException error", e);
 			//send mail
-			sendMail("At setoldChargeMap occur SQLException error!");
+			sendErrorMail("At setoldChargeMap occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -388,7 +390,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setCurrentMapDay occur SQLException error", e);
 			//send mail
-			sendMail("At setCurrentMapDay occur SQLException error!");
+			sendErrorMail("At setCurrentMapDay occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -441,7 +443,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {			
 			logger.error("At setDataRate occur SQLException error", e);
 			//send mail
-			sendMail("At setDataRate occur SQLException errorr!");
+			sendErrorMail("At setDataRate occur SQLException errorr!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -474,7 +476,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setThreshold occur SQLException error", e);
 			//send mail
-			sendMail("At setThreshold occur SQLException error!");
+			sendErrorMail("At setThreshold occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -506,7 +508,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setSERVICEIDtoVLN occur SQLException error", e);
 			//send mail
-			sendMail("At setSERVICEIDtoVLN occur SQLException error!");
+			sendErrorMail("At setSERVICEIDtoVLN occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -542,7 +544,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {			
 			logger.error("At setVLNtoTADIG occur SQLException error", e);
 			//send mail
-			sendMail("At setVLNtoTADIG occur SQLException error!");
+			sendErrorMail("At setVLNtoTADIG occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -575,7 +577,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
 			//send mail
-			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
+			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -611,7 +613,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
 			//send mail
-			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
+			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -646,7 +648,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At dataCount occur SQLException error", e);
 			//send mail
-			sendMail("At dataCount occur SQLException error!");
+			sendErrorMail("At dataCount occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -685,8 +687,8 @@ public class DVRSmain implements Job{
 			
 			e.printStackTrace();
 			logger.error("Got a SQLException : "+e.getStackTrace());
-			//sendMail
-			sendMail("At defaultRate occur SQLException error!");
+			//sendErrorMail
+			sendErrorMail("At defaultRate occur SQLException error!");
 			errorMsg=e.getStackTrace().toString();
 		}*/
 		logger.info("defaultRate : " +defaultRate+" TWD ");
@@ -723,7 +725,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
 			//send mail
-			sendMail("At setTADIGtoMCCMNC occur SQLException error!");
+			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -758,7 +760,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setIPtoMccmncList occur SQLException error", e);
 			//send mail
-			sendMail("At setIPtoMccmncList occur SQLException error!");
+			sendErrorMail("At setIPtoMccmncList occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -787,7 +789,7 @@ public class DVRSmain implements Job{
 				/*"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID "
 				+ "FROM SERVICE A,IMSI B "
 				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL ";*/
-				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,"
+				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,B.ICCID, "
 				+ "(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
 				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
 				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
@@ -816,6 +818,7 @@ public class DVRSmain implements Job{
 				map.put("NCODE", rs.getString("NCODE"));
 				map.put("SERVICEID", rs.getString("SERVICEID"));
 				map.put("IMSI", rs.getString("IMSI"));
+				map.put("ICCID", rs.getString("ICCID"));
 				msisdnMap.put(rs.getString("IMSI"), map);
 				msisdnMap.put(rs.getString("SERVICEID"), map);
 			}
@@ -824,7 +827,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setMsisdnMap occur SQLException error!", e);
 			//send mail
-			sendMail("At setMsisdnMap occur SQLException error!");
+			sendErrorMail("At setMsisdnMap occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -842,34 +845,81 @@ public class DVRSmain implements Job{
 	 */
 	private void setIMSItoServiceIDMap(){
 		logger.info("setIMSItoServiceIDMap...");
-		sql=  
-				/*"SELECT A.IMSI,A.SERVICEID "
-				+ "FROM IMSI A "
-				+ "WHERE A.SERVICEID IS NOT NULL "
-				+ "UNION "
-				+ */
-				"SELECT A.NEWVALUE IMSI, C.SERVICEID "
-				+ "FROM SERVICEINFOCHANGEORDER A, SERVICEORDER B, SERVICE C ,("
-				+ "        SELECT max(A.COMPLETEDATE) COMPLETEDATE, A.NEWVALUE,count(1) "
-				+ "        FROM SERVICEINFOCHANGEORDER A "
-				+ "        WHERE A.FIELDID=3713  AND A.COMPLETEDATE IS NOT NULL "
-				+ "        AND A.OLDVALUE <> A.NEWVALUE "
-				+ "        GROUP BY A.NEWVALUE ) D "
-				+ "WHERE A.FIELDID=3713 AND A.ORDERID=B.ORDERID "
-				+ "AND B.SERVICEID=C.SERVICEID "
-				+ "AND A.OLDVALUE <> A.NEWVALUE "
-				+ "AND D.COMPLETEDATE=A.COMPLETEDATE "
-				+ "AND A.NEWVALUE=D.NEWVALUE "
-				+ "AND A.NEWVALUE IN ( SELECT A.IMSI FROM IMSI A WHERE A.SERVICEID IS NULL)";
+		sql=  ""
+				+ "SELECT A.SERVICEID,A.IMSI"
+				+ "		FROM("
+				+ "			SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
+				+ "			FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
+				+ "		    WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
+				+ "		    UNION"
+				+ "		    SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
+				+ "		    FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
+				+ "		    WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A,"
+				+ "		    	(SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE"
+				+ "				from(SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
+				+ "             		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
+				+ "                     WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
+				+ "                     UNION"
+				+ "                     SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
+				+ "                     FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
+				+ "                     WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713)"
+				+ "                     GROUP BY IMSI )B"
+				+ "		WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE";
+		
 		
 		try {
 			
-			Statement st = conn.createStatement();
+			Statement st = conn2.createStatement();
 			logger.info("Execute SQL :"+sql);
 			ResultSet rs=st.executeQuery(sql);
 			
 			while(rs.next()){
 				IMSItoServiceIdMap.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			logger.error("At setIMSItoServiceIDMap occur SQLException error!", e);
+			//send mail
+			sendErrorMail("At setIMSItoServiceIDMap occur SQLException error!");
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+		}
+	}
+	
+	private void setServiceIDtoImsiMap(){
+		logger.info("setServiceIDtoImsiMap...");
+		sql = ""
+				+ " SELECT A.SERVICEID,A.IMSI "
+				+ "FROM( "
+				+ "		SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+				+ "		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "		WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "		UNION "
+				+ "		SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+				+ "		FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "		WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
+				+ "		(	SELECT SERVICEID,MAX(COMPLETEDATE) COMPLETEDATE "
+				+ "			from(	SELECT A.SERVICEID,B.NEWVALUE,A.COMPLETEDATE "
+				+ "					FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "					WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "					UNION "
+				+ "					SELECT A.SERVICEID,B.FIELDVALUE,A.COMPLETEDATE "
+				+ "					FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "					WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
+				+ "			GROUP BY SERVICEID )B "
+				+ "		WHERE A.SERVICEID=B.SERVICEID AND A.COMPLETEDATE =B.COMPLETEDATE ";
+		
+		
+		try {
+			
+			Statement st = conn2.createStatement();
+			logger.info("Execute SQL :"+sql);
+			ResultSet rs=st.executeQuery(sql);
+			
+			while(rs.next()){
 				ServiceIdtoIMSIMap.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
 			}
 			rs.close();
@@ -877,7 +927,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At setIMSItoServiceIDMap occur SQLException error!", e);
 			//send mail
-			sendMail("At setIMSItoServiceIDMap occur SQLException error!");
+			sendErrorMail("At setIMSItoServiceIDMap occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -934,6 +984,7 @@ public class DVRSmain implements Job{
 			DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
 			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
 			RUN_INTERVAL=(props.getProperty("progrma.RUN_INTERVAL")!=null?Integer.parseInt(props.getProperty("progrma.RUN_INTERVAL")):3600);
+			HKNetReceiver = props.getProperty("program.HKNetReceiver");
 			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("progrma.TEST_MODE"))?true:false);
 			
 			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDR資料一批次取出數量
@@ -950,6 +1001,7 @@ public class DVRSmain implements Job{
 					+ "DEFAULT_VOLUME_THRESHOLD2 : "+DEFAULT_VOLUME_THRESHOLD2+"\n"
 					+ "DEFAULT_PHONE : "+DEFAULT_PHONE+"\n"
 					+ "RUN_INTERVAL : "+RUN_INTERVAL+"\n"
+					+ "HKNetReceiver : "+HKNetReceiver +"\n"
 					+ "TEST_MODE : "+TEST_MODE+"\n"
 					+ "dataThreshold : "+dataThreshold+"\n"
 					//+ "lastfileID : "+lastfileID+"\n"
@@ -960,7 +1012,7 @@ public class DVRSmain implements Job{
 			e.printStackTrace();
 			System.out.println("File Path : "+path);
 			//send mail
-			sendMail("At loadProperties occur file not found error \n <br>"
+			sendErrorMail("At loadProperties occur file not found error \n <br>"
 					+ "file path="+path);
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
@@ -969,7 +1021,7 @@ public class DVRSmain implements Job{
 		} catch (IOException e) {
 			e.printStackTrace();
 			//send mail
-			sendMail("At loadProperties occur IOException error !\n <br>"
+			sendErrorMail("At loadProperties occur IOException error !\n <br>"
 					+ "file path="+path);
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
@@ -1002,7 +1054,7 @@ public class DVRSmain implements Job{
 			sql="";
 			logger.error("At connDB occur ClassNotFoundException error", e);
 			//send mail
-			sendMail("At connDB occur ClassNotFoundException error!");
+			sendErrorMail("At connDB occur ClassNotFoundException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1011,7 +1063,7 @@ public class DVRSmain implements Job{
 			sql="";
 			logger.error("At connDB occur SQLException error", e);
 			//send mail
-			sendMail("At connDB occur SQLException error!");
+			sendErrorMail("At connDB occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1041,7 +1093,7 @@ public class DVRSmain implements Job{
 			sql="";
 			logger.error("At connDB2 occur ClassNotFoundException error", e);
 			//send mail
-			sendMail("At connDB2 occur ClassNotFoundException error!");
+			sendErrorMail("At connDB2 occur ClassNotFoundException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1050,7 +1102,7 @@ public class DVRSmain implements Job{
 			sql="";
 			logger.error("At connDB2 occur SQLException error", e);
 			//send mail
-			sendMail("At connDB2 occur SQLException error!");
+			sendErrorMail("At connDB2 occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1071,7 +1123,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 				logger.error("close Connect Error", e);
 				//send mail
-				sendMail("At closeConnect occur SQLException error!");
+				sendErrorMail("At closeConnect occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -1088,7 +1140,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 				logger.error("close Connect2 Error", e);
 				//send mail
-				sendMail("At closeConnect2 occur SQLException error!");
+				sendErrorMail("At closeConnect2 occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -1110,7 +1162,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At cancelAutoCommit occur SQLException error", e);
 			//send mail
-			sendMail("At cancelAutoCommit occur SQLException error!");
+			sendErrorMail("At cancelAutoCommit occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1258,13 +1310,15 @@ public class DVRSmain implements Job{
 					String ipaddr = rs.getString("SGSNADDRESS");
 					
 					//20150115 add
-					String serviceid = msisdnMap.get(imsi).get("SERVICEID");
+					String serviceid = null;
+					if(msisdnMap.get(imsi)!=null)
+						serviceid = msisdnMap.get(imsi).get("SERVICEID");
 					
 					if(serviceid==null || "".equals(serviceid))
-						serviceid = IMSItoServiceIdMap.get("IMSI");
+						serviceid = IMSItoServiceIdMap.get(imsi);
 					
 					if(serviceid==null || "".equals(serviceid)){
-						sendMail("For CDR usageId="+usageId+" which can't find  ServceID." );
+						sendErrorMail("For CDR usageId="+usageId+" which can't find  ServceID." );
 						continue;
 					}
 					
@@ -1286,7 +1340,7 @@ public class DVRSmain implements Job{
 					}else{
 						sql="";errorMsg="";
 						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
-						sendMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
+						sendErrorMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 						
 					}
 
@@ -1317,7 +1371,7 @@ public class DVRSmain implements Job{
 							//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
 							//以預設費率計費
 							sql="";errorMsg="";
-							sendMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+							sendErrorMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
 							charge=Math.ceil(volume*kByte)*defaultRate;
 						}
 					}
@@ -1439,7 +1493,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At charge occur SQLException error", e);
 			//send mail
-			sendMail("At charge occur SQLException error!");
+			sendErrorMail("At charge occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1478,7 +1532,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At updateCdr occur SQLException error", e);
 			//send mail
-			sendMail("At updateCdr occur SQLException error!");
+			sendErrorMail("At updateCdr occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1612,7 +1666,7 @@ public class DVRSmain implements Job{
 					} catch (SQLException e) {
 						logger.error("At insertCurrent "+mon+":"+serviceid+" occur SQLException error", e);
 						//send mail
-						sendMail("At insertCurrent "+mon+":"+serviceid+" occur SQLException error!");
+						sendErrorMail("At insertCurrent "+mon+":"+serviceid+" occur SQLException error!");
 						errorMsg="";
 						for(StackTraceElement s :e.getStackTrace()){
 							errorMsg+=s.toString()+"<br>\n";
@@ -1658,7 +1712,7 @@ public class DVRSmain implements Job{
 						} catch (SQLException e) {
 							logger.error("At insertCurrentDay "+day+":"+":"+serviceid+":"+mccmnc+" occur SQLException error", e);
 							//send mail
-							sendMail("At insertCurrentDay "+day+":"+":"+serviceid+":"+mccmnc+" occur SQLException error!");
+							sendErrorMail("At insertCurrentDay "+day+":"+":"+serviceid+":"+mccmnc+" occur SQLException error!");
 							errorMsg="";
 							for(StackTraceElement s :e.getStackTrace()){
 								errorMsg+=s.toString()+"<br>\n";
@@ -1688,6 +1742,7 @@ public class DVRSmain implements Job{
 	/**
 	 * 依照額度需求發送警示簡訊
 	 * 第一次，額度一，訊息一
+	 * 
 	 * 
 	 */
 	private void sendAlertSMS(){
@@ -1724,7 +1779,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At sendAlertSMS:Load SMSSetting occur SQLException error", e);
 			//send mail
-			sendMail("At sendAlertSMS:Load SMSSetting occur SQLException error!");
+			sendErrorMail("At sendAlertSMS:Load SMSSetting occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1734,9 +1789,9 @@ public class DVRSmain implements Job{
 		
 		if(times.size()==0){
 			logger.error("No SMS Setting!");
-			//sendMail
+			//sendErrorMail
 			sql="";errorMsg="";
-			sendMail("Can't found SMS Setting!");
+			sendErrorMail("Can't found SMS Setting!");
 			return;
 		}
 		
@@ -1764,7 +1819,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At sendAlertSMS:Load SMSContent occur SQLException error", e);
 			//send mail
-			sendMail("At sendAlertSMS:Load SMSContent occur SQLException error!");
+			sendErrorMail("At sendAlertSMS:Load SMSContent occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -1774,7 +1829,7 @@ public class DVRSmain implements Job{
 		if(content.size()==0){
 			logger.error("No SMS content!");
 			sql="";errorMsg="";
-			sendMail("Can't found SMS Content sentting!");
+			sendErrorMail("Can't found SMS Content sentting!");
 			return;
 		}
 		
@@ -1793,8 +1848,8 @@ public class DVRSmain implements Job{
 					if(msisdnMap.containsKey(serviceid))
 						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 					if(phone==null ||"".equals(phone)){
-						//sendMail
-						sendMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
+						//sendErrorMail
+						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
 						logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
 						continue;
 					}
@@ -1917,7 +1972,7 @@ public class DVRSmain implements Job{
 										continue;
 									}
 									logger.debug("Suspend GPRS ... ");		
-									suspend(serviceid,phone);
+									suspend(imsi,phone);
 									currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
 								}
 
@@ -1934,7 +1989,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 				logger.error("At sendMonthAlertSMS occur SQLException error!", e);
 				//send mail
-				sendMail("At sendMonthAlertSMS occur SQLException error!");
+				sendErrorMail("At sendMonthAlertSMS occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -1943,7 +1998,7 @@ public class DVRSmain implements Job{
 			}catch(Exception e){
 				logger.error("At sendMonthAlertSMS occur Exception error!", e);
 				//send mail
-				sendMail("At sendMonthAlertSMS occur Exception error!");
+				sendErrorMail("At sendMonthAlertSMS occur Exception error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -1973,8 +2028,8 @@ public class DVRSmain implements Job{
 					if(msisdnMap.containsKey(serviceid))
 						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 					if(phone==null ||"".equals(phone)){
-						//sendMail
-						sendMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
+						//sendErrorMail
+						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
 						logger.debug("The serviceid:"+serviceid+" can't find msisdn to send! ");
 						continue;
 					}
@@ -2028,7 +2083,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 				logger.error("At sendDayAlertSMS occur SQLException error!", e);
 				//send mail
-				sendMail("At sendDayAlertSMS occur SQLException error!");
+				sendErrorMail("At sendDayAlertSMS occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2036,7 +2091,7 @@ public class DVRSmain implements Job{
 			} catch (IOException e) {
 				logger.error("At sendDayAlertSMS occur SQLException error!", e);
 				//send mail
-				sendMail("At sendDayAlertSMS occur SQLException error!");
+				sendErrorMail("At sendDayAlertSMS occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2119,12 +2174,13 @@ public class DVRSmain implements Job{
 					sendmsg=true;
 				}
 				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<volume){
-					//2.0 GB 簡訊中文100，英文101
+					//1.5 GB 簡訊中文100，英文101
 					msgid=100;
 					sendmsg=true;
 				}
 				
 				if(sendmsg){
+					/*
 					String priceplanid = null;
 					if(msisdnMap.containsKey(serviceid)){
 						priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
@@ -2140,11 +2196,11 @@ public class DVRSmain implements Job{
 					
 					//確認號碼
 					if(phone==null ||"".equals(phone)){
-						//sendMail
-						sendMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
-						logger.debug("The serviceid:"+serviceid+" can't find msisdn to send! ");
+						//sendErrorMail
+						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send "+msgid+"! ");
+						logger.debug("The serviceid:"+serviceid+" can't find msisdn to send "+msgid+"! ");
 						continue;
-					}
+					}*/
 					
 					//查詢所在國家的客服電話
 					String cPhone = null;
@@ -2155,19 +2211,17 @@ public class DVRSmain implements Job{
 						map = codeMap.get(nMccmnc.substring(0,3));
 					if(map!=null)
 						cPhone=map.get("PHONE");
-					
-					//發送簡訊
-					if(msgid==100)
-						logger.info("For "+serviceid+" send 1.5GB decrease speed  message !");
-					if(msgid==102)
-						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
-					
+
+					/*
 					//中文
 					//處理字串
 					String cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
+					mail_content += cont +"<br><br>";
+					//20150309 mod temprater setting only send mail
 					//發送簡訊
-					String res = setSMSPostParam(cont,phone);
-					logger.debug("send chinese message result : "+res);	
+					//String res = setSMSPostParam(cont,phone);
+					//logger.debug("send chinese message result : "+res);	
+
 					smsCount++;
 					
 					sql="INSERT INTO HUR_SMS_LOG"
@@ -2182,11 +2236,50 @@ public class DVRSmain implements Job{
 					msgid+=1;
 					//處理字串
 					cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
+					mail_content += cont +"<br><br>";
+					//20150309 mod temprater setting only send mail
 					//發送簡訊
-					res = setSMSPostParam(cont,phone);
-					logger.debug("send english message result : "+res);	
+					//res = setSMSPostParam(cont,phone);
+					//logger.debug("send english message result : "+res);	
 					smsCount++;
+					
+					sql="INSERT INTO HUR_SMS_LOG"
+							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+					//寫入資料庫
+					st.addBatch(sql);
+					logger.debug("execute SQL : "+sql); */
 
+					String mail_subject="";
+					String mail_content="";
+					String mail_sender="HKNet@sim2travel.com";
+					String mail_receiver=HKNetReceiver;
+					//發送簡訊
+					if(msgid==100){
+						mail_subject = "Notification on FUP 75% 1.5GB";
+						mail_content = content.get("104").get("CONTENT");
+						logger.info("For "+serviceid+" send 1.5GB decrease speed  message !");
+					}
+					if(msgid==102){
+						mail_subject = "Notification on FUP 100% 2GB";
+						mail_content = content.get("105").get("CONTENT");
+						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
+					}
+					
+					mail_content = processMag(mail_content,null,cPhone,msisdnMap.get(serviceid).get("ICCID"));
+					
+					sendMail(new String(mail_subject.getBytes("ISO8859-1"),"BIG5"), 
+							new String(mail_content.getBytes("ISO8859-1"),"BIG5").replaceAll("%2b", "+"),mail_sender ,mail_receiver );
+					
+					
+					sql="INSERT INTO HUR_SMS_LOG"
+							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+mail_content+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
+					//寫入資料庫
+					//st.addBatch(sql);
+					st.executeUpdate(sql);
+					logger.debug("execute SQL : "+sql); 
+					
 					//更新CurrentMap
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
 
@@ -2194,26 +2287,34 @@ public class DVRSmain implements Job{
 				
 			}
 			logger.debug("Total send volume alert SMS "+smsCount+" ...");
-			st.executeBatch();
+			//st.executeBatch();
 			st.close();
 			
 		} catch (SQLException e) {
 			logger.error("At sendDayAlertSMS occur SQLException error!", e);
 			//send mail
-			sendMail("At sendDayAlertSMS occur SQLException error!");
+			sendErrorMail("At sendDayAlertSMS occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
-		} catch (IOException e) {
-			logger.error("At sendDayAlertSMS occur SQLException error!", e);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("At sendDayAlertSMS occur UnsupportedEncodingException error!", e);
 			//send mail
-			sendMail("At sendDayAlertSMS occur SQLException error!");
+			sendErrorMail("At sendDayAlertSMS occur UnsupportedEncodingException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
-		}
+		} catch (Exception e) {
+			logger.error("At sendDayAlertSMS occur Exception error!", e);
+			//send mail
+			sendErrorMail("At sendDayAlertSMS occur Exception error!");
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+		} 
 	}
 	
 	/**
@@ -2223,7 +2324,12 @@ public class DVRSmain implements Job{
 	 * @param bracket
 	 * @return
 	 */
+	
 	private String processMag(String msg,Double bracket,String cPhone){
+		return processMag(msg,bracket,cPhone,null);
+	}
+	
+	private String processMag(String msg,Double bracket,String cPhone,String ICCID){
 		
 		//金額
 		if(bracket==null)
@@ -2234,6 +2340,11 @@ public class DVRSmain implements Job{
 		if(cPhone==null)
 			cPhone="";
 		msg=msg.replace("{{customerService}}",cPhone);
+		
+		//ICCID
+		if(ICCID==null)
+			ICCID="";
+		msg=msg.replace("{{ICCID}}",ICCID);
 		
 		return msg;
 	}
@@ -2346,7 +2457,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At suspend occur SQLException error!", e);
 			//send mail
-			sendMail("At suspend occur SQLException error!");
+			sendErrorMail("At suspend occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -2354,7 +2465,7 @@ public class DVRSmain implements Job{
 		} catch (IOException e) {
 			logger.error("At suspend occur IOException error!", e);
 			//send mail
-			sendMail("At suspend occur IOException error!");
+			sendErrorMail("At suspend occur IOException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -2362,7 +2473,7 @@ public class DVRSmain implements Job{
 		} catch (ClassNotFoundException e) {
 			logger.error("At suspend occur ClassNotFoundException error!", e);
 			//send mail
-			sendMail("At suspend occur ClassNotFoundException error!");
+			sendErrorMail("At suspend occur ClassNotFoundException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -2370,7 +2481,7 @@ public class DVRSmain implements Job{
 		} catch (Exception e) {
 			logger.error("At suspend occur Exception error!", e);
 			//send mail
-			sendMail("At suspend occur Exception error!");
+			sendErrorMail("At suspend occur Exception error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
@@ -2379,11 +2490,11 @@ public class DVRSmain implements Job{
 	}
 	
 	/**
-	 * 發送mail
+	 * 發送Error mail
 	 * 
 	 * @param content
 	 */
-	private static void sendMail(String content){
+	private static void sendErrorMail(String content){
 		mailReceiver=props.getProperty("mail.Receiver");
 		mailSubject="DVRS Warnning Mail";
 		mailContent="Error :"+content+"<br>\n"
@@ -2399,12 +2510,31 @@ public class DVRSmain implements Job{
 			}
 			
 		} catch (AddressException e) {
-			logger.error("Error at sendMail",e);
+			logger.error("Error at sendErrorMail",e);
 		} catch (MessagingException e) {
-			logger.error("Error at sendMail",e);
+			logger.error("Error at sendErrorMail",e);
 		} catch (IOException e) {
-			logger.error("Error at sendMail",e);
+			logger.error("Error at sendErrorMail",e);
+		} catch (Exception e) {
+			logger.error("Error at sendErrorMail",e);
 		}
+	}
+	
+	/**
+	 * 發送mail
+	 * 
+	 * @param content
+	 * @throws Exception 
+	 */
+	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
+
+		if(mailReceiver==null ||"".equals(mailReceiver)){
+			logger.error("Can't send email without receiver!");
+			throw new Exception("Can't send email without receiver!");
+		}else{
+			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
+		}
+
 	}
 
 	/**
@@ -2450,7 +2580,7 @@ public class DVRSmain implements Job{
 				
 				//如果狀態更新失敗，沒有動作發送錯誤Email
 				if("501".equalsIgnoreCase(cMesg)){
-					sendMail("Suspend does not work for"+"<br>"
+					sendErrorMail("Suspend does not work for"+"<br>"
 							+ "IMSI : "+NBR.get("imsi")+"<br>"
 							+ "MSISDN : "+NBR.get("msisdn")+"<br>"
 							+ "WorkOrderNBR : "+NBR.get("cWorkOrderNBR")+"<br>"
@@ -2511,7 +2641,7 @@ public class DVRSmain implements Job{
 			} catch (InterruptedException e) {
 				logger.error("At processSuspendNBR occur InterruptedException error!", e);
 				//send mail
-				sendMail("At processSuspendNBR occur InterruptedException error!");
+				sendErrorMail("At processSuspendNBR occur InterruptedException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2519,7 +2649,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 				logger.error("At processSuspendNBR occur SQLException error!", e);
 				//send mail
-				sendMail("At processSuspendNBR occur SQLException error!");
+				sendErrorMail("At processSuspendNBR occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2527,7 +2657,7 @@ public class DVRSmain implements Job{
 			} catch (IOException e) {
 				logger.error("At processSuspendNBR occur IOException error!", e);
 				//send mail
-				sendMail("At processSuspendNBR occur IOException error!");
+				sendErrorMail("At processSuspendNBR occur IOException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2726,12 +2856,12 @@ public class DVRSmain implements Job{
 
 		} catch (SchedulerException e) {
 			e.printStackTrace();
-			sendMail("at regularTimeRun occure error!");
+			sendErrorMail("at regularTimeRun occure error!");
 		}
 	}
 	
 	@Override
-	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+	public void execute(JobExecutionContext arg0){
 		
 		//如果已有等待的thread，結束自己
 		if(hasWaiting) {
@@ -2748,7 +2878,7 @@ public class DVRSmain implements Job{
 				} catch (InterruptedException e) {
 					logger.error("At waiting thread occur error", e);
 					//send mail
-					sendMail("At waiting thread occur error!");
+					sendErrorMail("At waiting thread occur error!");
 					errorMsg="";
 					for(StackTraceElement s :e.getStackTrace()){
 						errorMsg+=s.toString()+"<br>\n";
@@ -2763,12 +2893,17 @@ public class DVRSmain implements Job{
 		
 		//開始執行程式
 		executing=true;
-		process();
-		
-		//將動作交給下個thread
-		executing=false;
-		
-		//sendMail("test mail " + new Date());
+		try {
+			process();
+		} catch (Exception e) {
+			e.printStackTrace();
+			sendErrorMail("process error!");
+		}finally{
+			//將動作交給下個thread
+			executing=false;
+		}
+
+		//sendErrorMail("test mail " + new Date());
 	}
 	
 	private void process() {
@@ -2802,6 +2937,11 @@ public class DVRSmain implements Job{
 			setIMSItoServiceIDMap();
 			logger.info("setIMSItoServiceIDMap execute time :"+(System.currentTimeMillis()-subStartTime));
 
+			//設定ServiecId至IMSI的對應
+			subStartTime = System.currentTimeMillis();
+			setServiceIDtoImsiMap();
+			logger.info("setServiceIDtoImsiMap execute time :"+(System.currentTimeMillis()-subStartTime));
+			
 			//取得最後更新的FileID
 			subStartTime = System.currentTimeMillis();
 			setLastFileID();
@@ -2888,7 +3028,7 @@ public class DVRSmain implements Job{
 				}
 				logger.error("At updateTable occur SQLException error!", e);
 				//send mail
-				sendMail("At updateTable occur SQLException error!");
+				sendErrorMail("At updateTable occur SQLException error!");
 				errorMsg="";
 				for(StackTraceElement s :e.getStackTrace()){
 					errorMsg+=s.toString()+"<br>\n";
@@ -2910,7 +3050,7 @@ public class DVRSmain implements Job{
 
 		} else {
 			logger.error("connect is null!");
-			sendMail("Cannot connect to DB!");
+			sendErrorMail("Cannot connect to DB!");
 		}
 	}	
 }

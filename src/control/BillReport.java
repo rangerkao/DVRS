@@ -3,8 +3,11 @@ package control;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +41,24 @@ import bill.bean.UsageDiscount;
 
 public class BillReport{
 	
+	public BillReport(){
+		/**
+		 * 1:S2T with Usage
+		 * 2: 
+		 * 3:FET
+		 * 4:iGlomo
+		 */
+		process("NTT_201502_PDF_without_Usage.txt",2);
+	}
 	
 	private static String FileName;
 	//private static final String filePath =BillReport.class.getClassLoader().getResource("").toString().replace("file:", "")+ "source/";
 	
-	String filePath="C:/Users/ranger.kao/Dropbox/workspace/DVRS/src/source/";
-	String templatePath=filePath;
-	String exportPath=filePath;
+	String filePath="C:/Users/ranger.kao/Desktop/";
+	String templatePath="C:/Users/ranger.kao/Dropbox/workspace/DVRS/src/source/";
+	String exportPath="C:/Users/ranger.kao/Desktop/bill/";
 	public static void main(String[] args){
-		BillReport bill =new BillReport();
-		bill.process("85266400998.txt",1);
+		new BillReport();
 	}
 	
 	public void process(String fileName,int type){
@@ -182,6 +193,7 @@ public class BillReport{
 				break;
 			case 4:
 				templateName="bill/template3/billreport3.jrxml";
+				dataProcess1(result);
 				break;
 			default:
 					
@@ -200,9 +212,8 @@ public class BillReport{
 			}
 		}
 	}
-		
+	String dateString = new SimpleDateFormat("yyyyMM").format(new Date());
 	private void creatPDF(BillData data,int type,String templateName) throws JRException{
-
 
 		String jasperFile=JasperCompileManager.compileReportToFile(templatePath+templateName);
 		System.out.println("Load template success!");
@@ -211,21 +222,25 @@ public class BillReport{
 		
 		String fileName="default";
 		
+		
+		
+		
 		switch(type){
 			case 1:
 			case 2:
 				map = setReportParameter1(data,type);
-				fileName = data.getI().getAccountNum();
+				fileName = data.getI().getAccountNum()+"_"+dateString+"_"+data.getI().getAccountName();
 				break;
 			case 3:
 				map = setReportParameter2(data,type);
-				fileName = data.getBS().get(0).getU1().getAccountNum();
+				fileName = data.getBS().get(0).getU1().getAccountNum()+"_"+dateString+"_"+data.getBS().get(0).getU1().getAccountName();
 				break;
 			case 4:
 				if(data.getBS().get(0).getR()!=null)
 					data.getBS().get(0).setR2(data.getBS().get(0).getR());
+				
 				map = setReportParameter3(data,type);
-				fileName = data.getI().getAccountNum();
+				fileName = data.getI().getAccountNum()+"_"+dateString+"_"+data.getI().getAccountName();
 				break;
 			default:
 		}
@@ -235,16 +250,14 @@ public class BillReport{
 		else
 			System.out.println("set parameter fail!");
 
-		
 		String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JREmptyDataSource());
 		//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,null,new JREmptyDataSource());
 		//String jrprintFile=JasperFillManager.fillReportToFile(jasperFile,map,new JRBeanCollectionDataSource(data.getBS()));
 		System.out.println("create file success!");
-		
-		exportPath="C:\\Users\\ranger.kao\\Desktop\\bill\\"+fileName+".pdf";
+
 		System.out.println("Creating PDF file at "+exportPath+"!");
 		
-		JasperExportManager.exportReportToPdfFile(jrprintFile,exportPath);
+		JasperExportManager.exportReportToPdfFile(jrprintFile,exportPath+fileName+".pdf");
 	}
 	
 	private void dataProcess1(List<BillData> result){
@@ -268,6 +281,9 @@ public class BillReport{
 				List<UsageDetail> gprsUsageCharges=new ArrayList<UsageDetail>();
 				List<UsageDetail> mmsCharges=new ArrayList<UsageDetail>();
 				
+				List<UsageDetail> r1VoiceUsageCharges=new ArrayList<UsageDetail>();	
+				List<UsageDetail> r1SmsCharges=new ArrayList<UsageDetail>();
+				
 				for(UsageDetail u : bs.getR()){
 					if("Voice Usage Charges".equalsIgnoreCase(u.getChargeItemName())){
 						voiceUsageCharges.add(u);	
@@ -284,11 +300,22 @@ public class BillReport{
 					}
 				}
 				
+				for(UsageDetail u : bs.getR1()){
+					if("語音通話費".equalsIgnoreCase(u.getChargeItemName())){
+						r1VoiceUsageCharges.add(u);
+					}else if("簡訊服務費".equalsIgnoreCase(u.getChargeItemName())){
+						r1SmsCharges.add(u);
+					}
+				}
+				
 				bs.setVoiceUsageCharges(voiceUsageCharges);
 				bs.setSmsCharges(smsCharges);
 				bs.setGprsUsageCharges(gprsUsageCharges);
 				bs.setMmsCharges(mmsCharges);
 				bs.setTotalUsageCharge(tR1+tR2+tR3+tR4);
+				
+				bs.setR1SmsCharges(r1SmsCharges);
+				bs.setR1VoiceUsageCharges(r1VoiceUsageCharges);
 			}
 		}
 	}
@@ -314,7 +341,7 @@ public class BillReport{
 					+ "P.O. Box 81-875 Taipei"+"\n"
 					+ "Taipei City 10599"+"\n"
 					+ "Taiwan R.O.C.";
-			customerServiceNumber="+886-2-7738-1256";
+			customerServiceNumber="+886-960-840-112";
 		}else if(type==2){
 			imageName="HKNetLogo_4C.PNG";
 			contactTitle="Customer Service Hotlines:";
@@ -353,7 +380,13 @@ public class BillReport{
 		
 		//資料
 		map.put("Statement for", data.getI().getCustomerName());
-		map.put("Account Number", data.getI().getAccountName());
+		
+		String accountName = data.getI().getAccountName();
+		if(accountName!=null && type ==1){
+			accountName = mark(accountName,accountName.length()-5,accountName.length());
+			map.put("Account Number", accountName);
+		}
+			
 		map.put("Billing Period", data.getI().getCycleBeginDate()+"~"+data.getI().getCycleEndDate());
 		map.put("Currency", "HKD");
 		
@@ -400,13 +433,13 @@ public class BillReport{
 		map.put("Statement for", data.getBS().get(0).getU1().getCustomerName());
 		map.put("Account Number", data.getBS().get(0).getU1().getAccountName());
 		
-		String serviceCode = data.getI().getServiceCode();
+		String serviceCode = data.getBS().get(0).getU1().getServiceCode();
 		
 		if(serviceCode!=null && serviceCode.length()>=5){
 			serviceCode = 
 					serviceCode.substring(0, serviceCode.length()-5)
 					+ "*****";
-			data.getI().setServiceCode(serviceCode);
+			data.getBS().get(0).getU1().setServiceCode(serviceCode);
 		}
 		
 		map.put("serviceCode", data.getBS().get(0).getU1().getServiceCode());
@@ -456,6 +489,7 @@ public class BillReport{
 		map.put("TotalAmountDue", data.getI().getTotalAmountDue());
 		map.put("DueDate", data.getI().getDueDate());
 		map.put("CustomerName", data.getI().getCustomerName());
+		map.put("PaymentMethod", data.getI().getPaymentMethod());
 		
 		String accountName = data.getI().getAccountName();
 		
@@ -464,38 +498,61 @@ public class BillReport{
 					accountName.substring(0, accountName.length()-7)
 					+ "***"
 					+ accountName.substring(accountName.length()-4, accountName.length());
-			data.getI().setAccountName(accountName);
-			
+
 		}
 		
-		map.put("AccountName", data.getI().getAccountName());
+		map.put("AccountName", accountName);
 		
-		String serviceCode = data.getI().getServiceCode();
+		String serviceCode = data.getBS().get(0).getC().getServiceCode();
+		
+		if("13296".equals(data.getI().getAccountNum()))
+			System.out.print("");
+		
 		
 		if(serviceCode!=null && serviceCode.length()>=8){
 			serviceCode = 
 					serviceCode.substring(0, serviceCode.length()-7)
 					+ "***"
 					+ serviceCode.substring(serviceCode.length()-4, serviceCode.length());
-			data.getI().setServiceCode(serviceCode);
 		}
 		
 		
-		map.put("ServiceCode", data.getI().getServiceCode());
+		map.put("ServiceCode", serviceCode);
 		map.put("Priceplan", data.getBS().get(0).getC().getPriceplan());
 
-		map.put("Billing Period", data.getBS().get(0).getU1().getCycleBeginDate()+"~"+data.getBS().get(0).getU1().getCycleEndDate());
+		map.put("Billing Period", data.getI().getCycleBeginDate()+"~"+data.getI().getCycleEndDate());
 		map.put("Currency", "NTD");
 		map.put("J", data.getJ());
 		
 		map.put("D", data.getBS().get(0).getD());
 		map.put("TotalAmount", data.getBS().get(0).getC().getTotalAmount());
 
-		map.put("U1total", data.getBS().get(0).getU1().getTotalCharge());
-		map.put("U2total", data.getBS().get(0).getU2().getTotalCharge());
+		if(data.getBS().get(0).getU1()!=null)
+			map.put("U1total", data.getBS().get(0).getU1().getTotalCharge());
+		if(data.getBS().get(0).getU2()!=null)
+			map.put("U2total", data.getBS().get(0).getU2().getTotalCharge());
+
 		map.put("R1", data.getBS().get(0).getR1());
-		map.put("R2", data.getBS().get(0).getR2());
+		map.put("R", data.getBS().get(0).getR());
+		map.put("BS", data.getBS());
+		
 		
 		return map;
+	}
+	
+	public String mark(String str,int start,int end){
+		
+		if(str.length()<end)
+			return null;
+		
+		String star="";
+		
+		for(int i=start;i<end;i++){
+			star+="*";
+		}
+		
+		str = str.substring(0, start) + star + str.substring(end, str.length());
+		
+		return str;
 	}
 }

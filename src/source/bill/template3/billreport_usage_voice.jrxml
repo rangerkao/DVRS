@@ -20,7 +20,7 @@
 	<field name="subTotalDuration" class="java.lang.String"/>
 	<field name="subTotalCharges" class="java.lang.String"/>
 	<variable name="CallingOrCalled" class="java.lang.String">
-		<variableExpression><![CDATA[($F{callType}.equals("Incoming")?$F{callee}:$F{caller})]]></variableExpression>
+		<variableExpression><![CDATA[(!$F{callType}.equals("Incoming")?$F{callee}:$F{caller})]]></variableExpression>
 	</variable>
 	<group name="itemName" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{chargeItemName}]]></groupExpression>
@@ -161,10 +161,9 @@
 			<staticText>
 				<reportElement x="0" y="0" width="100" height="15" uuid="a9640de3-09f9-439c-88a5-d5fcfefae8e0"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<text><![CDATA[Subtotal
-]]></text>
+				<text><![CDATA[小計]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="406" y="0" width="44" height="15" uuid="52cef745-eb96-4f35-8668-7b5872d47fd6"/>

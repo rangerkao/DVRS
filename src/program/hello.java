@@ -69,7 +69,7 @@ public class hello {
 
 		String param="´ú¸Õ123.33215´ú¦¸°¼°¼°¼";
 		
-		query();
+		//query();
 		//updateDB(999,param);
 		//updateDB(999,null);
 		
@@ -103,6 +103,9 @@ public class hello {
 		
 		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
 		
+		System.out.println("Double Max\t:\t"+Double.MAX_VALUE);
+		System.out.println("Long Max\t:\t"+Long.MAX_VALUE);
+		System.out.println("Integer Max\t:\t"+Integer.MAX_VALUE);
 		
 		/*for(int i =1000 ;i<2000;i++){
 			

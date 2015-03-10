@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="billreport2_" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9ff95a03-1502-4644-a17a-b5af9857d4a2">
-	<property name="ireport.zoom" value="1.3310000000000095"/>
+	<property name="ireport.zoom" value="1.4641000000000148"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="528"/>
+	<property name="ireport.y" value="2606"/>
 	<parameter name="address for" class="java.lang.String"/>
 	<parameter name="Statement for" class="java.lang.String"/>
 	<parameter name="Account Number" class="java.lang.String"/>
@@ -16,7 +16,7 @@
 	</parameter>
 	<parameter name="applied date" class="java.lang.String"/>
 	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\WebContent\\WEB-INF\\classes\\source\\"]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["C:\\Users\\ranger.kao\\Dropbox\\workspace\\DVRS\\src\\source\\bill\\template1"]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Balance" class="java.util.List"/>
 	<parameter name="BS" class="java.util.List"/>
@@ -30,34 +30,31 @@
 	</background>
 	<title>
 		<band height="708" splitType="Stretch">
-			<textField>
-				<reportElement x="325" y="114" width="109" height="15" uuid="789c037a-7766-48c9-a31b-ba29f8ff46e4"/>
+			<staticText>
+				<reportElement x="268" y="121" width="173" height="12" uuid="4327ae36-f170-4bea-b31c-18fbf1d1a890"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[Page      of
+
+]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToBandHeight" x="324" y="133" width="117" height="12" uuid="789c037a-7766-48c9-a31b-ba29f8ff46e4"/>
+				<textElement>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Statement for}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="2" y="50" width="247" height="80" uuid="918250dd-dff1-4318-b379-b161c1a54602"/>
+				<reportElement x="2" y="50" width="248" height="84" uuid="918250dd-dff1-4318-b379-b161c1a54602"/>
 				<textElement>
 					<font fontName="新細明體" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{address for}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="267" y="103" width="173" height="61" uuid="4327ae36-f170-4bea-b31c-18fbf1d1a890"/>
-				<textElement>
-					<font size="8" isBold="false" isItalic="false" isUnderline="false" pdfFontName="Helvetica-Bold"/>
-				</textElement>
-				<text><![CDATA[Page      of
-Statement for :
-Account Number :
-Billing Period :
-Currency :
-]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="272" y="241" width="255" height="59" uuid="8a8d8930-a0e4-42d0-be39-b570282b7a94">
+				<reportElement positionType="Float" x="273" y="264" width="255" height="59" uuid="8a8d8930-a0e4-42d0-be39-b570282b7a94">
 					<printWhenExpression><![CDATA[$P{reportType}==1]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -75,39 +72,39 @@ By enrolling, I authorize Sim2Travel to pay my bill monthly by charging my credi
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement x="288" y="103" width="18" height="15" uuid="650c4501-4f67-4750-9b22-f9c1001d5640"/>
+				<reportElement x="289" y="121" width="18" height="12" uuid="650c4501-4f67-4750-9b22-f9c1001d5640"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="308" y="149" width="129" height="15" uuid="0292d5f3-6fee-4b42-83f7-fca7c7a2c6cf"/>
+				<reportElement x="268" y="179" width="173" height="12" uuid="0292d5f3-6fee-4b42-83f7-fca7c7a2c6cf"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Currency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Currency : "+$P{Currency}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="339" y="125" width="100" height="15" uuid="2e3ad803-21da-43db-b0ef-9493c7648924"/>
+				<reportElement x="268" y="155" width="173" height="12" uuid="2e3ad803-21da-43db-b0ef-9493c7648924"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Account Number}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Account Number : "+$P{Account Number}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement x="312" y="103" width="18" height="15" uuid="1fe6494f-1647-4d5e-aa51-3f126c8f9bb6"/>
+				<reportElement x="313" y="121" width="18" height="12" uuid="1fe6494f-1647-4d5e-aa51-3f126c8f9bb6"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="326" y="137" width="114" height="15" uuid="64ac9d95-1ef6-4c25-b589-dd8568ba09b4"/>
+				<reportElement x="268" y="167" width="173" height="12" uuid="64ac9d95-1ef6-4c25-b589-dd8568ba09b4"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="新細明體" size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Billing Period}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Billing Period : "+$P{Billing Period}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="16" y="496" width="528" height="210" uuid="29f44ebd-209c-45eb-88ca-e6ce312d0b99">
@@ -127,7 +124,7 @@ For derail rate plan please visit:
 http://www.sim2travel.com/tariff/rateplan.asp	]]></text>
 			</staticText>
 			<subreport>
-				<reportElement x="267" y="179" width="264" height="48" uuid="64c16bf3-53aa-4c1a-a3e0-c867d80393a8"/>
+				<reportElement x="268" y="202" width="264" height="48" uuid="64c16bf3-53aa-4c1a-a3e0-c867d80393a8"/>
 				<subreportParameter name="Previous Balance">
 					<subreportParameterExpression><![CDATA[$P{Previous Balance}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -152,12 +149,19 @@ http://www.sim2travel.com/tariff/rateplan.asp	]]></text>
 				<textFieldExpression><![CDATA[$P{contactTitle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToBandHeight" x="428" y="22" width="100" height="81" uuid="b7de39af-01fb-4dfc-9dba-c30a59483ced"/>
+				<reportElement stretchType="RelativeToBandHeight" x="428" y="22" width="108" height="89" uuid="b7de39af-01fb-4dfc-9dba-c30a59483ced"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{contactInfo}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="268" y="133" width="55" height="12" uuid="3379b73b-53eb-487f-8796-65ca8bbe3806"/>
+				<textElement>
+					<font fontName="新細明體" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Statement for : ]]></text>
+			</staticText>
 		</band>
 	</title>
 	<pageHeader>
@@ -264,7 +268,14 @@ With the Sim2Travel (Blue Ocean Alliance & rMVNO) promotional package, you will 
 How to pay:
 
 Sim2Travel (Blue Ocean Alliance & rMVNO) accepts payment by VISA or MasterCard only. Each Sim2Travel bill will be charged to the credit card
-that you have provided.]]></text>
+that you have provided.
+
+Beneficiary: Sim2travel Inc.
+A/C No.: 328-24-21800-9
+Bank Name: Shanghai Commercial Bank Ltd.
+Swift Code: SCBKHKHH
+Bank Address: 12 Queen's Road Central, Hong Kong
+Bill Number: 150131000012846150203]]></text>
 			</staticText>
 		</band>
 		<band height="694">
@@ -318,9 +329,15 @@ that you have provided.]]></text>
 
 
 How to pay:
-
-HKNet accepts payment by VISA or MasterCard only.  Each HKNet bill will be charged to the credit card that you have provided
-and be deducted by our billing partner Sim2Travel.]]></text>
+HKNet accepts payment via bank wire transfer. The total amount due must be paid in Hong Kong Dollars (HKD) via bank wire transfer. before
+/ on the 25 of the current month. Payment MUST include the full name and bill number. Transfer should be made directly to our billing partner
+Sim2Travel Inc.
+Beneficiary: Sim2travel Inc.
+A/C No.: 328-24-21800-9
+Bank Name: Shanghai Commercial Bank Ltd.
+Swift Code: SCBKHKHH
+Bank Address: 12 Queen’s Road Central, Hong Kong
+Bill Number: 130131000000008140205]]></text>
 			</staticText>
 		</band>
 		<band height="694">

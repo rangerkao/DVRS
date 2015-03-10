@@ -70,11 +70,12 @@ Destination
 ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="239" y="14" width="52" height="15" uuid="26ccd8c7-612a-4dd4-9e0e-05075d4ef5fc"/>
+				<reportElement x="239" y="14" width="42" height="15" uuid="26ccd8c7-612a-4dd4-9e0e-05075d4ef5fc"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<text><![CDATA[Call  Type
+				<text><![CDATA[Call
+Type
 ]]></text>
 			</staticText>
 			<staticText>

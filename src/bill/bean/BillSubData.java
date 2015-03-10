@@ -20,6 +20,9 @@ public class BillSubData {
 	private List<UsageDetail> gprsUsageCharges;
 	private List<UsageDetail> mmsCharges;
 	
+	private List<UsageDetail> r1VoiceUsageCharges;
+	private List<UsageDetail> r1SmsCharges;
+	
 	//for template 3 
 	private Usage u1;
 	private List<UsageDetail> r1;
@@ -41,6 +44,9 @@ public class BillSubData {
 		
 		r1=new ArrayList<UsageDetail>();
 		r2=new ArrayList<UsageDetail>();
+		
+		r1SmsCharges=new ArrayList<UsageDetail>();
+		r1VoiceUsageCharges=new ArrayList<UsageDetail>();	
 
 	}
 	
@@ -206,6 +212,22 @@ public class BillSubData {
 
 	public void setP(UsageDiscount p) {
 		this.p = p;
+	}
+
+	public List<UsageDetail> getR1VoiceUsageCharges() {
+		return r1VoiceUsageCharges;
+	}
+
+	public void setR1VoiceUsageCharges(List<UsageDetail> r1VoiceUsageCharges) {
+		this.r1VoiceUsageCharges = r1VoiceUsageCharges;
+	}
+
+	public List<UsageDetail> getR1SmsCharges() {
+		return r1SmsCharges;
+	}
+
+	public void setR1SmsCharges(List<UsageDetail> r1SmsCharges) {
+		this.r1SmsCharges = r1SmsCharges;
 	}
 
 	

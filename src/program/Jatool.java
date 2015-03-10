@@ -83,13 +83,13 @@ public class Jatool implements IJatool{
 	}
 	
 	@Override
-	public void sendMail(Logger logger,String sender, String receiver, String subject,String content) throws AddressException, MessagingException, IOException {
+	public void sendMail(Logger logger,String sender, String receiver, String subject,String content) throws Exception {
 		sendMail(logger,null,sender,receiver,subject,content);
 	}
 	
 
 	@Override
-	public void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws AddressException, MessagingException, IOException {
+	public void sendMail(Logger logger,Properties props,String sender,String receiver,String subject,String content) throws Exception {
 
 		if(props==null){
 			props=getProperties();
@@ -119,15 +119,15 @@ public class Jatool implements IJatool{
 		if(sender==null || "".equals(sender)){
 			if(username==null){
 				logControl(logger,"error","No sender and No UserName Set!");
-				return;
+				throw new Exception("No sender and No UserName Set!");
 			}
 			sender=username;			
-		}else{
+		}/*else{
 			if(username!=null && !"".equals(username) &&!sender.equalsIgnoreCase(username)){
 				logControl(logger,"error","sender is not equals to UserName !");
 				return;
 			}
-		}
+		}*/
 		
 		InternetAddress[] address = null; 
 		String ccList="";
@@ -308,7 +308,7 @@ public class Jatool implements IJatool{
 		return new java.util.Date(date.getTime());
 	}
 
-	String iniform="yyyy/MM/dd hh24:mm:ss";
+	String iniform="yyyy/MM/dd HH:mm:ss";
 	@Override
 	public String DateFormat(){
 		DateFormat dateFormat = new SimpleDateFormat(iniform);
