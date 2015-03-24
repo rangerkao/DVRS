@@ -22,12 +22,12 @@ public class CurrentControl extends BaseControl {
 		return currentDao.queryCurrentMonth();
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to) throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
 		System.out.println("ctr queryCurrentMonth..."+","+new Date());
-		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to)))
+		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to))&&("".equals(suspend)||suspend==null))
 			return currentDao.queryCurrentMonth();
 		
-		return currentDao.queryCurrentMonth(imsi,from,to);
+		return currentDao.queryCurrentMonth(imsi,from,to,suspend);
 	}
 	
 	public List<CurrentDay> queryCurrentDay() throws SQLException{

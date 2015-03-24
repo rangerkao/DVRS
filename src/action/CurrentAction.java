@@ -23,6 +23,7 @@ public class CurrentAction extends BaseAction {
 	String imsi;
 	String from;
 	String to;
+	String suspend;
 	
 	CurrentControl currentControl=new CurrentControl();
 	
@@ -30,8 +31,8 @@ public class CurrentAction extends BaseAction {
 	public String queryCurrentMonth(){
 		
 		try {
-			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to+","+new Date());
-			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""));
+			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to+",suspend:"+suspend+","+new Date());
+			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""),suspend);
 			System.out.println("Get return data:"+","+new Date());
 			result = beanToJSONArray(list);
 			System.out.println("parse to Json end,"+new Date());
@@ -89,6 +90,15 @@ public class CurrentAction extends BaseAction {
 	public void setTo(String to) {
 		this.to = to;
 	}
+
+	public String getSuspend() {
+		return suspend;
+	}
+
+	public void setSuspend(String suspend) {
+		this.suspend = suspend;
+	}
+	
 	
 	
 }

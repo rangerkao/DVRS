@@ -2168,12 +2168,12 @@ public class DVRSmain implements Job{
 				boolean sendmsg=false;
 				Integer msgid=0;
 				
-				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<volume){
+				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 					//2.0 GB 簡訊中文102，英文103
 					msgid=102;
 					sendmsg=true;
 				}
-				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<volume){
+				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
 					//1.5 GB 簡訊中文100，英文101
 					msgid=100;
 					sendmsg=true;
@@ -2579,7 +2579,8 @@ public class DVRSmain implements Job{
 				}
 				
 				//如果狀態更新失敗，沒有動作發送錯誤Email
-				if("501".equalsIgnoreCase(cMesg)){
+				//20150317 change ,if result_flag is not equal to "000" then send alert mail.
+				if(!"000".equalsIgnoreCase(cMesg)){
 					sendErrorMail("Suspend does not work for"+"<br>"
 							+ "IMSI : "+NBR.get("imsi")+"<br>"
 							+ "MSISDN : "+NBR.get("msisdn")+"<br>"

@@ -33,6 +33,7 @@ $(document).ready(function(){
     
     if(month<10)
     	month="0"+month;
+    
 });
 	function queryCurrentMonth(imsi){			
 		$.ajax({
@@ -40,7 +41,8 @@ $(document).ready(function(){
 	      data: {
 	    	  "from":$("#dateFrom").val(),
 				"to":$("#dateTo").val(),
-	    		"imsi":imsi
+	    		"imsi":imsi,
+	    		"suspend":$('input[name=suspend]:checked').val()
 	    	  //"imsi":$("#imsi").val() 	 
 	    	  }, //parameters go here in object literal form
 	      type: 'POST',
@@ -108,6 +110,7 @@ $(document).ready(function(){
 		});  */
 		pagination();
 	}
+	
 </script>
 </head>
 <body>
@@ -115,13 +118,21 @@ $(document).ready(function(){
 	<div class="row max_height" align="center">
 		<h3>–る仓璸</h3>
 		<div class="col-xs-4" align="right">琩高戳丁眖</div>
-		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="everQuery=false">
-		
-		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="everQuery=false"></div>
+		<div class="col-xs-8" align="left">
+			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="everQuery=false">
+			
+			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="everQuery=false">
+		</div>
 		<div class="col-xs-4" align="right"><label>IMSI:</label></div>
 		<div class="col-xs-2" align="left"><input type="text" id="imsi"></div>
 		<div class="col-xs-6" align="left"><input type="button" value="琩高" onclick="queryList()" class="btn btn-primary btn-sm"></div>
-		<div class="col-xs-12">
+		<div class="col-xs-4" align="right"><label>琌い耞筁GPRS:</label></div>
+		<div class="col-xs-2" align="left">
+			<input type="radio" name="suspend" value="">场
+			<input type="radio" name="suspend" value="0">
+			<input type="radio" name="suspend" value="1">琌
+		</div>
+		<div class="col-xs-6" align="left">
 			<font size="2" color="red">(琩高IMSIㄏノ"*"琘跋琿腹絏秈︽家絢琩高)</font>
 			<label id="Qmsg" style="height: 30px;">&nbsp;</label>
 		</div>

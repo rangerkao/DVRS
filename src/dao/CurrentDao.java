@@ -161,7 +161,7 @@ public class CurrentDao extends BaseDao {
 		
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to) throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
 		System.out.println("dao queryCurrentMonth..."+","+new Date());
 		imsitoServiceID = CatchAction.getImsitoServiceID();
 		serviceIDtoIMSI = CatchAction.getServiceIDtoIMSI();
@@ -176,6 +176,7 @@ public class CurrentDao extends BaseDao {
 				+ "FROM HUR_CURRENT A where 1=1 "
 				+ (from!=null &&!"".equals(from)?"AND A.MONTH >=  "+from+" ":"")
 				+ (to!=null &&!"".equals(to)?"AND A.MONTH <=  "+to+" ":"")
+				+ (suspend!=null && !"".equals(suspend)?"AND A.EVER_SUSPEND="+suspend+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
