@@ -1,3 +1,51 @@
+
+/** Program History
+ * 
+ * 20141008 開始CODING，第一版
+ * 20141009 將功能集合成工具java檔，完成mail寄送功能
+ * 20141009 完成批價功能，修正批次Query語法錯誤(將rownum以minus取代)
+ * 20141209 修改日簡訊內容帶出當月累計金額
+ * 20141013 完成警示簡訊功能
+ * 20141013 決定CDR無MCCMNC時的處理方式
+ * 20141014 完成GPRS中止功能
+ * 20141014 新增對應表，修正日期比對方式a.before(b)
+ * 20141015 調整mail發送
+ * 20141015 新增定時執行排程功能
+ * 20141016 UI端建立，完成權限驗證
+ * 20141021 完成UI執行外部程式功能
+ * 20141029 修改SMS寄送方式，從交由smpp發送改為使用http post方式
+ * 20141029 修改簡訊Table，將設定與內容分開，以msg ID 對應
+ * 20141029 完成由UI可進行操作Proccess功能
+ * 20141103 測試並已確認GPRS中止功能可運作
+ * 20141104 UI新增警示上限頁面，menu內容由後端控制
+ * 20141113 修改VIP客戶不進行斷網
+ * 20141113 新增1.5G、2.0G流量警示功能
+ * 20141118 修改VIP客戶以每5000塊進行警示
+ * 20141118 考慮之後也許有客制上限功能，修改table Schema，目前以0表示
+ * 20141118 新增追蹤中斷GPRS要求的狀態
+ * 20141118 新增華人上網包不批價計費
+ * 20141125 UI 套用BootStrap樣式
+ * 20141125 修改Daycap判斷，如果為負值，表示不參考
+ * 20141201 新增舊資料判斷Set集合
+ * 20141204 UI新增日、月累計頁面
+ * 20141204 新增menu小工具，以ID查詢簡訊，以門號查詢VIP
+ * 20141209 新增每日500塊警示
+ * 20141209 將取出日累計由未限制改為只取近兩個月
+ * 20141211 新增由IP對應到MCCMNC功能
+ * 20141215 二版(未上線)，依資費套用簡訊設定，批價不轉換幣別，部分設定改以table取出
+ * 20141216 修改，因每日500簡訊會帶出當月金額，修改當客戶已經斷網後不發送每日500警示
+ * 20150115 將累計由IMSI改為SERVICE ID為單位累計(避免換卡換號造成無法累計)
+ * 20150115 修改華人上網包檢查，取消檢查門號
+ * 20150309 NTT要求以mail通知流量警示
+ * 20150317 新增判斷，如果GPRS中斷要求結果不成功(000)，發送警示amil
+ * 20150324 修改日累計Mccmnc到新key值(國碼+業者名稱)
+ * 
+ */
+
+
+
+
+
 package program;
 
 
@@ -325,7 +373,7 @@ public class DVRSmain implements Job{
 	 * 取出 HUR_CURRENTE_DAY table資料
 	 * 建立成
 	 * Map 
-	 * Key:day , value:Map(IMSI,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
+	 * Key:day , value:Map(SERVICEID,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
 	 * 設定HUR_CURRENT_DAY計費,目前不做刪除動作，之後考慮是否留2個月資料
 	 * 20141209 修改取出近兩個月
 	 */
@@ -402,13 +450,15 @@ public class DVRSmain implements Job{
 	
 	/**
 	 * 取出 HUR_DATA_RATE
-	 * 建立成MAP Key:PRICEPLANID,Value:Map(MCCMNC,MAP(CURRENCY,CHARGEUNIT,RATE))
+	 * 建立成MAP Key:PRICEPLANID,Value:Map(MCCMNC,MAP(CURRENCY,CHARGEUNIT,RATE,NETWORK))
 	 */
+	//20150324 modify add network info
 	private void setDataRate(){
 		logger.info("setDataRate...");
-		sql=
-				"SELECT A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY,A.PRICEPLANID,A.DAYCAP "
-				+ "FROM HUR_DATA_RATE A ";
+		sql=""
+				+ "SELECT A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY,A.PRICEPLANID,A.DAYCAP,B.NETWORK "
+				+ "FROM HUR_DATA_RATE A,HUR_MCCMNC B "
+				+ "where A.MCCMNC=B.MCCMNC";
 		
 		try {
 			Statement st = conn.createStatement();
@@ -428,7 +478,7 @@ public class DVRSmain implements Job{
 				map.put("CHARGEUNIT", rs.getDouble("CHARGEUNIT"));
 				map.put("CURRENCY", rs.getString("CURRENCY"));
 				map.put("DAYCAP", rs.getDouble("DAYCAP"));
-				
+				map.put("NETWORK", rs.getString("NETWORK"));
 				if(dataRate.containsKey(priceplanID)){
 					map2=dataRate.get(priceplanID);
 				}
@@ -1390,6 +1440,19 @@ public class DVRSmain implements Job{
 
 					
 					//察看是否有以存在的資料，有的話取出做累加
+					//20150324 modify mccmnc to mcc + network
+					
+					
+					String nccNet;
+					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
+							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
+						System.out.println(mccmnc);
+						nccNet=mccmnc.substring(0,3);
+						nccNet+=dataRate.get(pricplanID).get(mccmnc).get("NETWORK");
+					}else{
+						nccNet=DEFAULT_MCCMNC;
+					}
+					
 					String cDay=tool.DateFormat(callTime, DAY_FORMATE);
 					Double oldCharge=0D;
 					Double oldvolume=0D;
@@ -1402,8 +1465,8 @@ public class DVRSmain implements Job{
 						map=currentDayMap.get(cDay);
 						if(map.containsKey(serviceid)){
 							map2=map.get(serviceid);
-							if( map2.containsKey(mccmnc)){
-								map3=map2.get(mccmnc);
+							if( map2.containsKey(nccNet)){
+								map3=map2.get(nccNet);
 
 								oldCharge=(Double)map3.get("CHARGE");
 								
@@ -1412,7 +1475,8 @@ public class DVRSmain implements Job{
 								//summary charge
 								charge=oldCharge+charge;
 								charge=tool.FormatDouble(charge, "0.0000");
-								
+								if(serviceid.equals("26234"))
+									System.out.println();
 								alert=(String)map3.get("ALERT");
 								oldvolume=(Double)map3.get("VOLUME");
 							
@@ -1433,7 +1497,7 @@ public class DVRSmain implements Job{
 					map3.put("LAST_DATA_TIME",callTime);
 					map3.put("VOLUME",volume+oldvolume);
 					map3.put("ALERT",alert);
-					map2.put(mccmnc, map3);
+					map2.put(nccNet, map3);
 					map.put(serviceid, map2);
 					currentDayMap.put(cDay, map);
 
@@ -1607,15 +1671,15 @@ public class DVRSmain implements Job{
 		//20141201 add change another method to distinguish insert and update
 		for(String day : currentDayMap.keySet()){
 			for(String serviceid : currentDayMap.get(day).keySet()){
-				for(String mccmnc : currentDayMap.get(day).get(serviceid).keySet()){
-					pst.setDouble(1,(Double) currentDayMap.get(day).get(serviceid).get(mccmnc).get("CHARGE"));
-					pst.setInt(2, (Integer) currentDayMap.get(day).get(serviceid).get(mccmnc).get("LAST_FILEID"));
-					pst.setString(3, spf.format((Date) currentDayMap.get(day).get(serviceid).get(mccmnc).get("LAST_DATA_TIME")));
-					pst.setDouble(4,(Double) currentDayMap.get(day).get(serviceid).get(mccmnc).get("VOLUME"));
-					pst.setString(5,(String) currentDayMap.get(day).get(serviceid).get(mccmnc).get("ALERT"));
+				for(String nccNet : currentDayMap.get(day).get(serviceid).keySet()){
+					pst.setDouble(1,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("CHARGE"));
+					pst.setInt(2, (Integer) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_FILEID"));
+					pst.setString(3, spf.format((Date) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_DATA_TIME")));
+					pst.setDouble(4,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("VOLUME"));
+					pst.setString(5,(String) currentDayMap.get(day).get(serviceid).get(nccNet).get("ALERT"));
 					pst.setString(6, day);
 					pst.setString(7, serviceid);
-					pst.setString(8, mccmnc);
+					pst.setString(8, nccNet);
 					pst.addBatch();
 					count++;
 					if(count==dataThreshold){
@@ -1700,19 +1764,19 @@ public class DVRSmain implements Job{
 		//20141201 add change another method to distinguish insert and update
 		for(String day : currentDayMap.keySet()){
 			for(String serviceid : currentDayMap.get(day).keySet()){
-				for(String mccmnc : currentDayMap.get(day).get(serviceid).keySet()){
-					if(!existMapD.containsKey(day)||!existMapD.get(day).containsKey(serviceid)||!existMapD.get(day).get(serviceid).contains(mccmnc)){
+				for(String nccNet : currentDayMap.get(day).get(serviceid).keySet()){
+					if(!existMapD.containsKey(day)||!existMapD.get(day).containsKey(serviceid)||!existMapD.get(day).get(serviceid).contains(nccNet)){
 						try {
 							PreparedStatement pst = conn.prepareStatement(sql);
 							pst.setString(1, serviceid);
-							pst.setString(2, mccmnc);
+							pst.setString(2, nccNet);
 							pst.setString(3, day);
 							pst.executeUpdate();
 							pst.close();
 						} catch (SQLException e) {
-							logger.error("At insertCurrentDay "+day+":"+":"+serviceid+":"+mccmnc+" occur SQLException error", e);
+							logger.error("At insertCurrentDay "+day+":"+":"+serviceid+":"+nccNet+" occur SQLException error", e);
 							//send mail
-							sendErrorMail("At insertCurrentDay "+day+":"+":"+serviceid+":"+mccmnc+" occur SQLException error!");
+							sendErrorMail("At insertCurrentDay "+day+":"+":"+serviceid+":"+nccNet+" occur SQLException error!");
 							errorMsg="";
 							for(StackTraceElement s :e.getStackTrace()){
 								errorMsg+=s.toString()+"<br>\n";
@@ -1727,7 +1791,7 @@ public class DVRSmain implements Job{
 									set=map.get(serviceid);
 								}							
 							}
-							set.add(mccmnc);
+							set.add(nccNet);
 							map.put(serviceid, set);
 							existMapD.put(day,map);
 						}
@@ -2038,9 +2102,9 @@ public class DVRSmain implements Job{
 					String alerted ="0";
 					
 					//累計
-					for(String mccmnc : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
-						daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(mccmnc).get("CHARGE");
-						String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(mccmnc).get("ALERT");
+					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
+						daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
+						String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("ALERT");
 						if("1".equals(a)) alerted="1";
 					}
 					
@@ -2064,8 +2128,8 @@ public class DVRSmain implements Job{
 						logger.debug("send message result : "+res);	
 						smsCount++;
 						//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
-						for(String mccmnc : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
-							currentDayMap.get(sYearmonthday).get(serviceid).get(mccmnc).put("ALERT", "1");
+						for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
+							currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
 						}
 						sql="INSERT INTO HUR_SMS_LOG"
 								+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
@@ -2113,13 +2177,20 @@ public class DVRSmain implements Job{
 		checkedPriceplanid.add("159");
 		checkedPriceplanid.add("160");
 		
-		Set<String> checkedMCCMNC =new HashSet<String>();
-		checkedMCCMNC.add("46001");
-		checkedMCCMNC.add("46007");
-		checkedMCCMNC.add("46002");
-		checkedMCCMNC.add("460000");
-		checkedMCCMNC.add("46000");
-		checkedMCCMNC.add("45412");
+		Set<String> checkedMCCNET =new HashSet<String>();
+		/*checkedMCCNET.add("46001");
+		checkedMCCNET.add("46007");
+		checkedMCCNET.add("46002");
+		checkedMCCNET.add("460000");
+		checkedMCCNET.add("46000");
+		checkedMCCNET.add("45412");*/
+		
+		checkedMCCNET.add("460China Unicom");
+		checkedMCCNET.add("460CMCC");
+		checkedMCCNET.add("460CMCC");
+		checkedMCCNET.add("460CMCC");
+		checkedMCCNET.add("460CMCC");
+		checkedMCCNET.add("454CMHK");
 		
 		//是否為Data Only 客戶
 		Set<String> checkedPriceplanid2 =new HashSet<String>();
@@ -2141,12 +2212,12 @@ public class DVRSmain implements Job{
 					}
 					
 					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
-						for(String mccmnc:currentDayMap.get(day).get(serviceid).keySet()){
+						for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
 							//確認Mccmnc
-							if(checkedMCCMNC.contains(mccmnc)){
+							if(checkedMCCNET.contains(mccNet)){
 								//進行累計
 								Double oldVolume=0D;
-								Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccmnc).get("VOLUME");
+								Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccNet).get("VOLUME");
 								if(tempMap.containsKey(serviceid)){
 									oldVolume=tempMap.get(serviceid);
 								}
