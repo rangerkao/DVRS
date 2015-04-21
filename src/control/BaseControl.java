@@ -15,7 +15,7 @@ public class BaseControl {
 
 	Properties props =new Properties();
 	Logger logger ;
-	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
+	protected String classPath = this.getClass().getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
 	public BaseControl() throws Exception{
 		loadProperties();
 	}

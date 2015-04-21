@@ -38,7 +38,7 @@ public class LinkAction extends BaseAction{
 	private String currentDay="currentDay";
 	private String cardChangeHistory="cardChangeHistory";
 	private String numberChangeHistory="numberChangeHistory";
-	
+	private String queryQos="queryQos";
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
@@ -58,7 +58,7 @@ public class LinkAction extends BaseAction{
 	public String currentDay(){return currentDay;} 
 	public String cardChangeHistory(){return cardChangeHistory;}
 	public String numberChangeHistory(){return numberChangeHistory;}
-	
+	public String queryQos(){return queryQos;}
 	public String logout()  
 	{  
 		ActionContext ac = ActionContext.getContext();

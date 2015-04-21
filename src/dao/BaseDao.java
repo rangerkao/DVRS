@@ -5,22 +5,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import program.IJatool;
 import program.Jatool;
-import program.DVRSmain;
-import control.BillReport;
 
 public class BaseDao {
 
@@ -30,7 +23,7 @@ public class BaseDao {
 	protected Connection conn2 =null;
 	protected IJatool tool=new Jatool();
 	protected String sql="";
-	protected String classPath = BillReport.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
+	protected String classPath = this.getClass().getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
 	
 	public BaseDao() throws Exception{
 		System.out.println("Base Dao InI...");

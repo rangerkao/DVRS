@@ -113,7 +113,7 @@ public class Jatool implements IJatool{
 		}
 		logControl(logger,"info","use authority : "+authFlag);
 		
-		boolean sessionDebug = false;
+		boolean sessionDebug = false; 
 		boolean singleBody=true;
 		
 		if(sender==null || "".equals(sender)){

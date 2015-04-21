@@ -33,14 +33,16 @@ public class CurrentAction extends BaseAction {
 		try {
 			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to+",suspend:"+suspend+","+new Date());
 			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""),suspend);
-			System.out.println("Get return data:"+","+new Date());
 			result = beanToJSONArray(list);
-			System.out.println("parse to Json end,"+new Date());
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Current", "queryMonth","from:"+from+" to:"+to+" IMSI:"+imsi, SUCCESS);
 		
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println(e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		
@@ -55,11 +57,15 @@ public class CurrentAction extends BaseAction {
 			
 			result = beanToJSONArray(list);
 		
+			actionLogControl.loggerAction(super.getUser().getAccount(), "Current", "queryDay","from:"+from+" to:"+to+" IMSI:"+imsi, SUCCESS);
 		
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println(e.getMessage());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		return SUCCESS;

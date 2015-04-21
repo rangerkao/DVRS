@@ -242,11 +242,18 @@ public class CurrentDao extends BaseDao {
 		}
 		
 		sql=
-				"SELECT A.DAY,B.NETWORK||'('||B.COUNTRY||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
+				/*"SELECT A.DAY,B.NETWORK||'('||B.COUNTRY||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
 				+ "FROM HUR_CURRENT_DAY A, HUR_MCCMNC B "
 				+ "WHERE A.MCCMNC=B.MCCMNC "
-				+ "ORDER BY A.LAST_DATA_TIME DESC ";
+				+ "ORDER BY A.LAST_DATA_TIME DESC ";*/
+				//20150327
+				
+				"SELECT A.DAY,SUBSTR(MCCMNC,4)||'('||(case when B.NAME is not null then  B.NAME else substr(A.MCCMNC,0,3) end)||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID "
+				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
+				+ "FROM HUR_CURRENT_DAY A,HUR_CUSTOMER_SERVICE_PHONE B "
+				+ "where substr(A.MCCMNC,0,3) = B.CODE(+) "
+				+ "ORDER BY A.DAY,A.LAST_DATA_TIME DESC ";
 		
 		List<CurrentDay> list = new ArrayList<CurrentDay>();
 		
@@ -289,10 +296,10 @@ public class CurrentDao extends BaseDao {
 		}
 		
 		sql=
-				"SELECT A.DAY,B.NETWORK||'('||B.COUNTRY||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
+				"SELECT A.DAY,SUBSTR(MCCMNC,4)||'('||(case when B.NAME is not null then  B.NAME else substr(A.MCCMNC,0,3) end)||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
-				+ "FROM HUR_CURRENT_DAY A, HUR_MCCMNC B "
-				+ "WHERE A.MCCMNC=B.MCCMNC "
+				+ "FROM HUR_CURRENT_DAY A, HUR_CUSTOMER_SERVICE_PHONE B "
+				+ "where substr(A.MCCMNC,0,3) = B.CODE(+) "
 				+ (from!=null &&!"".equals(from)?"AND A.DAY >=  "+from+" ":"")
 				+ (to!=null &&!"".equals(to)?"AND A.DAY <=  "+to+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";

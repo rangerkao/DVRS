@@ -37,6 +37,7 @@
  * 20150115 將累計由IMSI改為SERVICE ID為單位累計(避免換卡換號造成無法累計)
  * 20150115 修改華人上網包檢查，取消檢查門號
  * 20150309 NTT要求以mail通知流量警示
+ * 20150316 修改Jtool檔案，取消發送帳號與寄件者相同的限制(所以之前發送給ntt不成功)
  * 20150317 新增判斷，如果GPRS中斷要求結果不成功(000)，發送警示amil
  * 20150324 修改日累計Mccmnc到新key值(國碼+業者名稱)
  * 
@@ -247,6 +248,9 @@ public class DVRSmain implements Job{
 			st.close();
 			rs.close();
 			
+			//XXX
+			lastfileID=0;
+			
 		} catch (SQLException e) {
 			logger.error("At setLastFileID Got a SQLException", e);
 			//send mail
@@ -271,7 +275,9 @@ public class DVRSmain implements Job{
 			sql=
 					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
 					+ "FROM HUR_CURRENT A "
-					+ "WHERE A.MONTH IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
+					//XXX
+					//+ "WHERE A.MONTH IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
+					+ "WHERE A.MONTH IN ('201503') ";
 			
 			Statement st = conn.createStatement();
 			logger.debug("Execute SQL : "+sql);
@@ -383,7 +389,9 @@ public class DVRSmain implements Job{
 			sql=
 					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY,A.ALERT "
 					+ "FROM HUR_CURRENT_DAY A "
-					+ "WHERE SUBSTR(A.DAY,0,6) IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
+					//XXX
+					//+ "WHERE SUBSTR(A.DAY,0,6) IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
+					+ "WHERE SUBSTR(A.DAY,0,6) IN ('201503') ";
 			logger.debug("Execute SQL : "+sql);
 			Statement st = conn.createStatement();
 			ResultSet rs =st.executeQuery(sql);
@@ -677,13 +685,21 @@ public class DVRSmain implements Job{
 	 */
 	private int dataCount(){
 		logger.info("dataCount...");
-		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND A.CHARGE is null ";
+		//sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.FILEID>= ? AND A.CHARGE is null ";
+		sql=
+		"SELECT count(1) count "
+		//+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+(i*dataThreshold)+" AND A.CHARGE is null AND A.CALLTIME like '2015/03%' "
+		//+ "AND A.FILEID>= "+lastfileID+" "
+		+ "FROM HUR_DATA_USAGE A WHERE 1=1 "
+		+ "AND A.CALLTIME like '2015/03/"+tempdate+"%' ";
+		//+ "AND A.CALLTIME like '2015/03%' ";
+		
 		int count=0;
 		//找出總量
 		PreparedStatement pst;
 		try {
 			pst = conn.prepareStatement(sql);
-			pst.setInt(1, lastfileID);
+			//pst.setInt(1, lastfileID);
 			
 			ResultSet rs = pst.executeQuery();
 			logger.debug("Execute SQL : "+sql);
@@ -1296,8 +1312,6 @@ public class DVRSmain implements Job{
 			for(int j=0;j<ips.length;j++){
 				ipNumber+=Integer.parseInt(ips[j])*Math.pow(256, 3-j);
 			}
-			System.out.println("ipNumber="+ipNumber);
-			
 			for(Map<String,Object> m : IPtoMccmncList){
 				long startNum = (Long) m.get("START_NUM");
 				long EndNum = (Long) m.get("END_NUM");
@@ -1327,14 +1341,22 @@ public class DVRSmain implements Job{
 			//批次Query 避免ram空間不足
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
 				sql=
-						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
-						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS "
-						+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= "+lastfileID+" AND ROWNUM <= "+(i*dataThreshold)+" AND A.CHARGE is null "
+						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS,CHARGE "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS,CHARGE "
+						//+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+(i*dataThreshold)+" AND A.CHARGE is null AND A.CALLTIME like '2015/03%' "
+						//+ "AND A.FILEID>= "+lastfileID+" "
+						+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+(i*dataThreshold)+" "
+						+ "AND A.CALLTIME like '2015/03/"+tempdate+"%' "
+						//+ "AND A.CALLTIME like '2015/03%' "
 						+ "ORDER BY A.USAGEID,A.FILEID) "
 						+ "MINUS "
-						+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
-						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS "
-						+ "FROM HUR_DATA_USAGE A WHERE A.FILEID>= "+lastfileID+" AND ROWNUM <= "+((i-1)*dataThreshold)+" AND A.CHARGE is null "
+						+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS,CHARGE "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS,CHARGE "
+						//+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+((i-1)*dataThreshold)+" AND A.CHARGE is null AND A.CALLTIME like '2015/03%' "
+						//+ "AND A.FILEID>= "+lastfileID+" "
+						+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+((i-1)*dataThreshold)+" "
+						+ "AND A.CALLTIME like '2015/03/"+tempdate+"%' "
+						//+ "AND A.CALLTIME like '2015/03%' "
 						+ "ORDER BY A.USAGEID,A.FILEID) ";
 				
 				logger.debug("Execute SQL : "+sql);
@@ -1352,9 +1374,11 @@ public class DVRSmain implements Job{
 					Double volume=rs.getDouble("DATAVOLUME");
 					Date callTime=rs.getDate("CALLTIME");
 					Integer fileID=rs.getInt("FILEID");	
-					Double charge=0D;
+					//Double charge=0D;
 					Double dayCap=null;
-										
+						
+					//XXX
+					Double charge=rs.getDouble("CHARGE");
 					
 					//20141211 add
 					String ipaddr = rs.getString("SGSNADDRESS");
@@ -1372,34 +1396,49 @@ public class DVRSmain implements Job{
 						continue;
 					}
 					
-					
+					//XXX
 					String pricplanID=null;
 					if(msisdnMap.containsKey(imsi))
 						pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
+					else
+						pricplanID="139";
+
+					
+					if(!dataRate.containsKey(pricplanID)){
+						//XXX
+						/*sql="";errorMsg="";
+						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
+						sendErrorMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");*/
+					}
+					
+					
 					//20141211 add
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc=searchMccmncByIP(ipaddr);
 						if(mccmnc!=null && !"".equals(mccmnc))
 							logger.debug("For CDR usageId="+usageId+" which is without mccmnc. Found mccmnc="+mccmnc+" by IP range.");
 					}
-	
-					if(dataRate.containsKey(pricplanID)){
-						if(mccmnc==null || "".equals(mccmnc)){
-							mccmnc=searchMccmncBySERVICEID(serviceid);
-						}
-					}else{
-						sql="";errorMsg="";
-						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
-						sendErrorMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
-						
-					}
+					
+					//XXX
+					/*if(mccmnc==null || "".equals(mccmnc)){
+						mccmnc=searchMccmncBySERVICEID(serviceid);
+						if(mccmnc!=null && !"".equals(mccmnc))
+							logger.debug("For CDR usageId="+usageId+" which is without mccmnc. Found mccmnc="+mccmnc+" by serviceid.");
+					}*/
 
 					//還是找不到，給予預設，必須有
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc= DEFAULT_MCCMNC;
 					}
 					
-					int cd=checkQosAddon(imsi, mccmnc, callTime);
+					//XXX
+					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
+							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
+						dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
+					}
+					
+					
+					/*int cd=checkQosAddon(imsi, mccmnc, callTime);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
@@ -1417,26 +1456,22 @@ public class DVRSmain implements Job{
 							dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");
 							
 						}else{
+							
 							//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
 							//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
 							//以預設費率計費
 							sql="";errorMsg="";
-							sendErrorMail("IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+							sendErrorMail("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly,because mccmnc("+mccmnc+") is not in Data_Rate table ! ");
 							charge=Math.ceil(volume*kByte)*defaultRate;
 						}
-					}
+					}*/
 		
 					//XXX
 					/*if("454120260226967".equals(imsi))
 						System.out.println("check point");
 					*/
 					
-					//格式化至小數點後四位
-					charge=tool.FormatDouble(charge, "0.0000");
-
-					//將此筆CDR結果記錄，稍後回寫到USAGE TABLE
-					cdrChargeMap.put(usageId, charge);
-					logMsg+="UsageId "+usageId+" ,IMSI "+imsi+" ,MCCMNC "+mccmnc+" charge result is "+cdrChargeMap.get(usageId)+". ";
+					
 
 					
 					//察看是否有以存在的資料，有的話取出做累加
@@ -1446,12 +1481,22 @@ public class DVRSmain implements Job{
 					String nccNet;
 					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
-						System.out.println(mccmnc);
 						nccNet=mccmnc.substring(0,3);
 						nccNet+=dataRate.get(pricplanID).get(mccmnc).get("NETWORK");
 					}else{
 						nccNet=DEFAULT_MCCMNC;
 					}
+					
+					
+					//格式化至小數點後四位
+					charge=tool.FormatDouble(charge, "0.0000");
+
+					//將此筆CDR結果記錄，稍後回寫到USAGE TABLE
+					cdrChargeMap.put(usageId, charge);
+					logMsg+="UsageId "+usageId+" ,IMSI "+imsi+" ,MCCMNC "+nccNet+" charge result is "+cdrChargeMap.get(usageId)+". ";
+					
+					
+					
 					
 					String cDay=tool.DateFormat(callTime, DAY_FORMATE);
 					Double oldCharge=0D;
@@ -1474,9 +1519,6 @@ public class DVRSmain implements Job{
 								
 								//summary charge
 								charge=oldCharge+charge;
-								charge=tool.FormatDouble(charge, "0.0000");
-								if(serviceid.equals("26234"))
-									System.out.println();
 								alert=(String)map3.get("ALERT");
 								oldvolume=(Double)map3.get("VOLUME");
 							
@@ -1491,6 +1533,8 @@ public class DVRSmain implements Job{
 					if(dayCap!=null && dayCap>=0 && charge>dayCap) charge=dayCap;
 					
 					//將結果記錄到currentDayMap
+					//格式化至小數點後四位
+					charge=tool.FormatDouble(charge, "0.0000");
 					map3.put("CHARGE", charge);
 					logMsg+="The final Daily charge is "+map3.get("CHARGE")+". ";
 					map3.put("LAST_FILEID",fileID);
@@ -1538,6 +1582,7 @@ public class DVRSmain implements Job{
 					map4.put("LAST_DATA_TIME", callTime);
 					
 					charge=preCharge+charge;
+					//格式化至小數點後四位
 					charge=tool.FormatDouble(charge, "0.0000");
 					map4.put("CHARGE", charge);
 					logMsg+="The final month charge is "+map4.get("CHARGE")+". ";
@@ -2882,16 +2927,17 @@ public class DVRSmain implements Job{
 	 *                                主程式
 	 *************************************************************************
 	 *************************************************************************/
-	
+	static //XXX
+		String tempdate="06"; 
 	public static void main(String[] args) {
 		
 
 		IniProgram();
 
-		//DVRSmain rf =new DVRSmain();
-		//rf.process();
-		
-		regularTimeRun();
+		DVRSmain rf =new DVRSmain();
+		rf.process();
+		//XXX
+		//regularTimeRun();
 
 	}
 	
@@ -3072,41 +3118,63 @@ public class DVRSmain implements Job{
 			setAddonData();
 			logger.info("setAddonData execute time :"+(System.currentTimeMillis()-subStartTime));
 			
-			//開始批價 
-			subStartTime = System.currentTimeMillis();
-			charge();
-			logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
-
-			//發送警示簡訊
-			subStartTime = System.currentTimeMillis();
-			sendAlertSMS();
-			logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
 			
-			//回寫批價結果
-			subStartTime = System.currentTimeMillis();
-			//避免資料異常，完全處理完之後在commit
-			try {
-				updateCdr();
-				insertCurrentMap();
-				insertCurrentMapDay();
-				updateCurrentMap();
-				updateCurrentMapDay();
-				conn.commit();
-			} catch (SQLException e) {
+			Set<Integer> num = new HashSet<Integer>();
+			num.add(7);
+
+			for(int i=20;i<=24;i++){
+				tempdate=String.valueOf(i);
+				
+				if(i<10)
+					tempdate = "0"+tempdate;
+					
+				System.out.println("proccess date "+tempdate);
+				
+				
+				//開始批價 
+				subStartTime = System.currentTimeMillis();
+				charge();
+				logger.info("charge execute time :"+(System.currentTimeMillis()-subStartTime));
+
+				//發送警示簡訊
+				subStartTime = System.currentTimeMillis();
+				//XXX
+				//sendAlertSMS();
+				logger.info("sendAlertSMS execute time :"+(System.currentTimeMillis()-subStartTime));
+				
+				//回寫批價結果
+				subStartTime = System.currentTimeMillis();
+				//避免資料異常，完全處理完之後在commit
 				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
+					//XXX
+					//updateCdr();
+					//insertCurrentMap();
+					insertCurrentMapDay();
+					//updateCurrentMap();
+					updateCurrentMapDay();
+					conn.commit();
+				} catch (SQLException e) {
+					try {
+						conn.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					logger.error("At updateTable occur SQLException error!", e);
+					//send mail
+					sendErrorMail("At updateTable occur SQLException error!");
+					errorMsg="";
+					for(StackTraceElement s :e.getStackTrace()){
+						errorMsg+=s.toString()+"<br>\n";
+					}
 				}
-				logger.error("At updateTable occur SQLException error!", e);
-				//send mail
-				sendErrorMail("At updateTable occur SQLException error!");
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
+				logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
+				
+				
+				
 			}
-			logger.info("insert＆update execute time :"+(System.currentTimeMillis()-subStartTime));
+			
+			
+			
 
 			//suspend的後續追蹤處理
 			subStartTime = System.currentTimeMillis();

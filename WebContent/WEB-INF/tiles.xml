@@ -64,6 +64,10 @@
 		<put-attribute name="main" value="/web/currentDay.jsp" />
 	</definition>
 	
+	<definition name="queryQos" extends="web_base">
+		<put-attribute name="main" value="/web/queryQos.jsp" />
+	</definition>
+	
 	<definition name="cardChangeHistory" extends="web_base">
 		<put-attribute name="main" value="/web/cardChangeHistory.jsp" />
 	</definition>

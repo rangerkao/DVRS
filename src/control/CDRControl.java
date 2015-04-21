@@ -2,7 +2,6 @@ package control;
 
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
 import bean.CDR;
