@@ -33,7 +33,6 @@ public class MenuControl extends BaseControl {
 
 		//糷
 		List<Link> l3=new ArrayList<Link>();
-		l3.add(new Link("searchList","queryQosLink","Qosㄑ杆琩高"));
 		l3.add(new Link("searchList","smsQueryLink","禬秖虏癟祇癳琩高"));
 		l3.add(new Link("searchList","dataRateLink","禣瞯琩高"));
 		l3.add(new Link("searchList","currentMonthLink","–る仓璸"));
@@ -41,6 +40,7 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","cardChangeHistoryLink","传癘魁琩高"));
 		l3.add(new Link("searchList","numberChangeHistoryLink","传腹癘魁琩高琩高"));
 		
+		l3.add(new Link("elseList","queryQosLink","Qosㄑ杆琩高"));
 		l3.add(new Link("elseList","logoutLink","祅"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();

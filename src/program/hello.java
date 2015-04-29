@@ -24,13 +24,15 @@ import java.util.regex.Pattern;
 
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 
 public class hello {
 	private static String msg;
 	public static void main(String[] args) {
 		
+		System.out.println(hello.class.getClassLoader().getResource(""));
 		
-		
+		System.out.println("---151131".startsWith("--"));
 		
 		System.out.println("Hello!");
 		
