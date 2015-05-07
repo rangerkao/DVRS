@@ -299,7 +299,7 @@ public class DVRSmain implements Job{
 		//設定HUR_CURRENT計費，抓出這個月與下個月
 		try {
 			sql=
-					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,A.LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
+					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
 					+ "FROM HUR_CURRENT A "
 					+ "WHERE A.MONTH IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
 			
@@ -321,7 +321,7 @@ public class DVRSmain implements Job{
 				
 				map.put("LAST_FILEID", rs.getInt("LAST_FILEID"));
 				map.put("SMS_TIMES", rs.getInt("SMS_TIMES"));
-				map.put("LAST_DATA_TIME", (rs.getDate("LAST_DATA_TIME")!=null?rs.getDate("LAST_DATA_TIME"):new Date()));
+				map.put("LAST_DATA_TIME", rs.getString("LAST_DATA_TIME"));
 				map.put("CHARGE", rs.getDouble("CHARGE"));
 				map.put("VOLUME", rs.getDouble("VOLUME"));
 				map.put("EVER_SUSPEND", rs.getString("EVER_SUSPEND"));
@@ -398,7 +398,7 @@ public class DVRSmain implements Job{
 		boolean result = false; 
 		try {
 			sql=
-					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY,A.ALERT "
+					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY,A.ALERT "
 					+ "FROM HUR_CURRENT_DAY A "
 					+ "WHERE SUBSTR(A.DAY,0,6) IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
 			
@@ -426,7 +426,7 @@ public class DVRSmain implements Job{
 					}
 							
 					map.put("LAST_FILEID", rs.getInt("LAST_FILEID"));
-					map.put("LAST_DATA_TIME", (rs.getDate("LAST_DATA_TIME")!=null?rs.getDate("LAST_DATA_TIME"):new Date()));
+					map.put("LAST_DATA_TIME", rs.getString("LAST_DATA_TIME"));
 					map.put("CHARGE", rs.getDouble("CHARGE"));
 					map.put("VOLUME", rs.getDouble("VOLUME"));
 					map.put("ALERT", rs.getString("ALERT"));
@@ -1494,13 +1494,13 @@ public class DVRSmain implements Job{
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
 				sql=
 						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
-						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
 						+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+(i*dataThreshold)+" AND A.CHARGE is null "
 						//+ "AND A.FILEID>= "+lastfileID+" "
 						+ "ORDER BY A.USAGEID,A.FILEID) "
 						+ "MINUS "
 						+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
-						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,to_date(CALLTIME,'yyyy/MM/dd hh24:mi:ss') CALLTIME,SGSNADDRESS "
+						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
 						+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+((i-1)*dataThreshold)+" AND A.CHARGE is null "
 						//+ "AND A.FILEID>= "+lastfileID+" "
 						+ "ORDER BY A.USAGEID,A.FILEID) ";
@@ -1518,7 +1518,8 @@ public class DVRSmain implements Job{
 					String mccmnc=rs.getString("MCCMNC");
 					String usageId=rs.getString("USAGEID");
 					Double volume=rs.getDouble("DATAVOLUME");
-					Date callTime=rs.getDate("CALLTIME");
+					String sCallTime=rs.getString("CALLTIME");
+					Date callTime=new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(sCallTime);
 					Integer fileID=rs.getInt("FILEID");	
 					Double charge=0D;
 					Double dayCap=null;
@@ -1697,7 +1698,7 @@ public class DVRSmain implements Job{
 					map3.put("CHARGE", charge);
 					logMsg+="The final Daily charge is "+map3.get("CHARGE")+". ";
 					map3.put("LAST_FILEID",fileID);
-					map3.put("LAST_DATA_TIME",callTime);
+					map3.put("LAST_DATA_TIME",sCallTime);
 					map3.put("VOLUME",volume+oldvolume);
 					map3.put("ALERT",alert);
 					map2.put(nccNet, map3);
@@ -1753,7 +1754,7 @@ public class DVRSmain implements Job{
 					
 					map4.put("LAST_FILEID", fileID);
 					map4.put("SMS_TIMES", smsTimes);
-					map4.put("LAST_DATA_TIME", callTime);
+					map4.put("LAST_DATA_TIME", sCallTime);
 					
 					charge=preCharge+charge;
 					charge=tool.FormatDouble(charge, "0.0000");
@@ -1780,6 +1781,14 @@ public class DVRSmain implements Job{
 				}
 			}
 		} catch (SQLException e) {
+			logger.error("At charge occur SQLException error", e);
+			//send mail
+			sendErrorMail("At charge occur SQLException error!");
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+		} catch (ParseException e) {
 			logger.error("At charge occur SQLException error", e);
 			//send mail
 			sendErrorMail("At charge occur SQLException error!");
@@ -1902,7 +1911,7 @@ public class DVRSmain implements Job{
 					pst.setDouble(1,(Double) currentMap.get(mon).get(serviceid).get("CHARGE"));
 					pst.setInt(2, (Integer) currentMap.get(mon).get(serviceid).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMap.get(mon).get(serviceid).get("SMS_TIMES"));
-					pst.setString(4, spf.format((Date) currentMap.get(mon).get(serviceid).get("LAST_DATA_TIME")));
+					pst.setString(4, (String) currentMap.get(mon).get(serviceid).get("LAST_DATA_TIME"));
 					pst.setDouble(5,(Double) currentMap.get(mon).get(serviceid).get("VOLUME"));
 					pst.setString(6,(String) currentMap.get(mon).get(serviceid).get("EVER_SUSPEND"));
 					pst.setDouble(7,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
@@ -1966,7 +1975,7 @@ public class DVRSmain implements Job{
 					for(String nccNet : updateMapD.get(day).get(serviceid)){
 						pst.setDouble(1,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("CHARGE"));
 						pst.setInt(2, (Integer) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_FILEID"));
-						pst.setString(3, spf.format((Date) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_DATA_TIME")));
+						pst.setString(3, (String) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_DATA_TIME"));
 						pst.setDouble(4,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("VOLUME"));
 						pst.setString(5,(String) currentDayMap.get(day).get(serviceid).get(nccNet).get("ALERT"));
 						pst.setString(6, day);
