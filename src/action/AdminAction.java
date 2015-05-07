@@ -1,8 +1,11 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 
 
@@ -46,14 +49,15 @@ public class AdminAction extends BaseAction{
 		
 		List<Admin> adminList=new ArrayList<Admin>();
 		adminList=adminControl.queryAdminList();
-		System.out.println( beanToJSONArray(adminList));
-		result=beanToJSONArray(adminList);
+
+		result=makeResult(adminList, null);
 		try {
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", SUCCESS);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		return SUCCESS;
 	}
@@ -76,15 +80,17 @@ public class AdminAction extends BaseAction{
 		try {
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "update", mod+":"+ beanToJSONObject(admin), result);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 
 		return SUCCESS;
 
 	}
 
+	//--------------------------//
 	public Admin getAdmin() {
 		return admin;
 	}

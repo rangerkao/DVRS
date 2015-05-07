@@ -1,5 +1,7 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,16 +27,18 @@ public class DataRateAction extends BaseAction{
 	public String queryDataRate(){
 		try {
 			dataRateList=dataRateControl.queryDataRateList();
-			result=beanToJSONArray(dataRateList);
+			result=makeResult(dataRateList,null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "DataRate", "query","", SUCCESS);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		return SUCCESS;
 	}

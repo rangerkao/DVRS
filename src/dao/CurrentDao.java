@@ -169,7 +169,28 @@ public class CurrentDao extends BaseDao {
 			setServiceIDtoIMSI();
 			setIMSItoServiceID();
 		}
+		
+		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
+		Set<String> filterServiceID = new HashSet<String>();
+		String sServiceID = "";
+		
+		if(imsi!=null &&!"".equals(imsi)){
+			imsi = imsi.replace("/", "");
+		}
+		
+		if(!"^$".equals(imsi)){
+			for(String s : imsitoServiceID.keySet()){
+				if(s.matches(imsi)){
+					filterServiceID.add(imsitoServiceID.get(s));
+					sServiceID += ","+imsitoServiceID.get(s);
+				}
+			}
+			if(!"".equals(sServiceID))
+				sServiceID="("+sServiceID.substring(1)+")";
+		}
+		
 
+		
 		sql=
 				"SELECT A.MONTH,A.SERVICEID,A.CHARGE,A.VOLUME,A.SMS_TIMES,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME,A.EVER_SUSPEND,A.LAST_FILEID "
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
@@ -177,33 +198,20 @@ public class CurrentDao extends BaseDao {
 				+ (from!=null &&!"".equals(from)?"AND A.MONTH >=  "+from+" ":"")
 				+ (to!=null &&!"".equals(to)?"AND A.MONTH <=  "+to+" ":"")
 				+ (suspend!=null && !"".equals(suspend)?"AND A.EVER_SUSPEND="+suspend+" ":"")
+				+ (sServiceID!=null && !"".equals(sServiceID)? "AND A.SERVICEID in "+sServiceID+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 
-		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
-		
 		
 			Statement pst = conn.createStatement();
-			System.out.println("dB connect success: "+new Date());
 			ResultSet rs=pst.executeQuery(sql);
 			System.out.println("query execute : "+new Date()+sql);
-			
-			if(imsi!=null &&!"".equals(imsi)){
-				imsi = imsi.replace("/", "");
-			}
-			
-			Set<String> filterServiceID = new HashSet<String>();
-			
-			for(String s : imsitoServiceID.keySet()){
-				if(s.matches(imsi))
-					filterServiceID.add(imsitoServiceID.get(s));
-			}
-			
+
 			while(rs.next()){
 				
 				String serviceid = rs.getString("SERVICEID");
 				
-				if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
-					continue;
+				/*if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
+					continue;*/
 				
 				String rimsi = serviceIDtoIMSI.get(serviceid);
 				if(rimsi==null || "".equals(rimsi))
@@ -295,6 +303,25 @@ public class CurrentDao extends BaseDao {
 			setIMSItoServiceID();
 		}
 		
+		List<CurrentDay> list = new ArrayList<CurrentDay>();
+		Set<String> filterServiceID = new HashSet<String>();
+		String sServiceid = "";
+		
+		if(imsi!=null &&!"".equals(imsi)){
+			imsi = imsi.replace("/", "");
+		}
+		
+		if(!"^$".equals(imsi)){
+			for(String s : imsitoServiceID.keySet()){
+				if(s.matches(imsi)){
+					filterServiceID.add(imsitoServiceID.get(s));
+					sServiceid+=","+imsitoServiceID.get(s);
+				}
+			}	
+			if(!"".equals(sServiceid))
+				sServiceid="("+sServiceid.substring(1)+")";
+		}
+
 		sql=
 				"SELECT A.DAY,SUBSTR(MCCMNC,4)||'('||(case when B.NAME is not null then  B.NAME else substr(A.MCCMNC,0,3) end)||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
 				+ ",TO_CHAR(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,TO_CHAR(A.UPDATE_DATE,'yyyy/MM/dd hh24:mi:ss') UPDATE_DATE,TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd hh24:mi:ss') CREATE_DATE "
@@ -302,41 +329,27 @@ public class CurrentDao extends BaseDao {
 				+ "where substr(A.MCCMNC,0,3) = B.CODE(+) "
 				+ (from!=null &&!"".equals(from)?"AND A.DAY >=  "+from+" ":"")
 				+ (to!=null &&!"".equals(to)?"AND A.DAY <=  "+to+" ":"")
+				//20150505 add
+				+ (sServiceid!=null && !"".equals(sServiceid)?"AND A.SERVICEID in "+sServiceid+" " : "")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 		
 			System.out.println("Sql:"+sql);
-				
-		
-			List<CurrentDay> list = new ArrayList<CurrentDay>();
-		
 		
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
-			
-			
-			if(imsi!=null &&!"".equals(imsi)){
-				imsi = imsi.replace("/", "");
-			}
-			
-			Set<String> filterServiceID = new HashSet<String>();
-			
-			for(String s : imsitoServiceID.keySet()){
-				if(s.matches(imsi))
-					filterServiceID.add(imsitoServiceID.get(s));
-			}
-			
+
 			while(rs.next()){
 				
 				String serviceid = rs.getString("SERVICEID");
 				
-				if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
-					continue;
+				//20150505 modifi
+				/*if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
+					continue;*/
 				
 				String rimsi = serviceIDtoIMSI.get(serviceid);
 				if(rimsi==null || "".equals(rimsi))
 					rimsi=rs.getString("SERVICEID");
 
-				
 				CurrentDay c = new CurrentDay();
 				c.setDay(rs.getString("DAY"));
 				c.setMccmnc(rs.getString("MCCMNC"));

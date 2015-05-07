@@ -56,28 +56,34 @@ var cdrList;
   	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
-	      success: function(json) {  
-	    	  $("#Qmsg").html("Success");
-	    	  //jQuery.parseJSON,JSON.parse(json)
-	    	  //alert(json);
-
-	    	  var list=$.parseJSON(json);
-	    	  cdrList=list;
-	    	  dataList=cdrList.slice(0);
-
-	    	  },
-	      error: function() { $("#Qmsg").html('something bad happened'); 
-	      },
-  	  		beforeSend:function(){
-  	  		$("#Qmsg").html("正在查尋，請稍待...");
-  			disableButton();
-	        },
-	        complete:function(){
+	      	success: function(json) {  
+				$("#Qmsg").html("Success");
+				//jQuery.parseJSON,JSON.parse(json)
+				//alert(json);
+				
+				var list=$.parseJSON(json);
+				cdrList=list['data'];
+				if(cdrList!=null)
+					dataList=cdrList.slice(0);
+				
+				var error = list['error'];
+		    	  $('#Error').html(error);
+    	  	},
+	      	error: function() { 
+	      		$("#Qmsg").html('something bad happened'); 
+	      	},
+  			beforeSend:function(){
+	  	  		$("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
+       		},
+        	complete:function(){
 	      	  enableButton();
 	      		//pagination();
 	      		queryList();
 	      		dateChange=false;
-	        }
+	    	}
 	    });
 	}
 	
@@ -154,6 +160,9 @@ var cdrList;
 		</div>
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

@@ -1,5 +1,7 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -37,19 +39,23 @@ public class ActionLogAction extends BaseAction {
 				actionLoglist=actionLogControl.queryActionLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
 						tool.DateFormat(dateTo, "yyyy-MM-dd"));		
 			}
-			result=beanToJSONArray(actionLoglist);
 
+			result=makeResult(actionLoglist, null);
+			
 			actionLogControl.loggerAction(super.getUser().getAccount(), "ActionLog", "query", "dateFrom:"+dateFrom+";dateTo:"+dateTo, SUCCESS);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		return SUCCESS;
 	}
 
 
+	//-------------------------------------------------//
+	
 	public String getDateFrom() {
 		return dateFrom;
 	}

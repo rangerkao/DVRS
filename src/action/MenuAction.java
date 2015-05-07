@@ -23,13 +23,17 @@ public class MenuAction extends BaseAction {
 	
 	public String queryAuthentication(){
 		
+		if(super.getUser()==null)
+			return SUCCESS;
+		
 		List<Link> auth =menuControl.queryAuthentication(super.getUser().getRole());
 		
-		result=beanToJSONArray(auth);
+		result=makeResult(auth, null);
 
 		return SUCCESS;
 	}
 
+	//*************************************************//
 	public String getRole() {
 		return role;
 	}

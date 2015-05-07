@@ -33,14 +33,21 @@ function query(){
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  //$("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  limitList=list;
-	    	  dataList=limitList.slice(0);
+	    	  limitList=list['data'];
+	    	  
+	    	  if(limitList!=null)
+	    		  dataList=limitList.slice(0);
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
     	  beforeSend:function(){
     		  $("#Qmsg").html("正在查尋，請稍待...");
-    			disableButton();
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -99,6 +106,9 @@ function updateLimit(mod,txt){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	 query();
+	    	 
+	    	 var error = list['error'];
+	    	  $('#Error').html(error);
     	  },
 	      error: function(json) { $("#Qmsg").html('something bad happened'); 
 	      },
@@ -107,7 +117,9 @@ function updateLimit(mod,txt){
 	      },
     	  beforeSend:function(){
     		  $("#Qmsg").html("正在更新，請稍待...");
-    			disableButton();
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
           }
@@ -154,13 +166,18 @@ function enableButton(){
 	    		  $("#IMSI").val(v.imsi);
 	    		  updateLimit(mod,txt);
 	    	  }
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
     	  },
 	      error: function(json) {
 	    	  $("#Qmsg").html('something bad happened'); 
 	      },
     	  beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
-    			disableButton();
+    		  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
     			$("#IMSI").val("");
           },
           complete:function(){
@@ -309,6 +326,9 @@ function queryVIP(){
 		</div>
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

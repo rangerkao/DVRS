@@ -8,10 +8,13 @@
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
+var dataList;
+var adminList;
+
 	$(document).ready(function(){
 		queryAdmin();
 	});
-		var adminList;
+		
 		function queryAdmin(){
 		
 			  $.ajax({
@@ -25,8 +28,14 @@
 			    	  //alert(json);
 			    	  var list=$.parseJSON(json);
 			    	   $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-			    	  	adminList=list; 
-			    	     $.each(list,function(i,admin){  
+			    	  	adminList=list['data']; 
+			    	  	if(adminList!=null)
+							dataList=adminList.slice(0);
+						
+						var error = list['error'];
+				    	  $('#Error').html(error);
+				    	  
+			    	     $.each(dataList,function(i,admin){  
 	                      var _tr = $(	"<tr align='center'>"+
 	                      					"<td >"+admin.userid+"</td>"+
 	                      					"<td>"+admin.account+"</td>"+
@@ -38,12 +47,15 @@
 	                    $("#table1").append(_tr); }); 
 			    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 			    	    $("#table1 tr:even").addClass("even_columm"); 
+			    	    
 			    	  },
 			      error: function() { $("#Qmsg").html('something bad happened');
 			      },
 		    	  beforeSend:function(){
-		    			$("#Qmsg").html("正在查尋，請稍待...");
-		    			disableButton();
+		    		  $("#Qmsg").html("正在查尋，請稍待...");
+			    		$('#Error').html("");
+			    		dataList=[];
+			    		disableButton();
 		          },
 		          complete:function(){
 		        	  enableButton();
@@ -81,11 +93,16 @@
 				    	  		queryAdmin();
 				    	  	}else{
 				    	  		$("#Qmsg").html(json);
-				    	  		}},
+				    	  		}
+				    	  	
+				    	  	var error = list['error'];
+					    	  $('#Error').html(error);
+				      },
 				      error: function(json) { $("#Qmsg").html('something bad happened');
 				      },
 			    	  beforeSend:function(){
 			    		  $("#Qmsg").html("正在更新，請稍待...");
+			    		  $('#Error').html("");
 			    			disableButton();
 			          },
 			          complete:function(){
@@ -210,6 +227,9 @@
 					<td>&nbsp;</td>
 				</tr>
 			</table>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

@@ -17,6 +17,7 @@ padding: none;
 $(document).ready(function(){
 	//$("li").css("display","none");
 	queryAuth();
+	$('#elseList').append('<li><p class="text-left"><a id=logoutLink href="<s:url action="logoutLink"/>">登出</a></p></li>');
 });
 
 
@@ -78,7 +79,7 @@ var count=logOutTime/checkPeriod;
 		    	  //jQuery.parseJSON,JSON.parse(json)
 		    	  //alert(json);
 		    	  var list=$.parseJSON(json);
-		    	     $.each(list,function(i,Auth){
+		    	     $.each(list['data'],function(i,Auth){
 		    	   
 		    	    	 $('#'+Auth.belong).append('<li><p class="text-left"><a id='+Auth.action+' href="<s:url action="'+Auth.action+'"/>">'+Auth.name+'</a></p></li>');
 		    	     }); 
@@ -126,6 +127,10 @@ var count=logOutTime/checkPeriod;
 		    	  }else{
 		    		  $("#tLabel").val(v.imsi);
 		    	  }
+		    	  
+		    	  var error = list['error'];
+		    	  if(error!=null)
+		    		  alert(error);
 	    	  },
 		      error: function(json) {
 		    	  alert('something bad happened'); 
@@ -169,6 +174,9 @@ var count=logOutTime/checkPeriod;
 		    	  }else{
 		    		  $("#tLabel").val(v.msisdn);
 		    	  }
+		    	  var error = list['error'];
+		    	  if(error!=null)
+		    		  alert(error);
 	    	  },
 		      error: function(json) {
 		    	  alert('something bad happened'); 
@@ -212,6 +220,10 @@ function tqueryTWNMSISDN(){
 		    	  }else{
 		    		  $("#tLabel").val(v.msisdn);
 		    	  }
+		    	  
+		    	  var error = list['error'];
+		    	  if(error!=null)
+		    		  alert(error);
 	    	  },
 		      error: function(json) {
 		    	  alert('something bad happened'); 
@@ -232,32 +244,35 @@ function tqueryTWNMSISDN(){
 <body>
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: top;">
-		<div class="col-xs-12">
+		<div class="col-xs-12" style="visibility: hidden;">
 			<label id="x" >x.index</label>
 			<label id="y" >y.index</label>
 			<label id="menuAuth"></label>
 		</div>
 		<div class="col-xs-12">
-			<!-- <input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled"> -->
-			<input 	type="text" id="tText" class="col-xs-12"
-						value="請輸入" style="color: #AAAAAA;" 
-						onfocus="if (this.value == '請輸入') {this.value = ''; this.style.color='#333333'}" 
-						onblur="if (this.value == '') {this.value = '請輸入'; this.style.color='#AAAAAA'}"  >
+			<div class="col-xs-12">
+				<!-- <input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled"> -->
+				<input 	type="text" id="tText" class="col-xs-12"
+							value="請輸入" style="color: #AAAAAA;" 
+							onfocus="if (this.value == '請輸入') {this.value = ''; this.style.color='#333333'}" 
+							onblur="if (this.value == '') {this.value = '請輸入'; this.style.color='#AAAAAA'}"  >
+			</div>
+			<div class="dropdown col-xs-12">
+				<button class="btn btn-primary btn-xs col-xs-12 dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+				    選擇查詢項目
+				<span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-center" role="menu" aria-labelledby="dropdownMenu1">
+					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryMSISDN()" value="IMSI查詢門號"></li>
+					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"></li>
+					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN()" value="中華門號查詢香港主號"></li>
+				</ul>
+			</div>
+			<div class="col-xs-12">
+				<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
+			</div>
 		</div>
-		<div class="dropdown col-xs-12">
-			<button class="btn btn-primary btn-xs col-xs-12 dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-			    選擇查詢項目
-			<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu dropdown-menu-center" role="menu" aria-labelledby="dropdownMenu1">
-				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryMSISDN()" value="IMSI查詢門號"></li>
-				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"></li>
-				<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN()" value="中華門號查詢香港主號"></li>
-			</ul>
-		</div>
-		<div class="col-xs-12">
-			<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
-		</div>
+		
 		<!-- <div class="col-xs-12">
 			<input 	type="text" id="tIMSI" class="col-xs-12"
 					value="請輸入IMSI" style="color: #AAAAAA;" 
@@ -270,29 +285,30 @@ function tqueryTWNMSISDN(){
 					onblur="if (this.value == '') {this.value = '請輸入門號'; this.style.color='#AAAAAA'}" >
 			<input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"> 
 		</div> -->
-		
-		<ul id="menu">
-			<li>
-				<p class="text-left">使用者管理</p>
-				<ul id="adminList">
-				</ul>
-			</li>
-			<li>
-				<p class="text-left">DVRS查詢</p>
-				<ul id="searchList">
-				</ul>
-			</li>
-			<li>
-				<p class="text-left">DVRS設定</p>
-				<ul id="settingList">
-				</ul>
-			</li>
-			<li>
-				<p class="text-left">其他</p>
-				<ul id="elseList">
-				</ul>
-			</li>
-		</ul>
+		<div class="col-xs-12">
+			<ul id="menu">
+				<li>
+					<p class="text-left">使用者管理</p>
+					<ul id="adminList">
+					</ul>
+				</li>
+				<li>
+					<p class="text-left">DVRS查詢</p>
+					<ul id="searchList">
+					</ul>
+				</li>
+				<li>
+					<p class="text-left">DVRS設定</p>
+					<ul id="settingList">
+					</ul>
+				</li>
+				<li>
+					<p class="text-left">其他</p>
+					<ul id="elseList">
+					</ul>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>
 </body>

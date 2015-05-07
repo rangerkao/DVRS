@@ -25,8 +25,8 @@ function query(){
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  smsSettinglist=list;
-	    	    $.each(list,function(i,smsSetting){  
+	    	  smsSettinglist=list['data'];
+	    	    $.each(smsSettinglist,function(i,smsSetting){  
                var _tr = $(	"<tr>"+
                					"<td align='center' >"+smsSetting.id+"</td>"+
                					//"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
@@ -39,12 +39,17 @@ function query(){
              $("#table1").append(_tr); });
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
+	    	    
+	    	    var error = list['error'];
+		    	  $('#Error').html(error);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
-    			disableButton();
+	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		smsSettinglist=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -168,8 +173,8 @@ function updateSetting(mod,txt){
 	    	  $("#BClear").click();
 	    	  var list=$.parseJSON(json);
 	    	  $("#table1 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  smsSettinglist=list;
-	    	    $.each(list,function(i,smsSetting){  
+	    	  smsSettinglist=list['data'];
+	    	    $.each(smsSettinglist,function(i,smsSetting){  
              var _tr = $(	"<tr>"+
              					"<td align='center' >"+smsSetting.id+"</td>"+
              					//"<td align='center' >"+smsSetting.pricePlanId+"</td>"+
@@ -182,11 +187,16 @@ function updateSetting(mod,txt){
            $("#table1").append(_tr); });
 	    	    $("#table1 tr:odd").addClass("odd_columm");//奇數欄位樣式
 	    	    $("#table1 tr:even").addClass("even_columm");
+
+	    	    var error = list['error'];
+		    	  $('#Error').html(error);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
     	  beforeSend:function(){
     		  $("#Qmsg").html("正在更新，請稍待...");
+    		  $('#Error').html("");
+    		  smsSettinglist=[];
     			disableButton();
           },
           complete:function(){
@@ -227,14 +237,20 @@ function queryContent(){
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  //$("#table2 tr:gt(0)").remove();//移除>0之後讀tr
-	    	  smsContentlist=list;
-	    	  dataList=smsContentlist.slice(0);
+	    	  smsContentlist=list['data'];
+	    	  if(smsContentlist!=null)
+	    		  dataList=smsContentlist.slice(0);
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 	    	  },
 	      error: function() { $("#Qmsg2").html('something bad happened');  
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg2").html("正在查詢，請稍待...");
-    			disableButton();
+	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -260,12 +276,16 @@ function updateContent(mod,txt){
 	      success: function(json) {  
 	    	  $("#Qmsg2").html("Success");
 	    	  queryContent();
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 	      },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
     	  beforeSend:function(){
     		  $("#Qmsg").html("正在更新，請稍待...");
     			disableButton();
+    			$('#Error').html("");
           },
           complete:function(){
         	  //enableButton();
@@ -516,6 +536,9 @@ function validat2(mod,txt){
 					</table>
 				</div> -->
 			</div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

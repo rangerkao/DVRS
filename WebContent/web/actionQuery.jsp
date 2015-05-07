@@ -27,6 +27,7 @@ function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 var dataList;
+var actionList;
 function query(){
 	if(!validate()) return flase;
 	$.ajax({
@@ -41,15 +42,21 @@ function query(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
+	    	  actionList = list['data'];
+	    	  if(actionList!=null)
+	    		  dataList=actionList.slice(0);
 
-	    	  dataList=list;
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
-    			disableButton();
+	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -115,6 +122,9 @@ function clearDate(){
 		</div>
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

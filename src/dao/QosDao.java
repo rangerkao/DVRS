@@ -28,13 +28,30 @@ public class QosDao extends BaseDao {
 			System.out.println("Execute SQL :"+sql);
 			while(rs.next()){
 				QosBean qosdata =new QosBean();
+				String rc = rs.getString("RESULT_CODE");
+				if(rc!=null ){
+					if(rc.contains("RETURN_CODE=0")){
+						rc="成功";
+					}
+				}else{
+					rc="";
+				}
+				
+				String rc2 = rs.getString("RESPONSE_CODE");
+				if(rc2!=null ){
+					if(rc2.contains("200")){
+						rc2="正常";
+					}
+				}else{
+					rc2="";
+				}
 				qosdata.setProvisionID(rs.getInt("PROVISIONID"));
 				qosdata.setImsi(rs.getString("IMSI"));
 				qosdata.setMsisdn(rs.getString("MSISDN"));
 				qosdata.setPlan(rs.getString("PLAN"));
 				qosdata.setAction(rs.getString("ACTION"));
-				qosdata.setResultCode((rs.getString("RESULT_CODE").contains("RETURN_CODE=0")?"成功":rs.getString("RESULT_CODE")));
-				qosdata.setReturnCode(("200".equals(rs.getString("RESPONSE_CODE"))?"正常":rs.getString("RESPONSE_CODE")));
+				qosdata.setResultCode(rc);
+				qosdata.setReturnCode(rc2);
 				qosdata.setCreateTime(rs.getString("ctime"));
 				list.add(qosdata);
 			}
@@ -63,13 +80,32 @@ public class QosDao extends BaseDao {
 			System.out.println("Execute SQL :"+sql);
 			while(rs.next()){
 				QosBean qosdata =new QosBean();
+				
+				String rc = rs.getString("RESULT_CODE");
+				if(rc!=null ){
+					if(rc.contains("RETURN_CODE=0")){
+						rc="成功";
+					}
+				}else{
+					rc="";
+				}
+				
+				String rc2 = rs.getString("RESPONSE_CODE");
+				if(rc2!=null ){
+					if(rc2.contains("200")){
+						rc2="正常";
+					}
+				}else{
+					rc2="";
+				}
+				
 				qosdata.setProvisionID(rs.getInt("PROVISIONID"));
 				qosdata.setImsi(rs.getString("IMSI"));
 				qosdata.setMsisdn(rs.getString("MSISDN"));
 				qosdata.setPlan(rs.getString("PLAN"));
 				qosdata.setAction(rs.getString("ACTION"));
-				qosdata.setResultCode((rs.getString("RESULT_CODE").contains("RETURN_CODE=0")?"成功":rs.getString("RESULT_CODE")));
-				qosdata.setReturnCode(("200".equals(rs.getString("RESPONSE_CODE"))?"正常":rs.getString("RESPONSE_CODE")));
+				qosdata.setResultCode(rc);
+				qosdata.setReturnCode(rc2);
 				qosdata.setCreateTime(rs.getString("ctime"));
 				list.add(qosdata);
 			}

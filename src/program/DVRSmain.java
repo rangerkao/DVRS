@@ -159,6 +159,10 @@ public class DVRSmain implements Job{
 	Map <String,Double> cdrChargeMap = new HashMap<String,Double>();
 	static Map <String,Set<String>> existMap = new HashMap<String,Set<String>>();
 	static Map <String,Map <String,Set<String>>> existMapD = new HashMap<String,Map <String,Set<String>>>();
+	//20150505 add
+	static Map <String,Set<String>> updateMap = new HashMap<String,Set<String>>();
+	static Map <String,Map <String,Set<String>>> updateMapD = new HashMap<String,Map <String,Set<String>>>();
+	
 	
 	Map<String,Map<String,List<Map<String,Object>>>> dataRate = new HashMap<String,Map<String,List<Map<String,Object>>>>();
 	Map<String,Map<String,String>> msisdnMap = new HashMap<String,Map<String,String>>();
@@ -1472,6 +1476,9 @@ public class DVRSmain implements Job{
 		logger.info("charge...");
 		long subStartTime = System.currentTimeMillis();
 		
+		updateMap.clear();
+		updateMapD.clear();
+		
 		Statement st = null;
 		ResultSet rs = null;
 		
@@ -1696,6 +1703,21 @@ public class DVRSmain implements Job{
 					map2.put(nccNet, map3);
 					map.put(serviceid, map2);
 					currentDayMap.put(cDay, map);
+					
+					//20150505 add
+					Map <String,Set<String>> map6 = new HashMap<String,Set<String>>();
+					Set<String> set1 = new HashSet<String>();					
+					
+					if(updateMapD.containsKey(cDay)){	
+						map6 = updateMapD.get(cDay);
+						if(map6.containsKey(serviceid)){
+							set1 = map6.get(serviceid);
+						}
+					}
+					set1.add(nccNet);
+					map6.put(serviceid, set1);
+					updateMapD.put(cDay, map6);
+					
 
 					//更新currentMap，如果此筆CDR記錄時間的月紀錄存在
 					Double preCharge=0D;
@@ -1744,6 +1766,15 @@ public class DVRSmain implements Job{
 					map4.put("LAST_ALERN_VOLUME", volumeAlert);
 					map5.put(serviceid, map4);
 					currentMap.put(cMonth, map5);
+					
+					//20150505
+					Set<String> set2 = new HashSet<String>();
+					
+					if(updateMap.containsKey(cMonth)){	
+						set2 = updateMap.get(cMonth);
+					}
+					set2.add(serviceid);
+					updateMap.put(cMonth, set2);
 
 					logger.debug(logMsg);
 				}
@@ -1844,8 +1875,30 @@ public class DVRSmain implements Job{
 			pst = conn.prepareStatement(sql);
 			
 			//20141201 add change another method to distinguish insert and update
-			for(String mon : currentMap.keySet()){
+			/*for(String mon : currentMap.keySet()){
 				for(String serviceid : currentMap.get(mon).keySet()){
+					pst.setDouble(1,(Double) currentMap.get(mon).get(serviceid).get("CHARGE"));
+					pst.setInt(2, (Integer) currentMap.get(mon).get(serviceid).get("LAST_FILEID"));
+					pst.setInt(3, (Integer) currentMap.get(mon).get(serviceid).get("SMS_TIMES"));
+					pst.setString(4, spf.format((Date) currentMap.get(mon).get(serviceid).get("LAST_DATA_TIME")));
+					pst.setDouble(5,(Double) currentMap.get(mon).get(serviceid).get("VOLUME"));
+					pst.setString(6,(String) currentMap.get(mon).get(serviceid).get("EVER_SUSPEND"));
+					pst.setDouble(7,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
+					pst.setDouble(8,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_VOLUME"));
+					pst.setString(9, mon);
+					pst.setString(10, serviceid);//具有mccmnc
+					pst.addBatch();
+					count++;
+					if(count==dataThreshold){
+						logger.info("Execute updateCurrentMap Batch");
+						pst.executeBatch();
+						count=0;
+					}	
+				}
+			}*/
+			//20150505 add only update are modified
+			for(String mon : updateMap.keySet()){
+				for(String serviceid : updateMap.get(mon)){
 					pst.setDouble(1,(Double) currentMap.get(mon).get(serviceid).get("CHARGE"));
 					pst.setInt(2, (Integer) currentMap.get(mon).get(serviceid).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMap.get(mon).get(serviceid).get("SMS_TIMES"));
@@ -1908,9 +1961,9 @@ public class DVRSmain implements Job{
 			pst = conn.prepareStatement(sql);
 			
 			//20141201 add change another method to distinguish insert and update
-			for(String day : currentDayMap.keySet()){
-				for(String serviceid : currentDayMap.get(day).keySet()){
-					for(String nccNet : currentDayMap.get(day).get(serviceid).keySet()){
+			for(String day : updateMapD.keySet()){
+				for(String serviceid : updateMapD.get(day).keySet()){
+					for(String nccNet : updateMapD.get(day).get(serviceid)){
 						pst.setDouble(1,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("CHARGE"));
 						pst.setInt(2, (Integer) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_FILEID"));
 						pst.setString(3, spf.format((Date) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_DATA_TIME")));

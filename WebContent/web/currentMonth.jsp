@@ -52,14 +52,20 @@ $(document).ready(function(){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  currentList=list;
-	    	  dataList=currentList.slice(0);
+	    	  currentList=list['data'];
+	    	  if(currentList!=null)
+	    		  dataList=currentList.slice(0);
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 	    	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg").html("正在查詢，請稍待...");
-    			disableButton();
+	    	$("#Qmsg").html("正在查尋，請稍待...");
+    		$('#Error').html("");
+    		dataList=[];
+    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -147,6 +153,9 @@ $(document).ready(function(){
 		</div>
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

@@ -47,7 +47,7 @@ public class LoginAction extends BaseAction{
 		
 	}
 
-
+//************************************************//
 	public String getAcc() {
 		return acc;
 	}

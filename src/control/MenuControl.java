@@ -41,7 +41,7 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","numberChangeHistoryLink","传腹癘魁琩高琩高"));
 		
 		l3.add(new Link("elseList","queryQosLink","Qosㄑ杆琩高"));
-		l3.add(new Link("elseList","logoutLink","祅"));
+		//l3.add(new Link("elseList","logoutLink","祅"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();
 		roleAuth.put("cs", 2);

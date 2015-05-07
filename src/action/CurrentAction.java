@@ -1,5 +1,7 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -33,16 +35,19 @@ public class CurrentAction extends BaseAction {
 		try {
 			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to+",suspend:"+suspend+","+new Date());
 			List<CurrentMonth> list = currentControl.queryCurrentMonth(imsi,from.replace("-",""),to.replace("-",""),suspend);
-			result = beanToJSONArray(list);
+			result = makeResult(list, null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Current", "queryMonth","from:"+from+" to:"+to+" IMSI:"+imsi, SUCCESS);
 		
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		
@@ -55,17 +60,20 @@ public class CurrentAction extends BaseAction {
 			System.out.println("imsi:"+imsi+",from:"+from+",to:"+to);
 			List<CurrentDay> list = currentControl.queryCurrentDay(imsi,from.replace("-",""),to.replace("-",""));
 			
-			result = beanToJSONArray(list);
+			result = makeResult(list, null);
 		
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Current", "queryDay","from:"+from+" to:"+to+" IMSI:"+imsi, SUCCESS);
 		
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		return SUCCESS;

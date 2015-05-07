@@ -1,6 +1,7 @@
 package action;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +51,15 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	protected User getUser(){
 		return (User) session.get("s2tUser");
 	}
+	protected String makeResult(List data,String error){
+		Map<String,Object> map = new HashMap<String,Object>();
+		map.put("data", data);
+		map.put("error", error);
+		
+		return beanToJSONObject(map);
+	}
 	
+	//-----------------------------------------------------------------------------//
 	
 	public String getResult() {
 	  return result;

@@ -1,5 +1,7 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +25,19 @@ public class HistoryAction extends BaseAction {
 	public String queryCardChangeHistory(){
 		
 		try {
-			result = beanToJSONArray(historyControl.queryCardChangeHistory(imsi));
+			result = makeResult(historyControl.queryCardChangeHistory(imsi),null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "queryTWNMSISDN","", SUCCESS);
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		return SUCCESS;
@@ -42,21 +46,23 @@ public class HistoryAction extends BaseAction {
 	public String queryNumberChangeHistory(){
 		
 		try {
-			result = beanToJSONArray(historyControl.queryNumberChangeHistory(imsi));
+			result = makeResult(historyControl.queryNumberChangeHistory(imsi),null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "queryTWNMSISDN","", SUCCESS);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		return SUCCESS;
 	}
-
+//*****************************************//
 	public String getImsi() {
 		return imsi;
 	}

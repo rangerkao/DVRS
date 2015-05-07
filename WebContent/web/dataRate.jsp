@@ -32,13 +32,18 @@ var reportName="資費表";
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  dataList=list;
+	    	  dataList=list['data'];
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
     	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg").html("正在查尋，請稍待...");
-    			disableButton();
+	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -81,6 +86,9 @@ var reportName="資費表";
 
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

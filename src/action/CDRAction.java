@@ -1,5 +1,7 @@
 package action;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -30,22 +32,24 @@ public class CDRAction extends BaseAction {
 		try {
 			System.out.println("from:"+from+" to:"+to+" IMSI:"+IMSI);
 			CDRlist=cdrControl.queryCDR(from,to,IMSI);
-			
-			
-			result=beanToJSONArray(CDRlist);
+
+			result=makeResult(CDRlist, null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "CDR", "query","from:"+from+" to:"+to+" IMSI:"+IMSI, SUCCESS);
 		} catch (SQLException  e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		return SUCCESS;
 	}

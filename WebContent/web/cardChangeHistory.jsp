@@ -18,14 +18,16 @@ var tHead=[{name:"舊號",col:"oldvalue",_width:"25%"},
            {name:"完成時間",col:"completedate",_width:"25%"}];
 var reportName="換卡歷史";
 	function queryDataRate(){
-		var   reg=$("#imsi").val();
+		/* var   reg=$("#imsi").val();
 		reg="^"+reg+"$"
 		reg=reg.replace("*","\\d+");
-		reg=new RegExp(reg);	
+		reg=new RegExp(reg);	 */
 		
 		$.ajax({
 	      url: '<s:url action="queryCardChangeHistory"/>',
-	      data: {"imsi" : reg }, //parameters go here in object literal form
+	      data: {
+	    	  "imsi" : $("#imsi").val() 
+	    	  }, //parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
@@ -33,14 +35,20 @@ var reportName="換卡歷史";
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
-	    	  historyList=list;
-	    	  dataList=historyList.slice(0);
+	    	  historyList=list['data'];
+	    	  if(historyList!=null)
+	    		  dataList=historyList.slice(0);
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
     	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
 	      beforeSend:function(){
-    		  $("#Qmsg").html("正在查尋，請稍待...");
-    			disableButton();
+	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    		$('#Error').html("");
+	    		dataList=[];
+	    		disableButton();
           },
           complete:function(){
         	  enableButton();
@@ -92,6 +100,9 @@ var reportName="換卡歷史";
 
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>

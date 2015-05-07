@@ -47,15 +47,21 @@
 	    	  //alert(json);
 
 	    	  var list=$.parseJSON(json);
-	    	  QosList=list;
-	    	  dataList=QosList.slice(0);
+	    	  QosList=list['data'];
+	    	  if(QosList!=null)
+	    		  dataList=QosList.slice(0);
+	    	  
+	    	  var error = list['error'];
+	    	  $('#Error').html(error);
 
     	  },
 	      error: function() { $("#Qmsg").html('something bad happened'); 
 	      },
   		  beforeSend:function(){
-  	  		$("#Qmsg").html("正在查尋，請稍待...");
-  			disableButton();
+  			$("#Qmsg").html("正在查尋，請稍待...");
+    		$('#Error').html("");
+    		dataList=[];
+    		disableButton();
           },
           complete:function(){
 	      	  enableButton();
@@ -99,6 +105,9 @@
 		</div>
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>
+		</div>
+		<div class="col-xs-12" align="left"> 
+			<div id="Error"></div>
 		</div>
 	</div>
 </div>
