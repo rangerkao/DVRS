@@ -20,105 +20,47 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.TimerTask;
 import java.util.regex.Pattern;
 
+import org.apache.tomcat.jni.Local;
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 
 public class hello {
 	private static String msg;
-	public static void main(String[] args) {
+	static IJatool tool =new Jatool();
+	public static void main(String[] args) throws UnknownHostException {
 		
-		System.out.println(hello.class.getClassLoader().getResource(""));
-		
-		System.out.println("---151131".startsWith("--"));
-		
-		System.out.println("Hello!");
-		
-		System.out.println("\t:\t1\t2\t3\t4\t5\t6\t7\t8\t9");
-		for(int i=1;i<=9;i++){
-			System.out.print(i+"\t:");
-			for(int j=1;j<=9;j++)
-				System.out.print("\t"+(i*j));
-			System.out.println();
-		}
-		
-		
-		String ip ="";
-    	
-    	try {
-			ip=InetAddress.getLocalHost().getHostAddress()+"";
-		} catch (UnknownHostException e) {
-			ip="unknow";
+
+		/*try {
+			setSMSPostParam(new String("ä¸­æ–‡æ¸¬è©¦".getBytes("BIG5"), "ISO-8859-1"), "886989235253");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-    	System.out.println(ip);
-		
-		System.out.println(new Date(new Date().getTime()+600000));
-		
-		String ipAddr="221.177.44.235";
-
-		if(ipAddr.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$")){
-			String [] ips = ipAddr.split("\\.");
-			long ipNumber =0L;
-			for(int i=0;i<ips.length;i++){
-				ipNumber+=Integer.parseInt(ips[i])*Math.pow(256, 3-i);
-			}
-			System.out.println("ipNumber="+ipNumber);
-			
-		}
-
-		String param="´ú¸Õ123.33215´ú¦¸°¼°¼°¼";
+		}*/
+	
+		//DBæ¸¬è©¦
+		String param="æ¸¬è©¦123.33215æ¸¬æ¬¡å´å´å´";
 		
 		//query();
 		//updateDB(999,param);
 		//updateDB(999,null);
+		Calendar calendar =Calendar.getInstance();
+		System.out.println(new SimpleDateFormat("yyyy MMM dd HH:mm:ss", Locale.US).format(calendar.getTime()));
 		
-		String msisdn="85288923545";
-		
-		System.out.println(msisdn.substring(3,msisdn.length()));
-		
-		System.out.println("1".endsWith("0"));
-		
-		Jatool tool =new Jatool();
-		
-		Date d =new Date(new Date().getTime()-1000*60*60*24);
-		System.out.println("day : "+d);
-		
-		
-		Calendar calendar = Calendar.getInstance();
-		//calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-120);
-		//calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
-		calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)-60);
-		
-		System.out.println(Calendar.getInstance().get(Calendar.MONTH)+1);
-		System.out.println("calendar "+calendar.getTime());
-		
-		System.out.println(Pattern.matches("^\\d+(.\\d+)?", "y5450.5345"));
-		
-		System.out.println("1235461p".matches("^\\d+$"));
-		
-		System.out.println(tool.FormatNumString(500000D, "NT#,##0.00"));
-		
-		System.out.println(tool.FormatDouble(0.0000D, "0.0000"));
 		
 		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
+		
 		
 		System.out.println("Double Max\t:\t"+Double.MAX_VALUE);
 		System.out.println("Long Max\t:\t"+Long.MAX_VALUE);
 		System.out.println("Integer Max\t:\t"+Integer.MAX_VALUE);
 		
-		/*for(int i =1000 ;i<2000;i++){
-			
-			String t=String.valueOf(i);
-			for(int j=4-t.length();j>0;j--){
-				t="0"+t;
-			}
-			System.out.println("88698909"+t);
-		}*/
-
 		
+		
+
 	}
 
 	
@@ -203,9 +145,7 @@ public class hello {
 	
 	static void query(){
 		Connection conn=getConnection();
-		
 		String sql = "select ch_name from MARKETING_DB_COUNTRY A ";
-
 		if(conn==null){
 			System.out.println("connection is null");
 			
@@ -217,7 +157,8 @@ public class hello {
 			try {
 
 				st=conn.createStatement();
-				rs=st.executeQuery(sql);
+				st.executeUpdate(sql);
+				/*rs=st.executeQuery(sql);
 				
 				while(rs.next()){
 					String rss=rs.getString("ch_name");
@@ -226,7 +167,7 @@ public class hello {
 						rss=new String(rss.getBytes("ISO8859-1"),"BIG5");
 						System.out.println(rss);
 					}
-				}
+				}*/
 				
 				Map<String,String> setcountry = new HashMap<String,String>();
 				
@@ -286,4 +227,35 @@ public class hello {
 	
 		}
 	}
+	
+	 private static String setSMSPostParam(String msg,String phone) throws IOException{
+			StringBuffer sb=new StringBuffer ();
+
+			String PhoneNumber=phone,Text=msg,charset="big5",InfoCharCounter=null,PID=null,DCS=null;
+			String param =
+					"PhoneNumber=+{{PhoneNumber}}&"
+					+ "Text={{Text}}&"
+					+ "charset={{charset}}&"
+					+ "InfoCharCounter={{InfoCharCounter}}&"
+					+ "PID={{PID}}&"
+					+ "DCS={{DCS}}&"
+					+ "Submit=Submit";
+			
+			if(PhoneNumber==null)PhoneNumber="";
+			if(Text==null)Text="";
+			if(charset==null)charset="";
+			if(InfoCharCounter==null)InfoCharCounter="";
+			if(PID==null)PID="";
+			if(DCS==null)DCS="";
+			param=param.replace("{{PhoneNumber}}",PhoneNumber );
+			param=param.replace("{{Text}}",Text );
+			param=param.replace("{{charset}}",charset );
+			param=param.replace("{{InfoCharCounter}}",InfoCharCounter );
+			param=param.replace("{{PID}}",PID );
+			param=param.replace("{{DCS}}",DCS );
+			
+			
+			
+			return tool.HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+		}
 }

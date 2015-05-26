@@ -1175,7 +1175,7 @@ public class DVRSmaintest implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
 			
-			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), url, 
+			conn=tool.connDB(props.getProperty("Oracle.DriverClass"), url, 
 					props.getProperty("Oracle.UserName"), 
 					props.getProperty("Oracle.PassWord")
 					);
@@ -1216,7 +1216,7 @@ public class DVRSmaintest implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
 			
-			conn2=tool.connDB(logger, props.getProperty("mBOSS.DriverClass"),url, 
+			conn2=tool.connDB(props.getProperty("mBOSS.DriverClass"),url, 
 					props.getProperty("mBOSS.UserName"), 
 					props.getProperty("mBOSS.PassWord"));
 			

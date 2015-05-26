@@ -54,6 +54,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1250,7 +1252,7 @@ public class DVRSmain implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
 			
-			conn=tool.connDB(logger, props.getProperty("Oracle.DriverClass"), url, 
+			conn=tool.connDB(props.getProperty("Oracle.DriverClass"), url, 
 					props.getProperty("Oracle.UserName"), 
 					props.getProperty("Oracle.PassWord")
 					);
@@ -1291,7 +1293,7 @@ public class DVRSmain implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
 			
-			conn2=tool.connDB(logger, props.getProperty("mBOSS.DriverClass"),url, 
+			conn2=tool.connDB(props.getProperty("mBOSS.DriverClass"),url, 
 					props.getProperty("mBOSS.UserName"), 
 					props.getProperty("mBOSS.PassWord"));
 			
@@ -2984,7 +2986,7 @@ public class DVRSmain implements Job{
 	 * @param content
 	 * @throws Exception 
 	 */
-	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
+/*	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
 
 		if(mailReceiver==null ||"".equals(mailReceiver)){
 			logger.error("Can't send email without receiver!");
@@ -2993,7 +2995,34 @@ public class DVRSmain implements Job{
 			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
 		}
 
-	}
+	}*/
+
+	//20150526 mod
+		//mail host server had ended
+		//change send from local machine, solaris not use mail conmand, is use mailx,and final location end by dot. 
+		private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver){
+			String ip ="";
+			try {
+				ip = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				e1.printStackTrace();
+			}
+			
+			mailContent=mailContent+" from location "+ip;			
+			
+			String [] cmd=new String[3];
+			cmd[0]="/bin/bash";
+			cmd[1]="-c";
+			cmd[2]= "/bin/echo \""+mailContent+"\" | /bin/mail -s \""+mailSubject+"\" "+mailReceiver ;
+
+			try{
+				Process p = Runtime.getRuntime().exec (cmd);
+				p.waitFor();
+				System.out.println("send mail cmd:"+cmd);
+			}catch (Exception e){
+				System.out.println("send mail fail:"+mailContent);
+			}
+		}
 
 	/**
 	 * 中斷數據後續追蹤

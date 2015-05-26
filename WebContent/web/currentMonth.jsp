@@ -4,11 +4,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<%-- <style type="text/css">
-.ui-datepicker-calendar {
+<style type="text/css">
+/* .ui-datepicker-calendar {
 display: none;
-}
-</style> --%>
+} */
+</style> 
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <title>Insert title here</title>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
@@ -25,22 +25,50 @@ $(document).ready(function(){
         buttonImage: "source/icon.png",
         buttonImageOnly: true,
         buttonText: "Select date",
-        dateFormat: 'yy-mm'
-        
+        dateFormat: 'yy-mm',        
     });
     var Today=new Date();
     var month=Today.getMonth()+1;
     
     if(month<10)
     	month="0"+month;
-    
+    setDateYear();
+    setDateMonth();
 });
+
+function setDateYear(){
+	var now = new Date();
+	var y = now.getFullYear();
+	var html="";
+	for(var i=y;i>=1990;i--){
+		html+='<option value="'+i+'" '+(i==y?'selected="selected"':'')+'>'+i+'</option>';
+	}
+	$("#date-year").append(html);
+	$("#date-year-to").append(html);
+}
+function setDateMonth(){
+	var now = new Date();
+	var m = now.getMonth();
+	var html="";
+	for(var i=12;i>=1;i--){
+		var j=i;
+		if(j<10)
+	    	j="0"+j;
+		
+		html+='<option value="'+j+'" '+(i==m+1?'selected="selected"':'')+'>'+j+'</option>';
+	}
+	$("#date-month").append(html);
+	$("#date-month-to").append(html);
+}
+
 	function queryCurrentMonth(imsi){			
 		$.ajax({
 	      url: '<s:url action="queryCurrentMonth"/>',
 	      data: {
-	    	  "from":$("#dateFrom").val(),
-				"to":$("#dateTo").val(),
+	    	  /* "from":$("#dateFrom").val(),
+				"to":$("#dateTo").val(), */
+				"from":$("#date-year").val()+"-"+$("#date-month").val(),
+				"to":$("#date-year-to").val()+"-"+$("#date-month-to").val(),
 	    		"imsi":imsi,
 	    		"suspend":$('input[name=suspend]:checked').val()
 	    	  //"imsi":$("#imsi").val() 	 
@@ -123,11 +151,16 @@ $(document).ready(function(){
 <div class="container-fluid max_height" style="vertical-align: middle;">
 	<div class="row max_height" align="center">
 		<h3>每月累計頁面</h3>
-		<div class="col-xs-4" align="right">查詢期間從</div>
+		<!-- <div class="col-xs-4" align="right">查詢期間從</div>
 		<div class="col-xs-8" align="left">
 			<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="everQuery=false">
 			到
 			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="everQuery=false">
+		</div> -->
+		<div class="col-xs-4" align="right">查詢期間從</div>
+		<div class="col-xs-8" align="left"> 
+			<select id="date-year"></select>&nbsp;&nbsp;年&nbsp;&nbsp;&nbsp;&nbsp;<select id="date-month"></select>&nbsp;&nbsp;月&nbsp;&nbsp;
+			&nbsp;&nbsp;到&nbsp;&nbsp;<select id="date-year-to"></select>&nbsp;&nbsp;年&nbsp;&nbsp;&nbsp;&nbsp;<select id="date-month-to"></select>&nbsp;&nbsp;月&nbsp;&nbsp;
 		</div>
 		<div class="col-xs-4" align="right"><label>IMSI:</label></div>
 		<div class="col-xs-2" align="left"><input type="text" id="imsi"></div>

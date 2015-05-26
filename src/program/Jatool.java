@@ -11,10 +11,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,15 +34,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -184,6 +189,40 @@ public class Jatool implements IJatool{
 										"Content : "+msg.getContent()+"\n<br>"+
 										"SendDate: "+msg.getSentDate());			
 	}
+	@Override
+	public void sendMailforLinux(String msg) throws Exception{
+		sendMailforLinux(msg,null);
+	}
+	@Override
+	public void sendMailforLinux(String msg,String receiver) throws Exception{
+		String ip ="";
+		try {
+			ip = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
+		
+		if(receiver==null ||"".equals(receiver)){
+			throw new Exception("No receiver and No UserName Set!");
+		}
+			
+		String Receiver =receiver;
+		
+		msg=msg+" from location "+ip;			
+		
+		String [] cmd=new String[3];
+		cmd[0]="/bin/bash";
+		cmd[1]="-c";
+		cmd[2]= "/bin/echo \""+msg+"\" | /bin/mailx -s \"SMPP System alert\" "+Receiver ;
+
+		try{
+			Process p = Runtime.getRuntime().exec (cmd);
+			p.waitFor();
+			System.out.println("send mail cmd:"+cmd);
+		}catch (Exception e){
+			System.out.println("send mail fail:"+msg);
+		}
+	}
 	
 	private Properties getProperties(){
 		Properties result=new Properties();
@@ -211,18 +250,29 @@ public class Jatool implements IJatool{
 
 	
 	@Override
-	public Connection connDB(Logger logger, String DriverClass, String URL,
+	public Connection connDB(String DriverClass, String URL,
 			String UserName, String PassWord) throws ClassNotFoundException, SQLException {
-		logControl(logger, "debug", "Start to connect DB ");
-
 		Connection conn = null;
 
 			Class.forName(DriverClass);
 			conn = DriverManager.getConnection(URL, UserName, PassWord);
-
-		logControl(logger, "debug", "Finished to connect DB ");
-
 		return conn;
+	}
+	
+	@Override
+	public Connection connDB(String DriverClass,
+			String DBType,String ip,String port,String DBNameorSID,String charset,
+			String UserName,String PassWord) throws ClassNotFoundException, SQLException{
+
+			Class.forName(DriverClass);
+			String url="jdbc:{{DBType}}:thin:@{{Host}}:{{Port}}:{{ServiceName}}{{charset}}"
+					.replace("{{DBType}}", DBType)
+					.replace("{{Host}}", ip)
+					.replace("{{Port}}", port)
+					.replace("{{ServiceName}}", DBNameorSID)
+					.replace("{{charset}}", (charset!=null?"?charset="+charset:""));
+			
+		return connDB(DriverClass, url, UserName, PassWord);
 	}
 
 	@Override
@@ -500,7 +550,7 @@ public class Jatool implements IJatool{
 		if(charSet!=null &&!"".equals(charSet))
 			URL+="?characterEncoding="+charSet;
 		
-		return null;
+		return URL;
 	}
 	
 	@Override
@@ -518,4 +568,111 @@ public class Jatool implements IJatool{
 		
 		return result;
 	}
+
+
+	@Override
+	public Calendar getCalendar(){
+		return Calendar.getInstance();
+	}
+	
+	
+	@Override
+	public Calendar getCalendar(Date date) {
+		Calendar calendar=Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar;
+	}
+
+
+	@Override
+	public Calendar getCalendar(String date, String formate) throws ParseException {
+		Calendar calendar=Calendar.getInstance();
+		calendar.setTime(new SimpleDateFormat(formate).parse(date));
+		return calendar;
+	}
+
+
+	@Override
+	public Calendar getCalendarByCalculate(Integer year, Integer month,
+			Integer day, Integer hour, Integer min, Integer sec) {
+		
+		Calendar calendar=Calendar.getInstance();
+		
+		if(year!=null)
+			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR)+year);
+		if(month!=null)
+			calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH)+month);
+		if(day!=null)
+			calendar.set(Calendar.DATE, calendar.get(Calendar.DATE)+day);
+		if(hour!=null)
+			calendar.set(Calendar.HOUR, calendar.get(Calendar.HOUR)+hour);
+		if(min!=null)
+			calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE)+min);
+		if(sec!=null)
+			calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND)+sec);
+		
+		return calendar;
+	}
+
+
+	@Override
+	public String convertCharset(String content, String sourceCharset,
+			String torgetCharset) throws UnsupportedEncodingException {
+		if(sourceCharset==null)
+			return new String(content.getBytes(),torgetCharset);
+		if(torgetCharset==null)
+			return new String(content.getBytes(sourceCharset));
+		return new String(content.getBytes(sourceCharset),torgetCharset);
+	}
+
+
+	@Override
+	public String getLocalIP() throws UnknownHostException {
+		return InetAddress.getLocalHost().getHostAddress()+"";
+	}
+
+
+	@Override
+	public String getProgramDir(Class<?> className) {
+		return className.getClassLoader().getResource("").toString();
+	}
+
+
+	@Override
+	public String [] splitIP(String ip) {
+		return ip.split("\\.");
+	}
+
+
+	@Override
+	public void regularExcute(long periodTime, TimerTask run) {
+		Timer timer =new Timer();
+		timer.schedule(run,0, periodTime);
+	}
+
+
+	@Override
+	public void regularExcute(long periodTime, long delay, TimerTask run) {
+		Timer timer =new Timer();
+		timer.schedule(run,delay, periodTime);
+	}
+
+
+	@Override
+	public void regularExcute(long periodTime, Date FirstExecuteTime,
+			TimerTask run) {
+		Timer timer =new Timer();
+		timer.schedule(run,FirstExecuteTime, periodTime);
+	}
+
+
+	@Override
+	public String getExceptionMsg(Exception e) {
+		StringWriter errors = new StringWriter(); 
+		e.printStackTrace(new PrintWriter(errors)); 
+		return errors.toString();
+	}
+	
+	
+	
 }

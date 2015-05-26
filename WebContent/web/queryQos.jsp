@@ -82,8 +82,8 @@
 	<div class="row max_height" align="center">
 		<form class="form-horizontal" >
 		<h4>Qos琩高</h4>
-			<div class="col-xs-5" align="right"><label for="IMSI">IMSI:</label></div>
-			<div class="col-xs-7" align="left"><input type="text" id="IMSI" /></div>
+			<!-- <div class="col-xs-5" align="right"><label for="IMSI">IMSI:</label></div>
+			<div class="col-xs-7" align="left"><input type="text" id="IMSI" /></div> -->
 			<div class="col-xs-5" align="right"><label for="msisdn">MSISDN:</label></div>
 			<div class="col-xs-7" align="left"><input type="text" id="msisdn" /></div>
 			<div class="col-xs-12" align="center">		
@@ -92,7 +92,7 @@
 					<input type="button" class="btn btn-primary btn-sm" onclick="clear()" value="睲埃">
 				</div>
 			</div>	
-			<div class="col-xs-12"><font size="2" color="red">(琩高IMSIㄏノ"*"琘跋琿腹絏秈︽家絢琩高)</font><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>	
+			<div class="col-xs-12"><!-- <font size="2" color="red">(琩高IMSIㄏノ"*"琘跋琿腹絏秈︽家絢琩高)</font> --><label id="Qmsg" style="height: 30px;">&nbsp;</label></div>	
 		</form>
 		<div class="col-xs-12"> 
 			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>

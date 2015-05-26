@@ -2,13 +2,17 @@ package program;
 
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimerTask;
 import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
@@ -19,6 +23,77 @@ import org.apache.log4j.Logger;
 
 public interface IJatool {
 
+	/**
+	 *        時間日期
+	 */
+	
+	/**
+	 * 取得參數時間當月的第一天
+	 * @param date
+	 * @return
+	 */
+	Date getMonthFirstDate(Date date);
+	
+	/**
+	 * 取得參數時間當月的最後一天
+	 * @param date
+	 * @return
+	 */
+	Date getMonthLastDate(Date date);
+	
+	/**
+	 * 取得參數時間當日的零點
+	 * @param date
+	 * @return
+	 */
+	Date getDayFirstDate(Date date);
+	
+	/**
+	 * 取得參數時間當月的23點59分
+	 * @param date
+	 * @return
+	 */
+	Date getDayLastDate(Date date);
+	
+	/**
+	 * 將util Date 轉換至sql Date
+	 * 時間HH:Mi:SS 會被裁掉
+	 * @param date
+	 * @return
+	 */
+	java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date);
+	
+	/**
+	 * 將sql Date 轉換至util Date
+	 * @param date
+	 * @return
+	 */
+	java.util.Date convertJaveSqlDate_To_JavaUtilDate(java.sql.Date date);
+	
+	/**
+	 * 將日期轉換成字串
+	 *  new SimpleDateFormat(form,locale.位置) 指定區域的格式
+	 * @param date
+	 * @param form
+	 * @return
+	 */
+	String DateFormat();
+	String DateFormat(Date date,String form);
+	
+	/**
+	 * 將字串轉換成日期
+	 *  new SimpleDateFormat(form,locale.位置) 指定區域的格式
+	 * @param dateString
+	 * @param form
+	 * @return
+	 * @throws ParseException 
+	 */
+	Date DateFormat(String dateString,String form) throws ParseException;
+	
+	/**
+	 *            
+	 */
+	
 	/**
 	 *	發送郵件
 	 * 
@@ -66,8 +141,10 @@ public interface IJatool {
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
 	 */
-	Connection connDB(Logger logger,String DriverClass,String URL,String UserName,String PassWord) throws ClassNotFoundException, SQLException;
-	
+	Connection connDB(String DriverClass,String URL,String UserName,String PassWord) throws ClassNotFoundException, SQLException;
+	Connection connDB(String DriverClass,
+			String DBType,String ip,String port,String DBName,String charset,
+			String UserName,String PassWord) throws ClassNotFoundException, SQLException;
 	
 	/**
 	 * 
@@ -96,66 +173,7 @@ public interface IJatool {
 	 */
 	String callWSDLServer(String param) throws AxisFault, RemoteException;
 	
-	/**
-	 * 取得參數時間當月的第一天
-	 * @param date
-	 * @return
-	 */
-	Date getMonthFirstDate(Date date);
 	
-	/**
-	 * 取得參數時間當月的最後一天
-	 * @param date
-	 * @return
-	 */
-	Date getMonthLastDate(Date date);
-	
-	/**
-	 * 取得參數時間當日的零點
-	 * @param date
-	 * @return
-	 */
-	Date getDayFirstDate(Date date);
-	
-	/**
-	 * 取得參數時間當月的23點59分
-	 * @param date
-	 * @return
-	 */
-	Date getDayLastDate(Date date);
-	
-	/**
-	 * 將util Date 轉換至sql Date
-	 * 時間HH:Mi:SS 會被裁掉
-	 * @param date
-	 * @return
-	 */
-	java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date);
-	
-	/**
-	 * 將sql Date 轉換至util Date
-	 * @param date
-	 * @return
-	 */
-	java.util.Date convertJaveSqlDate_To_JavaUtilDate(java.sql.Date date);
-	
-	/**
-	 * 將日期轉換成字串
-	 * @param date
-	 * @param form
-	 * @return
-	 */
-	String DateFormat();
-	String DateFormat(Date date,String form);
-	
-	/**
-	 * 將字串轉換成日期
-	 * @param dateString
-	 * @param form
-	 * @return
-	 * @throws ParseException 
-	 */
-	Date DateFormat(String dateString,String form) throws ParseException;
 	
 	/**
 	 * 以Http Post 方式傳送參數
@@ -255,4 +273,65 @@ public interface IJatool {
 	 */
 	Double roundUpOrDdown(Double value,String method,int digit);
 	
+	/**
+	 * 傳回目前時間
+	 * @return
+	 */
+	Calendar getCalendar();
+	/**
+	 * 以Date 或是 字傳傳回指定時間
+	 * @param date
+	 * @return
+	 */
+	Calendar getCalendar(Date date);
+	Calendar getCalendar(String date,String formate) throws ParseException;
+	/**
+	 * 以參數相對值設定時間
+	 * @param year
+	 * @param month
+	 * @param day
+	 * @param hour
+	 * @param min
+	 * @param sec
+	 * @return
+	 */
+	Calendar getCalendarByCalculate(Integer year,Integer month,Integer day,Integer hour,Integer min,Integer sec);
+	
+	String convertCharset(String content,String sourceCharset,String torgetCharset) throws UnsupportedEncodingException;
+	
+	String getLocalIP() throws UnknownHostException;
+	
+	String getProgramDir(Class<?> className);
+	
+	/**
+	 * 
+	 * @param ip
+	 * @return 將字串拆解成array
+	 */
+	String [] splitIP(String ip);
+	
+	/**
+	 * 引入的Class 必須 extends  TimerTask
+	 * implement run function
+	 * @param periodTime
+	 * @param run
+	 */
+	void regularExcute(long periodTime,TimerTask run);
+	void regularExcute(long periodTime,long delay,TimerTask run);
+	void regularExcute(long periodTime,Date FirstExecuteTime,TimerTask run);
+	
+	String getExceptionMsg(Exception e);
+	
+	/**
+	 * 利用linux內部的郵件功能發送
+	 * 
+	 * linux 使用mail 指令
+	 * 
+	 * solarix 使用 mailx 指令，最後必須.結尾
+	 * 
+	 * @param msg
+	 * @throws Exception 
+	 */
+	void sendMailforLinux(String msg) throws Exception;
+	void sendMailforLinux(String msg,String receiver) throws Exception;
 }

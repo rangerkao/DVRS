@@ -187,6 +187,10 @@ public class CurrentDao extends BaseDao {
 			}
 			if(!"".equals(sServiceID))
 				sServiceID="("+sServiceID.substring(1)+")";
+			else
+				sServiceID="('')";
+			
+			
 		}
 		
 
@@ -320,6 +324,8 @@ public class CurrentDao extends BaseDao {
 			}	
 			if(!"".equals(sServiceid))
 				sServiceid="("+sServiceid.substring(1)+")";
+			else
+				sServiceid="('')";
 		}
 
 		sql=
