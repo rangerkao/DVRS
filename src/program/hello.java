@@ -34,7 +34,62 @@ public class hello {
 	public static void main(String[] args) throws UnknownHostException {
 		
 
-		/*try {
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd HHmmss");
+		
+		try {
+			Date sdate = sdf.parse("20150501");
+			Date edate = sdf.parse("20150531");
+			Date time = sdf2.parse("20150501 120012");
+			
+			System.out.println(
+					"sdate:"+sdate+"\n"
+					+ "edate:"+edate+"\n"
+					+ "time:"+time+"\n"
+					+ "after sdate:"+time.after(sdate)+"\n"
+					+ "before edate:"+time.before(edate));
+			
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		//簡訊測試   分段
+		String msg = "*環球卡高用量提醒*提醒您本月數據用量上網金額統計至前一小時加部份推估，已約達NT65,000.00，"
+				+ "實際用量及使用金額以帳單為準。另您已約定上網金額不設限，感謝您的留意。如需諮詢請電客服*123#。";
+		
+	
+		int number = 100;
+		int length = msg.length();
+		/*byte[] b = msg.getBytes();
+		length = b.length;*/
+		int msgN = length/number;
+		if(length%number>0)
+			msgN += 1;
+		String [] sub =new String[msgN];
+		
+		for(int i=0;i<msgN;i++){
+			int last = (i+1)*number;
+			if(last>length)
+				last=length;
+			
+			/*byte[] c=new byte[last-i*number];
+			
+			System.arraycopy(b, i*number , c, 0, last-i*number);
+
+				sub[i]=new String(c);*/
+	
+			sub[i]=msg.substring(i*number,last);
+		}
+		for(String s: sub){
+			System.out.println(s);
+		}
+		/*
+		try {
 			setSMSPostParam(new String("中文測試".getBytes("BIG5"), "ISO-8859-1"), "886989235253");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

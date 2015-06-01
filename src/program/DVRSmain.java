@@ -54,8 +54,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -1484,7 +1482,6 @@ public class DVRSmain implements Job{
 		Statement st = null;
 		ResultSet rs = null;
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 		int count=0;
 		double defaultRate=0;
 		try {
@@ -1631,11 +1628,7 @@ public class DVRSmain implements Job{
 							charge=Math.ceil(volume*kByte)*defaultRate;
 						}
 					}
-		
-					//XXX
-					/*if("454120260226967".equals(imsi))
-						System.out.println("check point");
-					*/
+
 					
 					//格式化至小數點後四位
 					charge=tool.FormatDouble(charge, "0.0000");
@@ -1785,19 +1778,19 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			logger.error("At charge occur SQLException error", e);
 			//send mail
-			sendErrorMail("At charge occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
+			sendErrorMail("At charge occur SQLException error!");
 		} catch (ParseException e) {
 			logger.error("At charge occur SQLException error", e);
 			//send mail
-			sendErrorMail("At charge occur SQLException error!");
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
+			sendErrorMail("At charge occur SQLException error!");
 		}finally{
 			try {
 				if(st!=null)
@@ -2189,7 +2182,10 @@ public class DVRSmain implements Job{
 		Statement st = null;
 		ResultSet rs = null;
 		//載入簡訊設定
-		
+		//times 設定編號，無作用
+		//bracket 警示額度，以0~1的比率
+		//msg 要發送的id，如果多個id以","號分開
+		//suspend 1表示需要中斷，0表示沒有
 		try {
 			sql="SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID DESC";	
 			
@@ -2362,6 +2358,7 @@ public class DVRSmain implements Job{
 						if(temp>lastAlernThreshold){
 							alertBracket=(double) temp;
 							sendSMS=true;
+							//如果為VIP客戶預設發3號簡訊
 							contentid=new String[]{"3"};
 						}
 					}
@@ -2385,11 +2382,48 @@ public class DVRSmain implements Job{
 								lastAlernThreshold=alertBracket;
 								smsTimes++;
 								logger.info("For "+serviceid+" send "+smsTimes+"th message:"+msg.get(i));
-								String cont =processMag(content.get(s).get("CONTENT"),alertBracket,cPhone);
+								
+								String cont = content.get(s).get("CONTENT");
+								
+								cont = new String(cont.getBytes("ISO8859-1"),"big5");
+								
+								cont =processMag(cont,alertBracket,cPhone);
+								
 								//WSDL方式呼叫 WebServer
 								//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
-
-								res=setSMSPostParam(cont,phone);
+								
+								//如果判斷客戶在印尼，則分段簡訊進行發送
+								if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
+									int number = 68;
+									
+									int length = cont.length();
+									/*byte[] b =cont.getBytes();
+									length = b.length;*/
+									int msgN = length/number;
+									if(length%number>0)
+										msgN += 1;
+									String [] sub =new String[msgN];
+									
+									for(int j=0;j<msgN;j++){
+										int last = (j+1)*number;
+										if(last>length)
+											last=length;
+											
+										/*byte [] c = new byte[number];
+										System.arraycopy(b, j*number , c, 0, last-j*number);
+										sub[j]=new String(c);*/
+										sub[j]=cont.substring(j*number,last);
+									}
+									String sRes="";
+									for(String sCont : sub){
+										sRes += setSMSPostParam(new String(sCont.getBytes("big5"),"ISO8859-1"),phone);
+										Thread.sleep(3000);
+									}
+									res = sRes.substring(0,sRes.length()-1);
+								}else{
+									res=setSMSPostParam(new String(cont.getBytes("big5"),"ISO8859-1"),phone);
+								}
+	
 								currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", lastAlernThreshold);
 								logger.debug("send message result : "+res);						
 								currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", smsTimes);
@@ -2397,32 +2431,30 @@ public class DVRSmain implements Job{
 								
 								sql="INSERT INTO HUR_SMS_LOG"
 										+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-										+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+										+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
 								//寫入資料庫
 								logger.debug("execute SQL : "+sql);
 								st.addBatch(sql);
-								
-								
-								//中斷GPRS服務
-								//20141113 新增客制定上限不執行斷網
-
-								if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
-									String imsi = msisdnMap.get(serviceid).get("IMSI");
-									if(imsi==null || "".equals(imsi))
-										imsi = ServiceIdtoIMSIMap.get(serviceid);
-									
-									if(imsi==null || "".equals(imsi)){
-										logger.debug("Suspend GPRS fail because without mimsi for serviceid is "+serviceid);
-										continue;
-									}
-									logger.debug("Suspend GPRS ... ");		
-									suspend(imsi,phone);
-									currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
-								}
-
-							}
-							
+							}				
 						}
+					}
+					
+					//中斷GPRS服務
+					//20141113 新增客制定上限不執行斷網
+					//20150529 將中斷的部分從發送簡訊中獨立出來
+
+					if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
+						String imsi = msisdnMap.get(serviceid).get("IMSI");
+						if(imsi==null || "".equals(imsi))
+							imsi = ServiceIdtoIMSIMap.get(serviceid);
+						
+						if(imsi==null || "".equals(imsi)){
+							logger.debug("Suspend GPRS fail because without mimsi for serviceid is "+serviceid);
+							continue;
+						}
+						logger.debug("Suspend GPRS ... ");		
+						suspend(imsi,phone);
+						currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
 					}
 				}
 				logger.debug("Total send month alert"+smsCount+" ...");
@@ -2485,7 +2517,7 @@ public class DVRSmain implements Job{
 
 					Double daycharge=0D;
 					String alerted ="0";
-					
+					String res="";
 					//累計
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
@@ -2506,10 +2538,34 @@ public class DVRSmain implements Job{
 						
 						//處理字串，日警示內容ID設定為99
 						//20141209 修改為帶出當月累積金額
-						String cont =processMag(content.get("99").get("CONTENT"),(Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"),cPhone);
+						String cont = content.get("99").get("CONTENT");
+						cont =new String(cont.getBytes("ISO8859-1"),"big5");
+						cont =processMag(cont,(Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"),cPhone);
 						//發送簡訊
 						logger.info("For "+serviceid+" send daily allert message:99");
-						String res = setSMSPostParam(cont,phone);
+						//如果判斷客戶在印尼，則分段簡訊進行發送
+						if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
+							int number = 68;
+							int length = cont.length();
+							int msgN = length/number;
+							if(length%number>0)
+								msgN += 1;
+							String [] sub =new String[msgN];
+							
+							for(int j=0;j<msgN;j++){
+								int last = (j+1)*number;
+								if(last>length)
+									last=length;
+								sub[j]=cont.substring(j*number,last);
+							}
+							String sRes="";
+							for(String sCont : sub){
+								sRes += setSMSPostParam(new String(sCont.getBytes("big5"),"ISO8859-1"),phone);
+							}
+							res = sRes.substring(0,sRes.length()-1);
+						}else{
+							res=setSMSPostParam(new String(cont.getBytes("big5"),"ISO8859-1"),phone);
+						}
 						logger.debug("send message result : "+res);	
 						smsCount++;
 						//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
@@ -2518,7 +2574,7 @@ public class DVRSmain implements Job{
 						}
 						sql="INSERT INTO HUR_SMS_LOG"
 								+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-								+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+								+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
 						//寫入資料庫
 						st.addBatch(sql);
 						logger.debug("execute SQL : "+sql);
@@ -2986,7 +3042,7 @@ public class DVRSmain implements Job{
 	 * @param content
 	 * @throws Exception 
 	 */
-/*	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
+	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
 
 		if(mailReceiver==null ||"".equals(mailReceiver)){
 			logger.error("Can't send email without receiver!");
@@ -2995,34 +3051,7 @@ public class DVRSmain implements Job{
 			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
 		}
 
-	}*/
-
-	//20150526 mod
-		//mail host server had ended
-		//change send from local machine, solaris not use mail conmand, is use mailx,and final location end by dot. 
-		private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver){
-			String ip ="";
-			try {
-				ip = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-				e1.printStackTrace();
-			}
-			
-			mailContent=mailContent+" from location "+ip;			
-			
-			String [] cmd=new String[3];
-			cmd[0]="/bin/bash";
-			cmd[1]="-c";
-			cmd[2]= "/bin/echo \""+mailContent+"\" | /bin/mail -s \""+mailSubject+"\" "+mailReceiver ;
-
-			try{
-				Process p = Runtime.getRuntime().exec (cmd);
-				p.waitFor();
-				System.out.println("send mail cmd:"+cmd);
-			}catch (Exception e){
-				System.out.println("send mail fail:"+mailContent);
-			}
-		}
+	}
 
 	/**
 	 * 中斷數據後續追蹤
