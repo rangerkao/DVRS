@@ -39,6 +39,8 @@ public class LinkAction extends BaseAction{
 	private String cardChangeHistory="cardChangeHistory";
 	private String numberChangeHistory="numberChangeHistory";
 	private String queryQos="queryQos";
+	private String smsContentSetting="smsContentSetting";
+	private String smsThresholdSetting="smsThresholdSetting";
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
@@ -51,6 +53,8 @@ public class LinkAction extends BaseAction{
 	public String smsQuery(){return SmsQuery;}  
 	public String actionQuery(){return ActionQuery;}  	
 	public String smsSetting(){return SmsSetting;}  	
+	public String smsContentSetting(){return smsContentSetting;} 
+	public String smsThresholdSetting(){return smsThresholdSetting;} 
 	public String program(){return Progrma;}  
 	public String cdr(){return CDR;} 
 	public String limitSetting(){return LimitSetting;} 

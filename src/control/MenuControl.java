@@ -28,7 +28,9 @@ public class MenuControl extends BaseControl {
 		
 		//層級二
 		List<Link> l2=new ArrayList<Link>();
-		l2.add(new Link("settingList","smsSettingLink","簡訊設定"));
+		//l2.add(new Link("settingList","smsSettingLink","簡訊設定"));
+		l2.add(new Link("settingList","smsContentSettingLink","簡訊內容設定"));
+		l2.add(new Link("settingList","smsThresholdSettingLink","簡訊警示設定"));
 		l2.add(new Link("settingList","limitSettingLink","警示上限設定"));
 
 		//層級三

@@ -11,9 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
-import program.DVRSmain;
+import cache.CacheAction;
 import bean.GPRSThreshold;
 import bean.SMSLog;
 import bean.SMSSetting;
@@ -23,47 +21,11 @@ public class SMSDao extends BaseDao{
 	
 	public SMSDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
-		logger = Logger.getLogger(SMSDao.class);
 	}
 	
 	Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
 	Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
-	private void setServiceIDtoIMSI() throws SQLException{
-		sql =
-				"SELECT B.IMSI,A.SERVICEID "
-				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
-				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
-				+ "AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748 "
-				+ "UNION "
-				+ "SELECT A.NEWVALUE IMSI, C.SERVICEID "
-				+ "FROM SERVICEINFOCHANGEORDER A, SERVICEORDER B, SERVICE C ,"
-				+ "		("
-				+ "			SELECT max(A.COMPLETEDATE) COMPLETEDATE, A.NEWVALUE,count(1) "
-				+ "			FROM SERVICEINFOCHANGEORDER A "
-				+ "			WHERE A.FIELDID=3713  AND A.COMPLETEDATE IS NOT NULL "
-				+ "	        AND A.OLDVALUE <> A.NEWVALUE "
-				+ "			GROUP BY A.NEWVALUE ) D "
-				+ "WHERE A.FIELDID=3713 AND A.ORDERID=B.ORDERID "
-				+ "AND B.SERVICEID=C.SERVICEID "
-				+ "AND A.OLDVALUE <> A.NEWVALUE "
-				+ "AND D.COMPLETEDATE=A.COMPLETEDATE "
-				+ "AND A.NEWVALUE=D.NEWVALUE "
-				+ "AND A.NEWVALUE IN ( SELECT A.IMSI FROM IMSI A WHERE A.SERVICEID IS NULL)";
-		
-		Statement st = conn.createStatement();
-		
-		ResultSet rs=st.executeQuery(sql);
-		
-		while(rs.next()){
-			serviceIDtoIMSI.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
-			imsitoServiceID.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
-		}
-		rs.close();
-		st.close();
-	}
-
 	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
 		
 		List<SMSLog> list =new ArrayList<SMSLog>();
@@ -77,7 +39,6 @@ public class SMSDao extends BaseDao{
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			Statement st = conn.createStatement();
-			logger.debug("Execute sql: "+sql);
 			ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSLog log = new SMSLog();
@@ -103,7 +64,6 @@ public class SMSDao extends BaseDao{
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			Statement st = conn.createStatement();
-			logger.debug("Execute sql: "+sql);
 			ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSLog log = new SMSLog();
@@ -118,15 +78,14 @@ public class SMSDao extends BaseDao{
 			}
 			rs.close();
 			st.close();
-			closeConnect();
+			
 		return list;
 	}
 	
 	public List<SMSSetting> querySMSSetting() throws SQLException{
-		logger.info("querySMSSetting...");
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND "
+				"SELECT A.ID,A.BRACKET*100 BRACKET,A.MEGID,A.SUSPEND "
 						+ "FROM HUR_SMS_SETTING A "
 						+ "ORDER BY A.ID ";
 				/*"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
@@ -134,7 +93,6 @@ public class SMSDao extends BaseDao{
 				+ "ORDER BY A.ID ";*/
 		
 			Statement st = conn.createStatement();
-			logger.debug("Execute sql: "+sql);
 			ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSSetting log = new SMSSetting();
@@ -153,12 +111,11 @@ public class SMSDao extends BaseDao{
 			}
 			rs.close();
 			st.close();
-			closeConnect();
+			
 		return list;
 	}
 	
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
-		logger.info("updateSMSSetting...");
 			//移除所有資料
 			sql=
 					"TRUNCATE  TABLE  HUR_SMS_SETTING";
@@ -175,7 +132,7 @@ public class SMSDao extends BaseDao{
 			PreparedStatement pst = conn.prepareStatement(sql);
 			for(SMSSetting s : list){
 				pst.setString(1, s.getId());
-				pst.setDouble(2, s.getBracket());
+				pst.setDouble(2, s.getBracket()/100);
 				pst.setString(3, s.getMsg());
 				if(s.getSuspend())
 					pst.setString(4, "1");
@@ -185,16 +142,20 @@ public class SMSDao extends BaseDao{
 				//pst.setString(5, s.getPricePlanId());
 				pst.addBatch();
 			}
-			logger.debug("Execute sql: "+sql);
 			pst.executeBatch();
 			pst.close();			
-			closeConnect();
+			
 		return list;
 	}
 	
 	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
-		logger.info("queryAlertLimit...");
-		setServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		if(imsitoServiceID.size()==0){
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		}
 		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
 		sql=
 				"SELECT A.SERVICEID,A.THRESHOLD,"
@@ -209,7 +170,6 @@ public class SMSDao extends BaseDao{
 				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND B.SERVICEID = C.SERVICEID (+)";
 		
 		Statement st = conn.createStatement();
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs = st.executeQuery(sql);
 		while(rs.next()){
 			String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
@@ -226,16 +186,20 @@ public class SMSDao extends BaseDao{
 		
 		st.close();
 		rs.close();
-		closeConnect();
+		
 		return list;
 	}
 	
 	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
-
-		setServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		if(imsitoServiceID.size()==0){
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		}
+		
 		String serviceid = imsitoServiceID.get(imsi);
-		logger.info("insertAlertLimit...");
-
 		sql=
 				"INSERT INTO HUR_GPRS_THRESHOLD (SERVICEID,THRESHOLD,CREATE_DATE) "
 				+ "VALUES(?,?,sysdate)";
@@ -244,19 +208,21 @@ public class SMSDao extends BaseDao{
 		
 		pst.setString(1, serviceid);
 		pst.setDouble(2, limit);
-		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
 		pst.close();
-		closeConnect();
+		
 		return result;
 	}
 	
 	public int updateAlertLimit(String imsi,Double limit) throws SQLException{
-
-		setServiceIDtoIMSI();
-		String serviceid = imsitoServiceID.get(imsi);
-		logger.info("updateAlertLimit...");
-		
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		if(imsitoServiceID.size()==0){
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		}
+		String serviceid = imsitoServiceID.get(imsi);		
 		sql=
 				"UPDATE HUR_GPRS_THRESHOLD A "
 				+ "SET A.THRESHOLD = ? "
@@ -265,18 +231,21 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		pst.setDouble(1, limit);
 		pst.setString(2, serviceid);
-		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
 		pst.close();
-		closeConnect();
+		
 		return result;
 	}
 	
 	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
-		setServiceIDtoIMSI();
-		String serviceid = imsitoServiceID.get(imsi);
-		logger.info("deleteAlertLimit...");
-		
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		if(imsitoServiceID.size()==0){
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		}
+		String serviceid = imsitoServiceID.get(imsi);		
 		sql=
 				"DELETE HUR_GPRS_THRESHOLD A "
 				+ "WHERE A.SERVICEID=? ";
@@ -284,15 +253,13 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, serviceid);
-		logger.debug("Execute sql: "+sql);
 		int result=pst.executeUpdate();
 		pst.close();
-		closeConnect();
+		
 		return result;
 	}
 	
 	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
-		logger.info("queryIMSI...");
 		Map<String,String> map =new HashMap<String,String>();
 		String imsi = null;
 		String pricaplainid = null;
@@ -305,7 +272,6 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, msisdn);
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
 		while(rs.next()){
 			imsi=rs.getString("IMSI");
@@ -315,12 +281,11 @@ public class SMSDao extends BaseDao{
 		pst.close();
 		map.put("imsi", imsi);
 		map.put("pricaplainid", pricaplainid);
-		closeConnect();
+		
 		return map;
 	}
 	
 	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
-		logger.info("queryTWNMSISDN...");
 		Map<String,String> map =new HashMap<String,String>();
 		String TWNmsisdn = null;
 		
@@ -334,7 +299,6 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, msisdn);
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
 		while(rs.next()){
 			TWNmsisdn=rs.getString("SERVICECODE");
@@ -354,7 +318,6 @@ public class SMSDao extends BaseDao{
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
-			logger.debug("Execute sql: "+sql);
 			ResultSet rs2 = pst2.executeQuery();
 			while(rs2.next()){
 				TWNmsisdn=rs2.getString("SERVICECODE");
@@ -378,7 +341,6 @@ public class SMSDao extends BaseDao{
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
-			logger.debug("Execute sql: "+sql);
 			ResultSet rs2 = pst2.executeQuery();
 			while(rs2.next()){
 				TWNmsisdn=rs2.getString("SERVICECODE");
@@ -388,12 +350,11 @@ public class SMSDao extends BaseDao{
 			if(rs2!=null) rs2.close();
 		}		
 		map.put("msisdn", TWNmsisdn);
-		closeConnect();
+		
 		return map;
 	}
 	
 	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
-		logger.info("queryIMSI...");
 		Map<String,String> map =new HashMap<String,String>();
 		String msisdn = null;
 		String pricaplainid = null;
@@ -406,7 +367,6 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, imsi);
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
 		while(rs.next()){
 			msisdn=rs.getString("SERVICECODE");
@@ -416,7 +376,7 @@ public class SMSDao extends BaseDao{
 		pst.close();
 		map.put("msisdn", msisdn);
 		map.put("pricaplainid", pricaplainid);
-		closeConnect();
+		
 		return map;
 	}
 	
@@ -429,7 +389,6 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, smsId);
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs = pst.executeQuery();
 		
 		while(rs.next()){
@@ -461,7 +420,6 @@ public class SMSDao extends BaseDao{
 		String VLN=null;
 		
 		sql="SELECT VLR_NUMBER FROM UTCN.BASICPROFILE WHERE IMSI='"+imsi+"'";
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs=conn2.createStatement().executeQuery(sql);
 		
 		while(rs.next()){
@@ -477,7 +435,6 @@ public class SMSDao extends BaseDao{
 		
 		sql=" SELECT B.REALMNAME TADIG, A.CHARGEAREACODE VLR FROM CHARGEAREACONFIG A, REALM B "
 				+ "WHERE A.AREAREFERENCE=B.AREAREFERENCE ";
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs=conn2.createStatement().executeQuery(sql);
 		
 		while(rs.next()){
@@ -490,7 +447,6 @@ public class SMSDao extends BaseDao{
 		String mccmnc=null;
 				
 		sql=" SELECT MCCMNC FROM HUR_MCCMNC WHERE TADIG='"+tadig+"'";
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs=conn.createStatement().executeQuery(sql);
 
 		while(rs.next()){
@@ -506,7 +462,6 @@ public class SMSDao extends BaseDao{
 		String cPhone=null;
 		String subcode=mccmnc.substring(0,3);
 		sql=" SELECT PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
-		logger.debug("Execute sql: "+sql);
 		ResultSet rs=conn.createStatement().executeQuery(sql);
 		
 		while(rs.next()){
@@ -515,26 +470,9 @@ public class SMSDao extends BaseDao{
 		rs.close();
 		return cPhone;		
 	}
-	public void closeConnect() {
-		if(conn!=null){
-			try {
-				super.conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		if(conn2!=null){
-			try {
-				super.conn2.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+
 	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
 		List<SMSContent> result = new ArrayList<SMSContent>();
-		logger.info("querySMSContent...");
-
 		sql=
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
@@ -552,15 +490,11 @@ public class SMSDao extends BaseDao{
 			}
 			
 			rs.close();
-			closeConnect();
-
 		return result;
 	}
 	
 	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
 		List<SMSContent> result = new ArrayList<SMSContent>();
-		logger.info("querySMSContent...");
-
 		sql=
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
@@ -579,16 +513,13 @@ public class SMSDao extends BaseDao{
 			}
 			
 			rs.close();
-			closeConnect();
+			
 
 		return result;
 	}
 	
 	public int insertSMSContent(SMSContent sc) throws Exception{
 		int result=0;
-		
-		logger.info("insertSMSContent...");
-
 		sql=
 				"INSERT INTO HUR_SMS_CONTENT (ID,CONTENT,CHARSET,DESCRIPTION) "
 				+ "VALUES(?,?,?,?)";
@@ -604,15 +535,12 @@ public class SMSDao extends BaseDao{
 			
 			pst.close();
 			
-			closeConnect();
+			
 		
 		return result;
 	}
 	public int updateSMSContent(SMSContent sc) throws Exception{
 		int result=0;
-		
-		logger.info("insertSMSContent...");
-
 		sql=
 				"UPDATE  HUR_SMS_CONTENT A "
 				+ "SET A.CONTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
@@ -629,15 +557,12 @@ public class SMSDao extends BaseDao{
 			
 			pst.close();
 			
-			closeConnect();
+			
 			
 		return result;
 	}
 	public int deleteSMSContent(SMSContent sc) throws Exception{
 		int result=0;
-		
-		logger.info("insertSMSContent...");
-
 		sql=
 				"DELETE HUR_SMS_CONTENT A "
 				+ "WHERE A.ID=?";
@@ -650,7 +575,7 @@ public class SMSDao extends BaseDao{
 			
 			pst.close();
 			
-			closeConnect();
+			
 		return result;
 	}
 	

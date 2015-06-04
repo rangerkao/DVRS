@@ -46,10 +46,7 @@ public class DataRateDao extends BaseDao {
 					list.add(datarate);
 				}
 				st.close();
-				rs.close();
-			
-			closeConnect();
-			
+				rs.close();			
 			return list;
 			
 		}

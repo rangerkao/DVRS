@@ -41,7 +41,7 @@ function pagination(){
 
 			$("#page"+totalPage).append("<tr align='center'></tr>");
 			$.each(tHead,function(i,head){
-				if(head.name=="button")
+				if(head.name=="button" || head.name=="checkbox")
 					$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'></td>");
 				else
 					$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'>"+head.name+"</td>");
@@ -51,6 +51,8 @@ function pagination(){
 		$.each(tHead,function(i,head){
 			if(head.name=="button")
 				$("#page"+totalPage+" tr").last().append(head.col);
+			else if(head.name=="checkbox")
+				$("#page"+totalPage+" tr").last().append("<td><input type='checkbox' "+(data[head.col]? "checked='checked'":"")+"disabled='disabled'></td>");
 			else
 				$("#page"+totalPage+" tr").last().append("<td>"+data[head.col]+"</td>");
 		});

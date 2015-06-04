@@ -304,7 +304,7 @@ function queryVIP(){
 		    </div>
 		    <div class="col-xs-12">
 		    	<div class="btn-group" class="col-xs-12">
-			    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="BClear">
+			    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="bClear">
 					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
 					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
 					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">

@@ -121,13 +121,13 @@ public class Jatool implements IJatool{
 		boolean sessionDebug = false; 
 		boolean singleBody=true;
 		
-		if(sender==null || "".equals(sender)){
+		/*if(sender==null || "".equals(sender)){
 			if(username==null){
 				logControl(logger,"error","No sender and No UserName Set!");
 				throw new Exception("No sender and No UserName Set!");
 			}
 			sender=username;			
-		}/*else{
+		}else{
 			if(username!=null && !"".equals(username) &&!sender.equalsIgnoreCase(username)){
 				logControl(logger,"error","sender is not equals to UserName !");
 				return;
@@ -159,7 +159,12 @@ public class Jatool implements IJatool{
 		mailSession.setDebug(sessionDebug); 
 		
 			Message msg = new MimeMessage(mailSession); 
-			msg.setFrom(new InternetAddress(sender));			// mail sender 
+			
+			try {
+				msg.setFrom(new InternetAddress(sender));			// mail sender 
+			} catch (Exception e) {
+				msg.setFrom();
+			}
 			
 			address = InternetAddress.parse(receiver, false); // mail recievers 
 			msg.setRecipients(Message.RecipientType.TO, address); 
@@ -242,8 +247,8 @@ public class Jatool implements IJatool{
 		
 		
 		//¦Û­q°Ñ¼Æ
-		result.setProperty("mail.username", "");
-		result.setProperty("mail.password", "");
+		result.setProperty("mail.username", "ranger.kao@sim2Travel.com");
+		result.setProperty("mail.password", "kkk770204");
 		
 		return result;
 	}

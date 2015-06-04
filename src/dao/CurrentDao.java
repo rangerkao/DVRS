@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import catche.CatchAction;
+import cache.CacheAction;
 import bean.CurrentDay;
 import bean.CurrentMonth;
 
@@ -30,93 +30,15 @@ public class CurrentDao extends BaseDao {
 	Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
 	Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
-	private void setIMSItoServiceID() throws SQLException{			
-		System.out.println("setIMSItoServiceID...");
-				sql = " SELECT A.SERVICEID,A.IMSI          "
-						+ "FROM("
-						+ "		SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
-						+ "		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
-						+ "		WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
-						+ "		UNION"
-						+ "		SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
-						+ "		FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
-						+ "		WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A,"
-						+ "     	(SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE"
-						+ "     	  from(SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
-						+ "     	            FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
-						+ "     	            WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
-						+ "     	            UNION"
-						+ "     	            SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
-						+ "     	            FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
-						+ "     	            WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713)"
-						+ "     	  GROUP BY IMSI )B "
-						+ " WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ";
-		
-		Statement st = conn2.createStatement();
-		
-		ResultSet rs=st.executeQuery(sql);
-		
-		while(rs.next()){
-			imsitoServiceID.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
-		}
-		rs.close();
-		st.close();
-	}
-	
-	private void setServiceIDtoIMSI() throws SQLException{	
-		System.out.println("setServiceIDtoIMSI...");
-		sql = " SELECT A.SERVICEID,A.IMSI "
-				+ "FROM( "
-				+ "		SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
-				+ "		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
-				+ "		WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
-				+ "		UNION "
-				+ "		SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
-				+ "		FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
-				+ "		WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
-				+ "		(	SELECT SERVICEID,MAX(COMPLETEDATE) COMPLETEDATE "
-				+ "			from(	SELECT A.SERVICEID,B.NEWVALUE,A.COMPLETEDATE "
-				+ "					FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
-				+ "					WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
-				+ "					UNION "
-				+ "					SELECT A.SERVICEID,B.FIELDVALUE,A.COMPLETEDATE "
-				+ "					FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
-				+ "					WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
-				+ "			GROUP BY SERVICEID )B "
-				+ "		WHERE A.SERVICEID=B.SERVICEID AND A.COMPLETEDATE =B.COMPLETEDATE ";
-		
-		Statement st = conn2.createStatement();
-		
-		ResultSet rs=st.executeQuery(sql);
-	
-		while(rs.next()){
-			serviceIDtoIMSI.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
-		}
-		rs.close();
-		st.close();
-	}
-	
-	public Map<String,String> getServiceIDtoIMSI() throws SQLException{
-		setServiceIDtoIMSI();
-		
-		return serviceIDtoIMSI;
-	}
-	
-	public Map<String,String> getIMSItoServiceID() throws SQLException{
-		setIMSItoServiceID();
-		
-		return imsitoServiceID;
-	}
-	
-	
 	
 	public List<CurrentMonth> queryCurrentMonth() throws SQLException{
 		
-		imsitoServiceID = CatchAction.getImsitoServiceID();
-		serviceIDtoIMSI = CatchAction.getServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		if(imsitoServiceID.size()==0){
-			setServiceIDtoIMSI();
-			setIMSItoServiceID();
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		}
 		
 		sql=
@@ -156,18 +78,18 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnect();
 		return list;
 		
 	}
 	
 	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
 		System.out.println("dao queryCurrentMonth..."+","+new Date());
-		imsitoServiceID = CatchAction.getImsitoServiceID();
-		serviceIDtoIMSI = CatchAction.getServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		if(imsitoServiceID.size()==0){
-			setServiceIDtoIMSI();
-			setIMSItoServiceID();
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		}
 		
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
@@ -240,17 +162,17 @@ public class CurrentDao extends BaseDao {
 			System.out.println("query parse end!"+new Date());
 			rs.close();
 			pst.close();
-			closeConnect();
 		return list;
 		
 	}
 	
 	public List<CurrentDay> queryCurrentDay() throws SQLException{
-		imsitoServiceID = CatchAction.getImsitoServiceID();
-		serviceIDtoIMSI = CatchAction.getServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		if(imsitoServiceID.size()==0){
-			setServiceIDtoIMSI();
-			setIMSItoServiceID();
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		}
 		
 		sql=
@@ -294,17 +216,17 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnect();
 		return list;
 		
 	}
 	
 	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException{
-		imsitoServiceID = CatchAction.getImsitoServiceID();
-		serviceIDtoIMSI = CatchAction.getServiceIDtoIMSI();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		if(imsitoServiceID.size()==0){
-			setServiceIDtoIMSI();
-			setIMSItoServiceID();
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		}
 		
 		List<CurrentDay> list = new ArrayList<CurrentDay>();
@@ -371,7 +293,6 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnect();
 		return list;
 		
 	}

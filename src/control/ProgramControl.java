@@ -14,7 +14,7 @@ public class ProgramControl extends BaseControl {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public String execute(String filename) throws IOException, InterruptedException{
+	/*public String execute(String filename) throws IOException, InterruptedException{
 		String result=null;
 		String rError=null;
 		String line;
@@ -59,5 +59,5 @@ public class ProgramControl extends BaseControl {
 			}
 		
 		return result;
-	}
+	}*/
 }

@@ -1,12 +1,10 @@
 package dao;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import bean.CDR;
@@ -15,7 +13,6 @@ public class CDRDao extends BaseDao {
 
 	public CDRDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<CDR> queryCDR() throws SQLException, ParseException{
@@ -42,7 +39,6 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnect();
 		return list;
 		
 	}
@@ -77,7 +73,6 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnect();
 		return list;
 	}
 }

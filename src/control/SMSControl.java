@@ -27,7 +27,6 @@ public class SMSControl extends BaseControl{
 	
 	public SMSControl() throws Exception {
 		super();
-		logger = Logger.getLogger(SMSControl.class);
 	}
 	
 	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
@@ -54,7 +53,6 @@ public class SMSControl extends BaseControl{
 			String content=smsDao.getSMSContent(smsId);
 			if(content!=null && !"".equals(content)){
 				if(msisdn==null ||"".equals(msisdn)){
-					logger.error("Can't send SMS without msisdn number!");
 				}else{
 					String cphone=queryCustmerServicePhone(imsi);
 					

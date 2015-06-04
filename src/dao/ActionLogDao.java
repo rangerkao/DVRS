@@ -9,14 +9,12 @@ import java.util.Date;
 import java.util.List;
 
 import bean.ActionLog;
-import bean.SMSLog;
 
 public class ActionLogDao extends BaseDao{
 
 	
 	public ActionLogDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException{
@@ -55,8 +53,6 @@ public class ActionLogDao extends BaseDao{
 			rs.close();
 			pst.close();
 			
-			closeConnect();
-			
 		return list;
 
 	}
@@ -90,15 +86,11 @@ public class ActionLogDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-			
-			closeConnect();
+
 		return list;
 	}
 	
 	public int loggerAction(String userid,String page,String action,String parameter,String result) throws Exception{
-		
-		if(conn==null || conn.isClosed())
-			super.connectDB();
 		
 		
 		sql="INSERT INTO HUR_ACTION_LOG "
@@ -115,7 +107,6 @@ public class ActionLogDao extends BaseDao{
 			aResult= pst.executeUpdate();
 			
 			pst.close();
-			closeConnect();
 			
 		 return aResult;
 	}

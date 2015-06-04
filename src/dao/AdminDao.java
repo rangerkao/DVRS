@@ -13,7 +13,6 @@ public class AdminDao extends BaseDao {
 	
 	public AdminDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	public int insert(Admin admin){
 		sql=
@@ -30,10 +29,9 @@ public class AdminDao extends BaseDao {
 			result=pst.executeUpdate();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
-		closeConnect();
 		return result;
 	}
 	public int update(Admin admin){
@@ -53,10 +51,8 @@ public class AdminDao extends BaseDao {
 			result=pst.executeUpdate();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		closeConnect();
 		return result;
 	}
 	
@@ -72,10 +68,8 @@ public class AdminDao extends BaseDao {
 			result=pst.executeUpdate();
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		closeConnect();
 		return result;
 	}
 	
@@ -102,10 +96,8 @@ public class AdminDao extends BaseDao {
 			rs.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		closeConnect();
 		return list;
 		
 	}
@@ -135,11 +127,8 @@ public class AdminDao extends BaseDao {
 			rs.close();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		closeConnect();
-		
+		}		
 		return admin;
 	}
 }

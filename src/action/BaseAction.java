@@ -1,9 +1,14 @@
 package action;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 
 import org.apache.struts2.interceptor.SessionAware;
 import org.json.JSONArray;
@@ -26,7 +31,7 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	protected String result;
+	protected static String result;
 	protected String exception;
 	protected Map<String, Object> session;
 	protected IJatool tool= new Jatool();

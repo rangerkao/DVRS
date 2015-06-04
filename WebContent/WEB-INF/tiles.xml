@@ -40,6 +40,14 @@
 	<definition name="smsSetting" extends="web_base">
 		<put-attribute name="main" value="/web/smsSetting.jsp" />
 	</definition>
+	
+	<definition name="smsThresholdSetting" extends="web_base">
+		<put-attribute name="main" value="/web/smsThresholdSetting.jsp" />
+	</definition>
+	
+	<definition name="smsContentSetting" extends="web_base">
+		<put-attribute name="main" value="/web/smsContentSetting.jsp" />
+	</definition>
 
 	<definition name="actionQuery" extends="web_base">
 		<put-attribute name="main" value="/web/actionQuery.jsp" />
@@ -76,8 +84,8 @@
 		<put-attribute name="main" value="/web/numberChangeHistory.jsp" />
 	</definition>
 
-	<definition name="catche" extends="web_base">
-		<put-attribute name="main" value="/web/Catche.jsp" />
+	<definition name="cache" extends="web_base">
+		<put-attribute name="main" value="/web/Cache.jsp" />
 	</definition>
 
 </tiles-definitions>

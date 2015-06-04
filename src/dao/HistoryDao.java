@@ -8,14 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 public class HistoryDao extends BaseDao {
 
 	public HistoryDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
-		logger = Logger.getLogger(HistoryDao.class);
 	}
 
 	public List<Map<String,String>> queryCardChangeHistory(String imsi) throws SQLException{
@@ -37,9 +33,7 @@ public class HistoryDao extends BaseDao {
 		
 		Statement st = conn.createStatement();
 		
-		ResultSet rs = st.executeQuery(sql);
-		logger.info("Execute SQL : "+sql);
-		
+		ResultSet rs = st.executeQuery(sql);		
 		while(rs.next()){
 			
 			//20150506 mod
@@ -78,8 +72,6 @@ public class HistoryDao extends BaseDao {
 		Statement st = conn.createStatement();
 		
 		ResultSet rs = st.executeQuery(sql);
-		logger.info("Execute SQL : "+sql);
-		
 		
 		while(rs.next()){
 			

@@ -101,7 +101,7 @@ public class SMSAction extends BaseAction {
 	public String updateSMSSetting() {
 		try {
 			JSONArray json =new JSONArray(smsSettinglistString);
-			
+
 				for(int i=0;i<json.length();i++){
 					JSONObject o=json.getJSONObject(i);
 					SMSSetting set=new SMSSetting();
@@ -113,7 +113,6 @@ public class SMSAction extends BaseAction {
 				}
 				
 				System.out.println("mod:"+mod);
-				
 				
 				if("add".equalsIgnoreCase(mod)){
 					boolean inserted=false;

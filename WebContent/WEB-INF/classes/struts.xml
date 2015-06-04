@@ -36,6 +36,8 @@
 			<result name="smsQuery" type="tiles">smsQuery</result>
 			<result name="actionQuery" type="tiles">actionQuery</result>
 			<result name="smsSetting" type="tiles">smsSetting</result>
+			<result name="smsContentSetting" type="tiles">smsContentSetting</result>
+			<result name="smsThresholdSetting" type="tiles">smsThresholdSetting</result>
 			<result name="program" type="tiles">program</result>
 			<result name="cdr" type="tiles">cdr</result>
 			<result name="limitSetting" type="tiles">limitSetting</result>
@@ -52,13 +54,17 @@
 		</action>
 
 		
-		<!-- Catche -->
-    	<action name="flushCatche" method="flushCatche" class="catche.CatchAction">
-	        <result name="success" type="tiles">catche</result>
+		<!-- Cache -->
+    	<action name="flushCache" method="flushCache" class="cache.CacheAction">
+	        <result name="success" type="tiles">cache</result>
         </action>
         
-        <action name="reloadCatche" method="reloadCatche" class="catche.CatchAction">
-	        <result name="success" type="tiles">catche</result>
+        <action name="reloadCache" method="reloadCache" class="cache.CacheAction">
+	        <result name="success" type="tiles">cache</result>
+        </action>
+        
+        <action name="batchReloadCache" method="batchReloadCache" class="cache.CacheAction">
+	        <result name="success" type="tiles">cache</result>
         </action>
 		
 		<!-- Escel 下載 -->
@@ -231,14 +237,6 @@
 	        <result type="json">
 	        	<param name="root">result</param>
 	        </result>
-        </action>
-    <!-- Catche -->
-    	<action name="flushCatche" method="flushCatche" class="catche.CatchAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-    
+        </action>    
     </package>
 </struts>

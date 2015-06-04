@@ -12,7 +12,6 @@ public class QosDao extends BaseDao {
 
 	public QosDao() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	//¬d¸ß¦Cªí
@@ -57,9 +56,6 @@ public class QosDao extends BaseDao {
 			}
 			st.close();
 			rs.close();
-		
-		closeConnect();
-		
 		return list;
 		
 	}
@@ -111,9 +107,6 @@ public class QosDao extends BaseDao {
 			}
 			st.close();
 			rs.close();
-			
-			closeConnect();
-			
 			return list;
 			
 		}

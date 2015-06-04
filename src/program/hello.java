@@ -35,38 +35,17 @@ public class hello {
 		
 
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-		SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd HHmmss");
 		
-		try {
-			Date sdate = sdf.parse("20150501");
-			Date edate = sdf.parse("20150531");
-			Date time = sdf2.parse("20150501 120012");
-			
-			System.out.println(
-					"sdate:"+sdate+"\n"
-					+ "edate:"+edate+"\n"
-					+ "time:"+time+"\n"
-					+ "after sdate:"+time.after(sdate)+"\n"
-					+ "before edate:"+time.before(edate));
-			
-			
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		
-		//簡訊測試   分段
+
+		/*//簡訊測試   分段
 		String msg = "*環球卡高用量提醒*提醒您本月數據用量上網金額統計至前一小時加部份推估，已約達NT65,000.00，"
 				+ "實際用量及使用金額以帳單為準。另您已約定上網金額不設限，感謝您的留意。如需諮詢請電客服*123#。";
 		
 	
 		int number = 100;
 		int length = msg.length();
-		/*byte[] b = msg.getBytes();
-		length = b.length;*/
+		byte[] b = msg.getBytes();
+		length = b.length;
 		int msgN = length/number;
 		if(length%number>0)
 			msgN += 1;
@@ -77,17 +56,17 @@ public class hello {
 			if(last>length)
 				last=length;
 			
-			/*byte[] c=new byte[last-i*number];
+			byte[] c=new byte[last-i*number];
 			
 			System.arraycopy(b, i*number , c, 0, last-i*number);
 
-				sub[i]=new String(c);*/
+				sub[i]=new String(c);
 	
 			sub[i]=msg.substring(i*number,last);
 		}
 		for(String s: sub){
 			System.out.println(s);
-		}
+		}*/
 		/*
 		try {
 			setSMSPostParam(new String("中文測試".getBytes("BIG5"), "ISO-8859-1"), "886989235253");
@@ -103,8 +82,9 @@ public class hello {
 		//updateDB(999,param);
 		//updateDB(999,null);
 		Calendar calendar =Calendar.getInstance();
-		System.out.println(new SimpleDateFormat("yyyy MMM dd HH:mm:ss", Locale.US).format(calendar.getTime()));
-		
+		//System.out.println(new SimpleDateFormat("yyyy MMM dd HH:mm:ss", Locale.US).format(calendar.getTime()));
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)+1,0,0,0);
+		System.out.println("calendar:"+calendar.getTime());
 		
 		List<String> list = tool.regularFind("32321,dsd,434,11,aas,4356,643,234,rer,123,442,1,1233,331", "^\\d{3}\\D|\\D\\d{3}\\D|\\D\\d{3}$");
 		

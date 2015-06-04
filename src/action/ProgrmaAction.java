@@ -22,7 +22,7 @@ public class ProgrmaAction extends BaseAction {
 	private ProgramControl programControl=new ProgramControl();
 	
 	public String execute() throws SQLException {
-		try {
+		/*try {
 			result = programControl.execute(filename);
 			
 		} catch (IOException e) {
@@ -40,7 +40,7 @@ public class ProgrmaAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.out.println("Exception:"+e.getMessage());
-		}
+		}*/
 		return SUCCESS;
 	}
 	
