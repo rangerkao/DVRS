@@ -1,5 +1,6 @@
 package control;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import dao.AdminDao;
@@ -15,7 +16,7 @@ public class LoginControl extends BaseControl{
 	}
 
 
-	public String loginC(Map session,String account,String password){
+	public String loginC(Map session,String account,String password) throws SQLException{
 		String msg="";
 			Admin admin = adminDao.queryAdminByAccount(account);
 			if(admin==null || admin.getPassword()==null || "".equals(admin.getPassword())){

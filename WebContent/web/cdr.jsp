@@ -39,10 +39,10 @@ var dataList;
 var cdrList;
 	function query(){
 
-		if(!dateChange){
+/* 		if(!dateChange){
 			queryList();
 			return;
-		}
+		} */
 		
 		if(!validate()) return false;
 		
@@ -52,7 +52,7 @@ var cdrList;
 	      url: '<s:url action="queryCDR"/>',
 	      data: {	"from":$("#dateFrom").val(),
   	  				"to":$("#dateTo").val(),
-  	  				//"IMSI":$("#IMSI").val()
+  	  				"IMSI":$("#IMSI").val()
   	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
@@ -97,6 +97,12 @@ var cdrList;
 	
 	function validate(){
 		var validation=true;
+		
+		if($("#IMSI").val()==null||$("#IMSI").val()==""){
+			alert("IMSI為必填！")
+			validation=false;
+		}
+		
 		if((($("#dateFrom").val()==null||$("#dateFrom").val()=="")^($("#dateTo").val()==null||$("#dateTo").val()==""))){
 			alert("日期必須同時填或皆不填！")
 			validation=false;

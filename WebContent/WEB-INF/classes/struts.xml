@@ -66,6 +66,10 @@
         <action name="batchReloadCache" method="batchReloadCache" class="cache.CacheAction">
 	        <result name="success" type="tiles">cache</result>
         </action>
+        
+        <action name="reloadProperties" method="reloadProperties" class="cache.CacheAction">
+	        <result name="success" type="tiles">cache</result>
+        </action>
 		
 		<!-- Escel 下載 -->
         <action name="createExcel"  method="createExcel" class="action.Excel">  

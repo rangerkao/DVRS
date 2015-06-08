@@ -38,19 +38,22 @@ public class SMSDao extends BaseDao{
 				+ (msisdn!=null && !"".equals(msisdn)?"AND A.SEND_NUMBER='"+msisdn+"' ":"")
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
-			Statement st = conn.createStatement();
-			ResultSet rs=st.executeQuery(sql);
-			while(rs.next()){
-				SMSLog log = new SMSLog();
-				log.setId(rs.getString("ID"));
-				//log.setMsg(rs.getString("MSG"));
-				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
-				log.setResult(rs.getString("RESULT"));
-				log.setSendNumber(rs.getString("SEND_NUMBER"));
-				log.setSendDate(rs.getString("SEND_DATE"));
-				log.setCreateDate(rs.getString("CREATE_DATE"));
-				list.add(log);
-			}
+		Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		while(rs.next()){
+			SMSLog log = new SMSLog();
+			log.setId(rs.getString("ID"));
+			//log.setMsg(rs.getString("MSG"));
+			log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
+			log.setResult(rs.getString("RESULT"));
+			log.setSendNumber(rs.getString("SEND_NUMBER"));
+			log.setSendDate(rs.getString("SEND_DATE"));
+			log.setCreateDate(rs.getString("CREATE_DATE"));
+			list.add(log);
+		}
+		rs.close();
+		st.close();
+		closeConnection();
 		return list;
 
 	}
@@ -63,22 +66,22 @@ public class SMSDao extends BaseDao{
 				+ "WHERE 1=1 "
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
-			Statement st = conn.createStatement();
-			ResultSet rs=st.executeQuery(sql);
-			while(rs.next()){
-				SMSLog log = new SMSLog();
-				log.setId(rs.getString("ID"));
-				//log.setMsg(rs.getString("MSG"));
-				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
-				log.setResult(rs.getString("RESULT"));
-				log.setSendNumber(rs.getString("SEND_NUMBER"));
-				log.setSendDate(rs.getString("SEND_DATE"));
-				log.setCreateDate(rs.getString("CREATE_DATE"));
-				list.add(log);
-			}
-			rs.close();
-			st.close();
-			
+		Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		while(rs.next()){
+			SMSLog log = new SMSLog();
+			log.setId(rs.getString("ID"));
+			//log.setMsg(rs.getString("MSG"));
+			log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
+			log.setResult(rs.getString("RESULT"));
+			log.setSendNumber(rs.getString("SEND_NUMBER"));
+			log.setSendDate(rs.getString("SEND_DATE"));
+			log.setCreateDate(rs.getString("CREATE_DATE"));
+			list.add(log);
+		}
+		rs.close();
+		st.close();
+		closeConnection();
 		return list;
 	}
 	
@@ -92,59 +95,59 @@ public class SMSDao extends BaseDao{
 				+ "FROM HUR_SMS_SETTING A "
 				+ "ORDER BY A.ID ";*/
 		
-			Statement st = conn.createStatement();
-			ResultSet rs=st.executeQuery(sql);
-			while(rs.next()){
-				SMSSetting log = new SMSSetting();
-				log.setId(rs.getString("ID"));
-				log.setBracket(rs.getDouble("BRACKET"));
-				log.setMsg(rs.getString("MEGID"));
-				//log.setPricePlanId(rs.getString("PRICEPLANID"));
-	
-				String s=rs.getString("SUSPEND");
-				if("0".equals(s))
-					log.setSuspend(false);
-				else if("1".equals(s))
-					log.setSuspend(true);
-					
-				list.add(log);
-			}
-			rs.close();
-			st.close();
-			
+		Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		while(rs.next()){
+			SMSSetting log = new SMSSetting();
+			log.setId(rs.getString("ID"));
+			log.setBracket(rs.getDouble("BRACKET"));
+			log.setMsg(rs.getString("MEGID"));
+			//log.setPricePlanId(rs.getString("PRICEPLANID"));
+
+			String s=rs.getString("SUSPEND");
+			if("0".equals(s))
+				log.setSuspend(false);
+			else if("1".equals(s))
+				log.setSuspend(true);
+				
+			list.add(log);
+		}
+		rs.close();
+		st.close();
+		closeConnection();
 		return list;
 	}
 	
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
-			//移除所有資料
-			sql=
-					"TRUNCATE  TABLE  HUR_SMS_SETTING";
+		//移除所有資料
+		sql=
+				"TRUNCATE  TABLE  HUR_SMS_SETTING";
+		
+		Statement st = conn.createStatement();
+		st.execute(sql);
+		st.close();
+		//重新匯入資料
+		sql=
+				"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
+				+ "VALUES(?,?,?,?)";
+				/*"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND,PRICEPLANID) "
+				+ "VALUES(?,?,?,?,?)";*/
+		PreparedStatement pst = conn.prepareStatement(sql);
+		for(SMSSetting s : list){
+			pst.setString(1, s.getId());
+			pst.setDouble(2, s.getBracket()/100);
+			pst.setString(3, s.getMsg());
+			if(s.getSuspend())
+				pst.setString(4, "1");
+			else
+				pst.setString(4, "0");
 			
-			Statement st = conn.createStatement();
-			st.execute(sql);
-			st.close();
-			//重新匯入資料
-			sql=
-					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
-					+ "VALUES(?,?,?,?)";
-					/*"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND,PRICEPLANID) "
-					+ "VALUES(?,?,?,?,?)";*/
-			PreparedStatement pst = conn.prepareStatement(sql);
-			for(SMSSetting s : list){
-				pst.setString(1, s.getId());
-				pst.setDouble(2, s.getBracket()/100);
-				pst.setString(3, s.getMsg());
-				if(s.getSuspend())
-					pst.setString(4, "1");
-				else
-					pst.setString(4, "0");
-				
-				//pst.setString(5, s.getPricePlanId());
-				pst.addBatch();
-			}
-			pst.executeBatch();
-			pst.close();			
-			
+			//pst.setString(5, s.getPricePlanId());
+			pst.addBatch();
+		}
+		pst.executeBatch();
+		pst.close();			
+		closeConnection();
 		return list;
 	}
 	
@@ -186,7 +189,7 @@ public class SMSDao extends BaseDao{
 		
 		st.close();
 		rs.close();
-		
+		closeConnection();
 		return list;
 	}
 	
@@ -210,7 +213,7 @@ public class SMSDao extends BaseDao{
 		pst.setDouble(2, limit);
 		int result=pst.executeUpdate();
 		pst.close();
-		
+		closeConnection();
 		return result;
 	}
 	
@@ -233,7 +236,7 @@ public class SMSDao extends BaseDao{
 		pst.setString(2, serviceid);
 		int result=pst.executeUpdate();
 		pst.close();
-		
+		closeConnection();
 		return result;
 	}
 	
@@ -255,7 +258,7 @@ public class SMSDao extends BaseDao{
 		pst.setString(1, serviceid);
 		int result=pst.executeUpdate();
 		pst.close();
-		
+		closeConnection();
 		return result;
 	}
 	
@@ -279,6 +282,7 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
+		closeConnection();
 		map.put("imsi", imsi);
 		map.put("pricaplainid", pricaplainid);
 		
@@ -349,6 +353,8 @@ public class SMSDao extends BaseDao{
 			if(pst2!=null) pst2.close();	
 			if(rs2!=null) rs2.close();
 		}		
+		
+		closeConnection();
 		map.put("msisdn", TWNmsisdn);
 		
 		return map;
@@ -374,6 +380,8 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
+		closeConnection();
+		
 		map.put("msisdn", msisdn);
 		map.put("pricaplainid", pricaplainid);
 		
@@ -396,7 +404,7 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
-	
+
 		return result;
 	}
 	
@@ -411,22 +419,21 @@ public class SMSDao extends BaseDao{
 		pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
 		pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 		pst.executeUpdate();
-		pst.close();
-		
-		
+		pst.close();		
 	}
 	
 	public String queryVLR(String imsi) throws SQLException{
 		String VLN=null;
 		
 		sql="SELECT VLR_NUMBER FROM UTCN.BASICPROFILE WHERE IMSI='"+imsi+"'";
-		ResultSet rs=conn2.createStatement().executeQuery(sql);
+		Statement st =conn2.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
 			VLN=rs.getString("VLR_NUMBER");
 		}
 		rs.close();
-		
+		st.close();
 		return VLN;
 	}
 	
@@ -435,25 +442,29 @@ public class SMSDao extends BaseDao{
 		
 		sql=" SELECT B.REALMNAME TADIG, A.CHARGEAREACODE VLR FROM CHARGEAREACONFIG A, REALM B "
 				+ "WHERE A.AREAREFERENCE=B.AREAREFERENCE ";
-		ResultSet rs=conn2.createStatement().executeQuery(sql);
+		Statement st =conn2.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
 			map.put(rs.getString("VLR"), rs.getString("TADIG"));
 		}
 		rs.close();
+		st.close();
 		return map;
 	}
 	public String queryMccmnc(String tadig) throws SQLException{
 		String mccmnc=null;
 				
 		sql=" SELECT MCCMNC FROM HUR_MCCMNC WHERE TADIG='"+tadig+"'";
-		ResultSet rs=conn.createStatement().executeQuery(sql);
+		Statement st =conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 
 		while(rs.next()){
 			mccmnc=rs.getString("MCCMNC");
 		}		
 				
 		rs.close();
+		st.close();
 
 		return mccmnc;		
 	}
@@ -462,12 +473,14 @@ public class SMSDao extends BaseDao{
 		String cPhone=null;
 		String subcode=mccmnc.substring(0,3);
 		sql=" SELECT PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
-		ResultSet rs=conn.createStatement().executeQuery(sql);
+		Statement st =conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
 			cPhone=rs.getString("PHONE");
 		}		
 		rs.close();
+		st.close();
 		return cPhone;		
 	}
 
@@ -478,7 +491,8 @@ public class SMSDao extends BaseDao{
 				+ "FROM HUR_SMS_CONTENT A "
 				+ "ORDER BY A.ID ";
 		
-			ResultSet rs = conn.createStatement().executeQuery(sql);
+		Statement st =conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSContent sc = new SMSContent();
 				
@@ -490,6 +504,8 @@ public class SMSDao extends BaseDao{
 			}
 			
 			rs.close();
+			st.close();
+			closeConnection();
 		return result;
 	}
 	
@@ -501,7 +517,8 @@ public class SMSDao extends BaseDao{
 				+ "WHERE A.ID IN ("+id+") "
 				+ "ORDER BY A.ID ";
 		
-			ResultSet rs = conn.createStatement().executeQuery(sql);
+		Statement st =conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
 				SMSContent sc = new SMSContent();
 				
@@ -513,7 +530,8 @@ public class SMSDao extends BaseDao{
 			}
 			
 			rs.close();
-			
+			st.close();
+			closeConnection();
 
 		return result;
 	}
@@ -524,18 +542,16 @@ public class SMSDao extends BaseDao{
 				"INSERT INTO HUR_SMS_CONTENT (ID,CONTENT,CHARSET,DESCRIPTION) "
 				+ "VALUES(?,?,?,?)";
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
-			
-			pst.setInt(1, sc.getId());
-			pst.setString(2, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
-			pst.setString(3, sc.getCharSet());
-			pst.setString(4, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
-			
-			result=pst.executeUpdate();
-			
-			pst.close();
-			
-			
+		PreparedStatement pst =conn.prepareStatement(sql);			
+		pst.setInt(1, sc.getId());
+		pst.setString(2, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
+		pst.setString(3, sc.getCharSet());
+		pst.setString(4, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
+		
+		result=pst.executeUpdate();
+		
+		pst.close();	
+		closeConnection();
 		
 		return result;
 	}
@@ -546,19 +562,18 @@ public class SMSDao extends BaseDao{
 				+ "SET A.CONTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
 				+ "WHERE A.ID=?";
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
-			
-			pst.setString(1, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
-			pst.setString(2, sc.getCharSet());
-			pst.setString(3, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
-			pst.setInt(4, sc.getId());
-			
-			result=pst.executeUpdate();
-			
-			pst.close();
-			
-			
-			
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
+		pst.setString(2, sc.getCharSet());
+		pst.setString(3, (sc.getDescription()!=null ? new String(sc.getDescription().getBytes("BIG5"),"ISO8859-1"):""));
+		pst.setInt(4, sc.getId());
+		
+		result=pst.executeUpdate();
+		
+		pst.close();
+		closeConnection();
+
 		return result;
 	}
 	public int deleteSMSContent(SMSContent sc) throws Exception{
@@ -567,14 +582,14 @@ public class SMSDao extends BaseDao{
 				"DELETE HUR_SMS_CONTENT A "
 				+ "WHERE A.ID=?";
 		
-			PreparedStatement pst = conn.prepareStatement(sql);
-			
-			pst.setInt(1, sc.getId());
-			
-			result=pst.executeUpdate();
-			
-			pst.close();
-			
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setInt(1, sc.getId());
+		
+		result=pst.executeUpdate();
+		
+		pst.close();
+		closeConnection();
 			
 		return result;
 	}

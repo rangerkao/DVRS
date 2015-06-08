@@ -67,17 +67,18 @@ public class AdminAction extends BaseAction{
 		System.out.println( beanToJSONObject(admin));
 		System.out.println(	"mod:"+mod);
 		int r=0;
-		if(mod.equalsIgnoreCase("add")){
-			if(adminControl.addAdmin(admin)!=1)
-				result="Error To add new data!";
-		}else if(mod.equalsIgnoreCase("mod")){
-			if(adminControl.modAdmin(admin)!=1)
-				result="Error To modify data!";
-		}else if(mod.equalsIgnoreCase("del")){
-			if(adminControl.delAdmin(admin)!=1)
-				result="Error To delete data!";
-		}
+		
 		try {
+			if(mod.equalsIgnoreCase("add")){
+				if(adminControl.addAdmin(admin)!=1)
+					result="Error To add new data!";
+			}else if(mod.equalsIgnoreCase("mod")){
+				if(adminControl.modAdmin(admin)!=1)
+					result="Error To modify data!";
+			}else if(mod.equalsIgnoreCase("del")){
+				if(adminControl.delAdmin(admin)!=1)
+					result="Error To delete data!";
+			}
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "update", mod+":"+ beanToJSONObject(admin), result);
 		} catch (Exception e) {
 			e.printStackTrace();

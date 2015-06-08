@@ -1,5 +1,6 @@
 package control;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import dao.AdminDao;
@@ -14,19 +15,19 @@ public class AdminControl extends BaseControl{
 
 	private AdminDao adminDao=new AdminDao();
 	
-	public List<Admin> queryAdminList(){
+	public List<Admin> queryAdminList() throws SQLException{
 		return adminDao.queryAdminList();
 	}
 	
-	public int addAdmin(Admin admin){
+	public int addAdmin(Admin admin) throws SQLException{
 		return adminDao.insert(admin);
 	}
 	
-	public int modAdmin(Admin admin){
+	public int modAdmin(Admin admin) throws SQLException{
 		return adminDao.update(admin);
 	}
 
-	public int delAdmin(Admin admin){
+	public int delAdmin(Admin admin) throws SQLException{
 		return adminDao.delete(admin);
 	}
 

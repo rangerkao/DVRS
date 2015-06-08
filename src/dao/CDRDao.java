@@ -39,6 +39,7 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			closeConnection();
 		return list;
 		
 	}
@@ -52,7 +53,7 @@ public class CDRDao extends BaseDao {
 				+ "WHERE 1=1 "
 				+ (from!=null &&!"".equals(from)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')>=to_date('"+from+"','yyyy-mm-dd') ":"")  
 				+ (to!=null &&!"".equals(to)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')<=to_date('"+to+"','yyyy-mm-dd')+1 ":"")
-				+ (IMSI!=null && !"".equals(IMSI)?"AND A.IMSI='"+IMSI+"' ":"")
+				+ (IMSI!=null && !"".equals(IMSI)?"AND A.IMSI like '"+IMSI.replace("*", "%")+"' ":"")
 				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
 		
@@ -73,6 +74,7 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			closeConnection();
 		return list;
 	}
 }

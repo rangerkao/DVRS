@@ -51,6 +51,9 @@ public class HistoryDao extends BaseDao {
 			map.put("completedate", rs.getString("COMPLETEDATE"));
 			result.add(map);
 		}
+		rs.close();
+		st.close();
+		closeConnection();
 		return result;
 	}
 	
@@ -91,6 +94,9 @@ public class HistoryDao extends BaseDao {
 			map.put("completedate", rs.getString("COMPLETEDATE"));
 			result.add(map);
 		}
+		rs.close();
+		st.close();
+		closeConnection();
 		return result;
 	}
 	

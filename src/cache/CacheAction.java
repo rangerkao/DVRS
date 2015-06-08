@@ -35,7 +35,7 @@ public class CacheAction extends BaseAction {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	static Properties props =new Properties();
+	static Properties props =null;
 	static Logger logger ;
 
 	//IMSI SERVICEID 對應表
@@ -43,6 +43,7 @@ public class CacheAction extends BaseAction {
 	static Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
 	//Instance 化 DB連結
+	//instance 會造成程式無法持續運作
 	static Connection conn = null;
 	static Connection conn2 = null;
 	
@@ -60,8 +61,8 @@ public class CacheAction extends BaseAction {
 		classPath=CacheAction.class.getClassLoader().getResource("").toString().replace("file:", "").replace("%20", " ");
 		try {
 			loadProperties();
-			connectDB();
-			connectDB2();
+			/*connectDB();
+			connectDB2();*/
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -81,6 +82,7 @@ public class CacheAction extends BaseAction {
 	//---------------建立  Properties---------------------
 	private static void loadProperties() throws FileNotFoundException, IOException {	
 		String path=classPath+ "/program/Log4j.properties";
+		props =new Properties();
 		props.load(new FileInputStream(path));
 		PropertyConfigurator.configure(props);
 		System.out.println("loadProperties success!");
@@ -90,26 +92,33 @@ public class CacheAction extends BaseAction {
 		return props;
 	}
 	
+	public String reloadProperties(){
+		try {
+			loadProperties();
+		} catch (FileNotFoundException e) {
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = s.toString();
+		} catch (IOException e) {
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = s.toString();
+		}
+		System.out.println("reload End!");
+		return SUCCESS;
+	}
+	
 	//---------------建立DB 連結 conn1 主資料庫、conn2 Mboss----
 	public static Connection getConnect1() throws Exception{
-		if(conn!=null && !conn.isClosed()){
-			return conn;
-		}else{
-			connectDB();
-			return conn;
-		}
+		return connectDB();
 	}
 	
 	public static Connection getConnect2() throws Exception{
-		if(conn2!=null && !conn2.isClosed()){
-			return conn2;
-		}else{
-			connectDB2();
-			return conn2;
-		}
+		return connectDB2();
 	}
 	
-	protected static void connectDB() throws Exception{
+	protected static Connection connectDB() throws Exception{
+		Connection conn = null;
 		System.out.println(classPath);
 		String url=props.getProperty("Oracle.URL");
 		System.out.println(url);
@@ -127,9 +136,10 @@ public class CacheAction extends BaseAction {
 			if(conn==null){
 				throw new Exception("DB Connect null !");
 			}
-
+		return conn;
 	}
-	protected static void connectDB2() throws Exception {
+	protected static Connection connectDB2() throws Exception {
+		Connection conn2=null;
 		String url=props.getProperty("mBOSS.URL")
 				.replace("{{Host}}", props.getProperty("mBOSS.Host"))
 				.replace("{{Port}}", props.getProperty("mBOSS.Port"))
@@ -142,13 +152,21 @@ public class CacheAction extends BaseAction {
 			if(conn2==null){
 				throw new Exception("DB Connect2 null !");
 			}
-
+		return conn2;
 	}
+	/**
+	 * 建立連線
+	 * @throws Exception 
+	 */
 	
+	protected static void createConnect() throws Exception{
+		conn=getConnect1();
+		conn2=getConnect2();
+	}
 	/**
 	 * 關閉連線
 	 */
-	protected void closeConnect() {
+	protected static void closeConnect() {
 		if (conn != null) {
 
 			try {
@@ -159,7 +177,17 @@ public class CacheAction extends BaseAction {
 				//send mail
 				//sendMail("At closeConnect occur SQLException error!");
 			}
+		}
+		if (conn2 != null) {
 
+			try {
+				conn2.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				//logger.debug("close ResultSet Error : "+e.getMessage());
+				//send mail
+				//sendMail("At closeConnect occur SQLException error!");
+			}
 		}
 	}
 	
@@ -192,17 +220,22 @@ public class CacheAction extends BaseAction {
 	public static String reloadServiceIDwithIMSIMappingCache(){
 		flushServiceIDwithIMSIMappingCache();
 		try {
+			createConnect();
 			setIMSItoServiceID();
 			setServiceIDtoIMSI();
 			sendMail("k1988242001@gmail.com","DVRS Cache Reload!","DVRS Cache Reload! At "+new Date());
 		} catch (SQLException e) {
-			
-			
 			StringWriter s = new StringWriter();
-			
 			e.printStackTrace(new PrintWriter(s));
 			result = s.toString();
 			sendMail("k1988242001@gmail.com","DVRS Cache Reload Error!","DVRS Cache Reload Error! At "+new Date()+"\n"+s);
+		} catch (Exception e) {
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = s.toString();
+			sendMail("k1988242001@gmail.com","DVRS Cache Reload Error!","DVRS Cache Reload Error! At "+new Date()+"\n"+s);
+		}finally{
+			closeConnect();
 		}
 		System.out.println("reload End!");
 		return SUCCESS;
@@ -274,7 +307,8 @@ public class CacheAction extends BaseAction {
 
 	}
 	
-	private static void setIMSItoServiceID() throws SQLException{			
+	private static void setIMSItoServiceID() throws Exception{	
+		
 		System.out.println("setIMSItoServiceID...");
 				sql = " SELECT A.SERVICEID,A.IMSI          "
 						+ "FROM("
@@ -296,7 +330,10 @@ public class CacheAction extends BaseAction {
 						+ "     	  GROUP BY IMSI )B "
 						+ " WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ";
 		
-		Statement st = conn2.createStatement();
+	    
+		Connection subConn2 = getConnect2();
+
+		Statement st = subConn2.createStatement();
 		
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -307,7 +344,7 @@ public class CacheAction extends BaseAction {
 		st.close();
 	}
 	
-	private static void setServiceIDtoIMSI() throws SQLException{	
+	private static void setServiceIDtoIMSI() throws Exception{	
 		System.out.println("setServiceIDtoIMSI...");
 		sql = " SELECT A.SERVICEID,A.IMSI "
 				+ "FROM( "
@@ -328,8 +365,8 @@ public class CacheAction extends BaseAction {
 				+ "					WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
 				+ "			GROUP BY SERVICEID )B "
 				+ "		WHERE A.SERVICEID=B.SERVICEID AND A.COMPLETEDATE =B.COMPLETEDATE ";
-		
-		Statement st = conn2.createStatement();
+		Connection subConn2 = getConnect2();
+		Statement st = subConn2.createStatement();
 		
 		ResultSet rs=st.executeQuery(sql);
 	

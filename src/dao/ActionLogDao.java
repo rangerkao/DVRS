@@ -52,7 +52,6 @@ public class ActionLogDao extends BaseDao{
 			
 			rs.close();
 			pst.close();
-			
 		return list;
 
 	}
@@ -86,7 +85,6 @@ public class ActionLogDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-
 		return list;
 	}
 	
@@ -107,6 +105,7 @@ public class ActionLogDao extends BaseDao{
 			aResult= pst.executeUpdate();
 			
 			pst.close();
+			closeConnection();
 			
 		 return aResult;
 	}

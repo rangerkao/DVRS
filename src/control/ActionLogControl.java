@@ -18,6 +18,8 @@ public class ActionLogControl extends BaseControl {
 
 	private ActionLogDao actionLogDao = new ActionLogDao();
 	
+	
+	
 	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException{
 		return actionLogDao.queryActionLog(fromDate, toDate);
 	}

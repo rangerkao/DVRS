@@ -78,6 +78,7 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			closeConnection();
 		return list;
 		
 	}
@@ -162,6 +163,7 @@ public class CurrentDao extends BaseDao {
 			System.out.println("query parse end!"+new Date());
 			rs.close();
 			pst.close();
+			closeConnection();
 		return list;
 		
 	}
@@ -216,6 +218,7 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			closeConnection();
 		return list;
 		
 	}
@@ -293,6 +296,7 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			closeConnection();
 		return list;
 		
 	}

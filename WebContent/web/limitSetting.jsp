@@ -73,16 +73,7 @@ function chooseRow(bu){
 }
 
 function updateLimit(mod,txt){
-	
-	if($("#IMSI").val()==null || $("#IMSI").val()==""){
-		alert("IMSI不可為空");
-		return;
-	}
-	
-	
-	if (!validat(mod,txt)) return false;
-	
-	
+
 	var sendSMS=false;
 	if(mod=="add"){
 		if(confirm("需要發送通知簡訊給予客戶嗎？")){
@@ -122,6 +113,7 @@ function updateLimit(mod,txt){
 	    		disableButton();
           },
           complete:function(){
+        	  enableButton();
           }
 	    });
 }
@@ -132,13 +124,8 @@ function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 
- function queryIMSI(mod,txt){
-	
-	if(mod=='del'){
-		updateLimit(mod,txt);
-		return;
-	}
-	 
+function queryIMSI(mod,txt){
+
 	if($("#Msisdn").val()==null || $("#Msisdn").val()==""){
 		$("#LMsisdn").html('此欄位不可為空');
 		return
@@ -146,6 +133,9 @@ function enableButton(){
 	if(!volidateNum($("#Msisdn").val())){
 		$("#LMsisdn").html('格式錯誤，必須為純數字');
 		validate = false;
+	}
+	if(!validat(mod,txt)){
+		return false;
 	}
 
 	$.ajax({
@@ -189,7 +179,7 @@ function enableButton(){
 function validat(mod,txt){
 	
 	var validate = true;
-	
+	var exist=false;
 	if(mod!='del' && ($("#Msisdn").val()==null ||$("#Msisdn").val()=="")){
 		$("#LMsisdn").html('此欄位不可為空');
 		validate = false; 
@@ -208,24 +198,22 @@ function validat(mod,txt){
 		validate = false;
 	}
 	
+	 $.each(limitList,function(i,limit){
+		 if(limit.msisdn==$("#Msisdn").val()){
+			 exist=true;
+		 }
+	 });
+	
 	if(validate){
 		if(mod=='add'){			
-			//確認資料有沒有在
-			 $.each(limitList,function(i,limit){
-				 if(limit.msisdn==$("#Msisdn").val()){
-					 alert("此門號已設定上限，無法新增!");
-					 validate = false;
-				 }
-			 });
+			if(exist){
+				alert("此門號已設定過，無法新增！");
+				validate = false;
+			}
 		}else if(mod=='mod' || mod=='del'){
-			validate = false;
-			$.each(limitList,function(i,limit){
-				 if(limit.imsi==$("#IMSI").val()){
-					 validate = true;
-				 }
-			 });
-			if(!validate){
+			if(!exist){
 				 alert("此門號未曾設定過，無法刪除,修改！");
+				 validate = false;
 			}
 		}else{
 			validate = false;
