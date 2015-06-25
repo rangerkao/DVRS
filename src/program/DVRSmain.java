@@ -72,9 +72,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.quartz.Job;
@@ -124,7 +121,7 @@ public class DVRSmain implements Job{
 	
 	//Hur Data conf
 	private static Integer dataThreshold=null;//CDR資料一批次取出數量
-	private static Integer lastfileID=null;//最後批價檔案號
+	//private static Integer lastfileID=null;//最後批價檔案號
 	private static Double exchangeRate=null; //港幣對台幣匯率，暫訂為4
 	private static Double kByte=null;//RATE單位KB，USAGE單位B
 	
@@ -219,6 +216,8 @@ public class DVRSmain implements Job{
 		//sSX001
 		sSX001.add("45412");
 		
+		sSX001.add("454CMHK");
+		
 		//sSX002
 		sSX002.add("46001");
 		sSX002.add("46007");
@@ -226,6 +225,10 @@ public class DVRSmain implements Job{
 		sSX002.add("460000");
 		sSX002.add("46000");
 		sSX002.add("45412");
+		
+		sSX002.add("460China Unicom");
+		sSX002.add("460CMCC");
+		sSX002.add("454CMHK");
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return true;
 	}
@@ -240,7 +243,7 @@ public class DVRSmain implements Job{
 	/**
 	 * 尋找最後一次更改的fileID，以及目標處理的最終ID
 	 */
-	private boolean setLastFileID(){
+	/*private boolean setLastFileID(){
 		logger.info("setLastFileID...");
 		long subStartTime = System.currentTimeMillis();
 		boolean result = false;
@@ -280,7 +283,7 @@ public class DVRSmain implements Job{
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return result;
-	}
+	}*/
 	
 	/**
 	 * 取出 HUR_CURRENTE table資料
@@ -860,7 +863,7 @@ public class DVRSmain implements Job{
 	/**
 	 * 建立華人上網包對應資料
 	 * 
-	 * List Map KEY:MSISDN,VALUE(IMSI,MSISDN,SERVICECODE,STARTDATE,ENDDATE)>
+	 * List Map KEY:MSISDN,VALUE(IMSI,MSISDN,SERVICEID,SERVICECODE,STARTDATE,ENDDATE)>
 	 */
 	private boolean setAddonData(){
 		logger.info("setAddonData...");
@@ -871,7 +874,7 @@ public class DVRSmain implements Job{
 		boolean result = false;
 		
 		sql=
-				"SELECT A.S2TIMSI IMSI,A.S2TMSISDN MSISDN,A.SERVICECODE,A.STARTDATE,A.ENDDATE "
+				"SELECT A.S2TIMSI IMSI,A.S2TMSISDN MSISDN,A.SERVICEID,A.SERVICECODE,A.STARTDATE,A.ENDDATE "
 				+ "FROM ADDONSERVICE_N A ";
 		try {
 			logger.debug("Execute SQL : "+sql);
@@ -882,6 +885,7 @@ public class DVRSmain implements Job{
 				Map<String,Object> map = new HashMap<String,Object>();
 				map.put("IMSI", rs.getString("IMSI"));
 				map.put("MSISDN", rs.getString("MSISDN"));
+				map.put("SERVICEID", rs.getString("SERVICEID"));
 				map.put("SERVICECODE", rs.getString("SERVICECODE"));
 				map.put("STARTDATE", rs.getDate("STARTDATE"));
 				map.put("ENDDATE", rs.getDate("ENDDATE"));
@@ -1402,38 +1406,53 @@ public class DVRSmain implements Job{
 	 *確認華人上網包 
 	 *20150115 ALTER 取消檢查門號
 	 */
-	private int checkQosAddon(String imsi,String mccmnc,Date callTime){
+	private int checkQosAddon(String imsi,String mccmnc,Date callTime,String serviceID){
 		
 
 		int cd=0;
 		
-		//String msisdn=null;
-		if(msisdnMap.containsKey(imsi)) {
-			//msisdn=msisdnMap.get(imsi).get("MSISDN");
-			
-			//只有香港
-			if(cd==0 && sSX001.contains(mccmnc)){
-				for(Map<String,Object> m : addonDataList){
-					if(imsi.equals(m.get("IMSI"))&&"SX001".equals(m.get("SERVICECODE"))&&
-							(callTime.after((Date) m.get("STARTDATE"))||callTime.equals((Date) m.get("STARTDATE")))&&
-							(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE")))){
-						cd=1;
-						break;
-					}
+		if(imsi!=null && !"".equals(imsi)){
+			//String msisdn=null;
+			/*if(msisdnMap.containsKey(imsi)) {*/
+				//msisdn=msisdnMap.get(imsi).get("MSISDN");
+			for(Map<String,Object> m : addonDataList){
+				if(imsi.equals(m.get("IMSI"))&&
+						(("SX001".equals(m.get("SERVICECODE"))&& sSX001.contains(mccmnc))||
+						("SX002".equals(m.get("SERVICECODE"))&& sSX002.contains(mccmnc)))&&
+						(callTime.after((Date) m.get("STARTDATE"))||callTime.equals((Date) m.get("STARTDATE")))&&
+						(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE"))||callTime.equals((Date) m.get("ENDDATE")))){
+					cd=1;
+					break;
 				}
-				
 			}
-			
-			//香港加中國大陸
-			if(cd==0 && sSX002.contains(mccmnc)){
-				for(Map<String,Object> m : addonDataList){
-					if(imsi.equals(m.get("IMSI"))&&"SX002".equals(m.get("SERVICECODE"))&&
-							(callTime.after((Date) m.get("STARTDATE"))||callTime.equals((Date) m.get("STARTDATE")))&&(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE")))){
-						cd=1;
-						break;
-					}
+			/*}*/
+		}
+				
+		//20150623 search by serviceid 
+		if(serviceID!=null && !"".equals(serviceID)){
+			for(Map<String,Object> m : addonDataList){
+				Calendar startTime = Calendar.getInstance(),endTime = Calendar.getInstance();
+				startTime.setTime((Date) m.get("STARTDATE"));
+				startTime.set(Calendar.HOUR_OF_DAY, 0);
+				startTime.set(Calendar.MINUTE, 0);
+				startTime.set(Calendar.SECOND, 0);
+				
+				
+				if(m.get("ENDDATE")!=null){
+					endTime.setTime((Date) m.get("ENDDATE"));
+					endTime.set(Calendar.HOUR_OF_DAY, 0);
+					endTime.set(Calendar.MINUTE, 0);
+					endTime.set(Calendar.SECOND, 0);
 				}
 				
+				if(serviceID.equals(m.get("SERVICEID"))&&
+						(("SX001".equals(m.get("SERVICECODE"))&& sSX001.contains(mccmnc))||
+						("SX002".equals(m.get("SERVICECODE"))&& sSX002.contains(mccmnc)))&&
+						(callTime.after(startTime.getTime())||callTime.equals(startTime.getTime()))&&
+						(endTime==null ||callTime.before(endTime.getTime())||callTime.equals(endTime.getTime()))){
+					cd=1;
+					break;
+				}
 			}
 		}
 		
@@ -1487,7 +1506,6 @@ public class DVRSmain implements Job{
 		try {
 			count=dataCount();
 			defaultRate=defaultRate();
-			setQosData();
 
 			//批次Query 避免ram空間不足
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
@@ -1573,7 +1591,7 @@ public class DVRSmain implements Job{
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
-					int cd=checkQosAddon(imsi, mccmnc, callTime);
+					int cd=checkQosAddon(imsi, mccmnc, callTime,null);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
@@ -1606,17 +1624,7 @@ public class DVRSmain implements Job{
 								logger.error("usageId:"+usageId+",CALLTIME:"+callTime.toString()+" can't charge correctly without Rate table ! ");
 								sendErrorMail("usageId:"+usageId+",CALLTIME:"+callTime.toString()+" can't charge correctly without Rate table ! ");
 								continue;
-							}
-							/*
-							String currency=(String) dataRate.get(pricplanID).get(mccmnc).get("CURRENCY");
-							if("HKD".equalsIgnoreCase(currency))
-								ec=exchangeRate;
-								
-							Double rate=(Double)dataRate.get(pricplanID).get(mccmnc).get("RATE");
-							Double unit=(Double)dataRate.get(pricplanID).get(mccmnc).get("CHARGEUNIT");
-							charge=Math.ceil(volume*kByte)*rate*ec/unit;
-							dayCap=(Double)dataRate.get(pricplanID).get(mccmnc).get("DAYCAP");*/
-							
+							}							
 						}else{
 							
 							//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
@@ -2613,6 +2621,8 @@ public class DVRSmain implements Job{
 		
 		//降速提醒簡訊判斷*************************************
 		
+		//NTT
+		
 		//暫存數據用量資料 Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
 		//是否需要計算的pricePlanid
@@ -2634,7 +2644,6 @@ public class DVRSmain implements Job{
 		checkedPriceplanid2.add("158");
 		checkedPriceplanid2.add("159");
 		checkedPriceplanid2.add("160");
-		
 		for(String day : currentDayMap.keySet()){
 			//這個月的月資料
 			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
@@ -2647,7 +2656,7 @@ public class DVRSmain implements Job{
 						priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
 						subsidiaryid = msisdnMap.get(serviceid).get("SUBSIDIARYID");
 					}
-					
+					//是否為NTT需要計算
 					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
 						for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
 							//確認Mccmnc
@@ -2668,14 +2677,14 @@ public class DVRSmain implements Job{
 		
 		try {
 			smsCount=0;
-			st = conn.createStatement();
+			st=conn.createStatement();
 			for(String serviceid:tempMap.keySet()){
 				Double volume=tempMap.get(serviceid);
 				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
 				//超過發簡訊，另外確認是否已通知過
 				boolean sendmsg=false;
 				Integer msgid=0;
-				
+				//NTT 流量警示內容為100～103
 				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 					//2.0 GB 簡訊中文102，英文103
 					msgid=102;
@@ -2688,28 +2697,7 @@ public class DVRSmain implements Job{
 				}
 				
 				if(sendmsg){
-					/*
-					String priceplanid = null;
-					if(msisdnMap.containsKey(serviceid)){
-						priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
-						//是否為Data only 方案
-						if(checkedPriceplanid2.contains(priceplanid)){
-							//以設定通知號通知
-							phone=msisdnMap.get(serviceid).get("NCODE");
-						}else{
-							//以門號通知
-							phone=msisdnMap.get(serviceid).get("MSISDN");
-						}
-					}
-					
-					//確認號碼
-					if(phone==null ||"".equals(phone)){
-						//sendErrorMail
-						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send "+msgid+"! ");
-						logger.debug("The serviceid:"+serviceid+" can't find msisdn to send "+msgid+"! ");
-						continue;
-					}*/
-					
+
 					//查詢所在國家的客服電話
 					String cPhone = null;
 					String nMccmnc=searchMccmncBySERVICEID(serviceid);
@@ -2719,44 +2707,6 @@ public class DVRSmain implements Job{
 						map = codeMap.get(nMccmnc.substring(0,3));
 					if(map!=null)
 						cPhone=map.get("PHONE");
-
-					/*
-					//中文
-					//處理字串
-					String cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
-					mail_content += cont +"<br><br>";
-					//20150309 mod temprater setting only send mail
-					//發送簡訊
-					//String res = setSMSPostParam(cont,phone);
-					//logger.debug("send chinese message result : "+res);	
-
-					smsCount++;
-					
-					sql="INSERT INTO HUR_SMS_LOG"
-							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-					//寫入資料庫
-					st.addBatch(sql);
-					logger.debug("execute SQL : "+sql); 
-					
-					
-					//英文
-					msgid+=1;
-					//處理字串
-					cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
-					mail_content += cont +"<br><br>";
-					//20150309 mod temprater setting only send mail
-					//發送簡訊
-					//res = setSMSPostParam(cont,phone);
-					//logger.debug("send english message result : "+res);	
-					smsCount++;
-					
-					sql="INSERT INTO HUR_SMS_LOG"
-							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-					//寫入資料庫
-					st.addBatch(sql);
-					logger.debug("execute SQL : "+sql); */
 
 					String mail_subject="";
 					String mail_content="";
@@ -2775,7 +2725,7 @@ public class DVRSmain implements Job{
 					}
 					
 					mail_content = processMag(mail_content,null,cPhone,msisdnMap.get(serviceid).get("ICCID"));
-					
+					smsCount++;
 					sendMail(new String(mail_subject.getBytes("ISO8859-1"),"BIG5"), 
 							new String(mail_content.getBytes("ISO8859-1"),"BIG5").replaceAll("%2b", "+"),mail_sender ,mail_receiver );
 					
@@ -2790,37 +2740,35 @@ public class DVRSmain implements Job{
 					
 					//更新CurrentMap
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
-
 				}
 				
 			}
-			logger.debug("Total send volume alert SMS "+smsCount+" ...");
+			logger.debug("Total send NTT volume alert mail "+smsCount+" ...");
 			//st.executeBatch();			
 		} catch (SQLException e) {
-			logger.error("At sendDayAlertSMS occur SQLException error!", e);
+			logger.error("At send NTT volume alert mail occur SQLException error!", e);
 			//send mail
-			
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
-			sendErrorMail("At sendDayAlertSMS occur SQLException error!");
+			sendErrorMail("At send NTT volume alert mail occur SQLException error!");
 		} catch (UnsupportedEncodingException e) {
-			logger.error("At sendDayAlertSMS occur UnsupportedEncodingException error!", e);
+			logger.error("At send NTT volume alert mail occur UnsupportedEncodingException error!", e);
 			//send mail
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
-			sendErrorMail("At sendDayAlertSMS occur UnsupportedEncodingException error!");
+			sendErrorMail("At send NTT volume alert mail occur UnsupportedEncodingException error!");
 		} catch (Exception e) {
-			logger.error("At sendDayAlertSMS occur Exception error!", e);
+			logger.error("At send NTT volume alert mail occur Exception error!", e);
 			//send mail
 			errorMsg="";
 			for(StackTraceElement s :e.getStackTrace()){
 				errorMsg+=s.toString()+"<br>\n";
 			}
-			sendErrorMail("At sendDayAlertSMS occur Exception error!");
+			sendErrorMail("At send NTT volume alert mail occur Exception error!");
 		} finally{
 			try {
 				if(st!=null)
@@ -2830,6 +2778,152 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 			}
 		}
+		
+		//20150623 新增華人上網包
+		tempMap.clear();
+		for(String day : currentDayMap.keySet()){
+			//這個月的月資料
+			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
+				Date dayTime = null;
+				try {
+					dayTime = new SimpleDateFormat("yyyyMMdd").parse(day);
+				} catch (ParseException e) {
+					continue;
+				}
+				for(String serviceid:currentDayMap.get(day).keySet()){
+					for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
+						//XXX
+						int check=checkQosAddon(null, mccNet, dayTime,serviceid);
+						if(check==1){
+							//進行累計
+							Double oldVolume=0D;
+							Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccNet).get("VOLUME");
+							if(tempMap.containsKey(serviceid)){
+								oldVolume=tempMap.get(serviceid);
+							}
+							tempMap.put(serviceid, oldVolume+volume);
+						}
+					}
+				}
+			}
+		}
+		
+		try {
+			smsCount=0;
+			st = conn.createStatement();
+			for(String serviceid:tempMap.keySet()){
+				Double volume=tempMap.get(serviceid);
+				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
+				//超過發簡訊，另外確認是否已通知過
+				boolean sendmsg=false;
+				Integer msgid=0;
+				//華人上網包簡訊內容
+				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
+					//2.0 GB 簡訊中文102，英文103
+					msgid=102;
+					sendmsg=true;
+				}
+				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
+					//1.5 GB 簡訊中文100，英文101
+					msgid=100;
+					sendmsg=true;
+				}
+				
+				if(sendmsg){
+					//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
+					if(msisdnMap.containsKey(serviceid))
+						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
+					if(phone==null ||"".equals(phone)){
+						//sendErrorMail
+						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
+						logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
+						continue;
+					}
+					
+					//查詢所在國家的客服電話
+					String cPhone = null;
+					String nMccmnc=searchMccmncBySERVICEID(serviceid);
+					Map<String,String> map=null;
+					
+					if(nMccmnc!=null && !"".equals(nMccmnc))
+						map = codeMap.get(nMccmnc.substring(0,3));
+					if(map!=null)
+						cPhone=map.get("PHONE");
+
+					//中文
+					//處理字串
+					String cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
+					//發送簡訊
+					String res = setSMSPostParam(cont,phone);
+					logger.debug("send chinese message result : "+res);	
+
+					smsCount++;
+					
+					sql="INSERT INTO HUR_SMS_LOG"
+							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+					//寫入資料庫
+					st.addBatch(sql);
+					logger.debug("execute SQL : "+sql); 
+					
+					
+					//英文
+					msgid+=1;
+					//處理字串
+					cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
+					//發送簡訊
+					res = setSMSPostParam(cont,phone);
+					logger.debug("send english message result : "+res);	
+					smsCount++;
+					
+					sql="INSERT INTO HUR_SMS_LOG"
+							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+					//寫入資料庫
+					st.addBatch(sql);
+					logger.debug("execute SQL : "+sql); 
+					
+					//更新CurrentMap
+					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
+				}	
+			}
+			logger.debug("Total send 華人上網包 volume alert SMS "+smsCount+" ...");
+			//st.executeBatch();			
+		} catch (SQLException e) {
+			logger.error("At addon volume Alert SMS occur SQLException error!", e);
+			//send mail
+			
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+			sendErrorMail("At addon volume Alert SMS occur SQLException error!");
+		} catch (UnsupportedEncodingException e) {
+			logger.error("At addon volume Alert SMS occur UnsupportedEncodingException error!", e);
+			//send mail
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+			sendErrorMail("At addon volume Alert SMS occur UnsupportedEncodingException error!");
+		} catch (Exception e) {
+			logger.error("At addon volume Alert SMS occur Exception error!", e);
+			//send mail
+			errorMsg="";
+			for(StackTraceElement s :e.getStackTrace()){
+				errorMsg+=s.toString()+"<br>\n";
+			}
+			sendErrorMail("At addon volume Alert SMS occur Exception error!");
+		} finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+			}
+		}
+		
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 	}
 	
@@ -3010,7 +3104,8 @@ public class DVRSmain implements Job{
 	 * 
 	 * @param content
 	 */
-	private static void sendErrorMail(String content){
+	//20150616 change send from linux mail server
+	/*private static void sendErrorMail(String content){
 		mailReceiver=props.getProperty("mail.Receiver");
 		mailSubject="DVRS Warnning Mail";
 		mailContent="Error :"+content+"<br>\n"
@@ -3036,12 +3131,12 @@ public class DVRSmain implements Job{
 		}
 	}
 	
-	/**
+	*//**
 	 * 發送mail
 	 * 
 	 * @param content
 	 * @throws Exception 
-	 */
+	 */ /*
 	private static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver) throws Exception{
 
 		if(mailReceiver==null ||"".equals(mailReceiver)){
@@ -3051,6 +3146,44 @@ public class DVRSmain implements Job{
 			tool.sendMail(logger, props, mailSender, mailReceiver, mailSubject, mailContent);
 		}
 
+	}*/
+	
+	static void sendErrorMail(String msg){
+
+		mailReceiver=props.getProperty("mail.Receiver");
+		mailSubject="DVRS Warnning Mail";
+		mailContent="Error :"+msg+"<br>\n"
+				+ "Error occurr time: "+tool.DateFormat()+"<br>\n"
+				+ "SQL : "+sql+"<br>\n"
+				+ "Error Msg : "+errorMsg;	
+		
+		String [] cmd=new String[3];
+		cmd[0]="/bin/bash";
+		cmd[1]="-c";
+		cmd[2]= "/bin/echo \""+mailContent+"\" | /bin/mail -s \""+mailSubject+"\" -r DVRS_ALERT "+mailReceiver;
+
+		try{
+			Process p = Runtime.getRuntime().exec (cmd);
+			p.waitFor();
+			System.out.println("send mail cmd:"+cmd);
+		}catch (Exception e){
+			System.out.println("send mail fail:"+msg);
+		}
+	}
+	
+	void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver){
+		String [] cmd=new String[3];
+		cmd[0]="/bin/bash";
+		cmd[1]="-c";
+		cmd[2]= "/bin/echo \""+mailContent+"\" | /bin/mail -s \""+mailSubject+"\" -r "+mailSender+" "+mailReceiver;
+
+		try{
+			Process p = Runtime.getRuntime().exec (cmd);
+			p.waitFor();
+			System.out.println("send mail cmd:"+cmd);
+		}catch (Exception e){
+			System.out.println("send mail fail:"+mailContent);
+		}
 	}
 
 	/**
@@ -3346,6 +3479,7 @@ public class DVRSmain implements Job{
 					setTADIGtoMCCMNC()&&//TADIG 對應到 MCCMNC
 					setCostomerNumber()&&//國碼對應表(客服,國名)
 					setAddonData()&&//華人上網包申請資料
+					setQosData()&&//設定SX001,SX002資料
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					(oldChargeMap.size()!=0||setoldChargeMap())&&//設定old
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT

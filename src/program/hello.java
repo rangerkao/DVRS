@@ -34,7 +34,20 @@ public class hello {
 	public static void main(String[] args) throws UnknownHostException {
 		
 
-		
+		//時間測試
+		try {
+			Date testTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/06/23 15:35:44");
+			
+			Calendar startTime = Calendar.getInstance(),endTime = Calendar.getInstance();
+			startTime.setTime(testTime);
+			startTime.set(Calendar.HOUR_OF_DAY, 0);
+			startTime.set(Calendar.MINUTE, 0);
+			startTime.set(Calendar.SECOND, 0);
+			System.out.println(startTime.getTime());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 
 		/*//簡訊測試   分段
