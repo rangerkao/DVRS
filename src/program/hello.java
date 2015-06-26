@@ -35,7 +35,7 @@ public class hello {
 		
 
 		//時間測試
-		try {
+		/*try {
 			Date testTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/06/23 15:35:44");
 			
 			Calendar startTime = Calendar.getInstance(),endTime = Calendar.getInstance();
@@ -47,15 +47,15 @@ public class hello {
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 
-		/*//簡訊測試   分段
-		String msg = "*環球卡高用量提醒*提醒您本月數據用量上網金額統計至前一小時加部份推估，已約達NT65,000.00，"
-				+ "實際用量及使用金額以帳單為準。另您已約定上網金額不設限，感謝您的留意。如需諮詢請電客服*123#。";
+		//簡訊測試   分段
+		String msg = "*環球卡高用量提醒*提醒您本月數據用量上網金額統計至前{{bp}}一小時加部份推估，已約達NT65,000.00，"
+				+ "實際用量及使用金額以帳單為準。另您已{{bp}}約定上網金額不設限，感謝您的留意。如需諮詢請電客服*123#。";
 		
 	
-		int number = 100;
+		/*int number = 100;
 		int length = msg.length();
 		byte[] b = msg.getBytes();
 		length = b.length;
@@ -76,10 +76,13 @@ public class hello {
 				sub[i]=new String(c);
 	
 			sub[i]=msg.substring(i*number,last);
-		}
+		}*/
+		
+		String [] sub ={msg.replaceAll("\\{\\{bp\\}\\}","")};
+		//String [] sub =msg.split("\\{\\{bp\\}\\}");
 		for(String s: sub){
 			System.out.println(s);
-		}*/
+		}
 		/*
 		try {
 			setSMSPostParam(new String("中文測試".getBytes("BIG5"), "ISO-8859-1"), "886989235253");

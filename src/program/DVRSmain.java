@@ -53,6 +53,8 @@ package program;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -346,13 +348,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setCurrentMap occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setCurrentMap occur SQLException error!");
+			ErrorHandle("At setCurrentMap occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -457,13 +453,7 @@ public class DVRSmain implements Job{
 			result = true;
 
 		} catch (SQLException e) {
-			logger.error("At setCurrentMapDay occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setCurrentMapDay occur SQLException error!");
+			ErrorHandle("At setCurrentMapDay occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -534,13 +524,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {			
-			logger.error("At setDataRate occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setDataRate occur SQLException errorr!");
+			ErrorHandle("At setDataRate occur SQLException error", e);
 		} finally{
 			try {
 				if(st!=null)
@@ -628,13 +612,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setSERVICEIDtoVLN occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setSERVICEIDtoVLN occur SQLException error!");
+			ErrorHandle("At setSERVICEIDtoVLN occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -679,13 +657,7 @@ public class DVRSmain implements Job{
 			
 			result =true;
 		} catch (SQLException e) {			
-			logger.error("At setVLNtoTADIG occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setVLNtoTADIG occur SQLException error!");
+			ErrorHandle("At setVLNtoTADIG occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -727,13 +699,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
+			ErrorHandle("At setTADIGtoMCCMNC occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -779,13 +745,7 @@ public class DVRSmain implements Job{
 			}
 			result = true;
 		} catch (SQLException e) {
-			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
+			ErrorHandle("At setTADIGtoMCCMNC occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -826,13 +786,7 @@ public class DVRSmain implements Job{
 			logger.info("usage count : " +count);
 
 		} catch (SQLException e) {
-			logger.error("At dataCount occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At dataCount occur SQLException error!");
+			ErrorHandle("At dataCount occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -893,13 +847,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setTADIGtoMCCMNC occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setTADIGtoMCCMNC occur SQLException error!");
+			ErrorHandle("At setTADIGtoMCCMNC occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -943,13 +891,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setIPtoMccmncList occur SQLException error", e);
-			//send mail
-			sendErrorMail("At setIPtoMccmncList occur SQLException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At setIPtoMccmncList occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1003,13 +945,7 @@ public class DVRSmain implements Job{
 			}
 			result = true;
 		} catch (SQLException e) {
-			logger.error("At setMsisdnMap occur SQLException error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setMsisdnMap occur SQLException error!");
+			ErrorHandle("At setMsisdnMap occur SQLException error!", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1070,13 +1006,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setIMSItoServiceIDMap occur SQLException error!", e);
-			//send mail
-			sendErrorMail("At setIMSItoServiceIDMap occur SQLException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At setIMSItoServiceIDMap occur SQLException error!", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1129,13 +1059,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setIMSItoServiceIDMap occur SQLException error!", e);
-			//send mail
-			sendErrorMail("At setIMSItoServiceIDMap occur SQLException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At setIMSItoServiceIDMap occur SQLException error!", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1223,22 +1147,9 @@ public class DVRSmain implements Job{
 					+ "kByte : "+kByte+"\n");
 			
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			System.out.println("File Path : "+path);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At loadProperties occur file not found error \n <br> file path="+path);
+			ErrorHandle("At loadProperties occur file not found error \n <br> file path="+path);
 		} catch (IOException e) {
-			e.printStackTrace();
-			//send mail	
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At loadProperties occur IOException error !\n <br> file path="+path);
+			ErrorHandle("At loadProperties occur IOException error !\n <br> file path="+path);
 		}
 	}
 	
@@ -1263,22 +1174,9 @@ public class DVRSmain implements Job{
 			
 		} catch (ClassNotFoundException e) {
 			sql="";
-			logger.error("At connDB occur ClassNotFoundException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At connDB occur ClassNotFoundException error!");
+			ErrorHandle("At connDB occur ClassNotFoundException error", e);
 		} catch (SQLException e) {
-			sql="";
-			logger.error("At connDB occur SQLException error", e);
-			//send mail	
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At connDB occur SQLException error!");
+			ErrorHandle("At connDB occur SQLException error", e);
 		}
 	}
 	
@@ -1302,22 +1200,10 @@ public class DVRSmain implements Job{
 			logger.info("Connrct to "+url);
 		} catch (ClassNotFoundException e) {
 			sql="";
-			logger.error("At connDB2 occur ClassNotFoundException error", e);
-			//send mail
-			sendErrorMail("At connDB2 occur ClassNotFoundException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}	
+			ErrorHandle("At connDB2 occur ClassNotFoundException error", e);
 		} catch (SQLException e) {
 			sql="";
-			logger.error("At connDB2 occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At connDB2 occur SQLException error!");
+			ErrorHandle("At connDB2 occur SQLException error", e);;
 		}
 	}
 	
@@ -1332,13 +1218,7 @@ public class DVRSmain implements Job{
 				logger.info("closeConnect1...");
 				conn.close();
 			} catch (SQLException e) {
-				logger.error("close Connect Error", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At closeConnect occur SQLException error!");
+				ErrorHandle("close Connect Error", e);
 			}
 
 		}
@@ -1349,13 +1229,7 @@ public class DVRSmain implements Job{
 				logger.info("closeConnect2...");
 				conn2.close();
 			} catch (SQLException e) {
-				logger.error("close Connect2 Error", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At closeConnect2 occur SQLException error!");
+				ErrorHandle("close Connect2 Error", e);
 			}
 
 		}
@@ -1371,13 +1245,7 @@ public class DVRSmain implements Job{
 			conn.setAutoCommit(false);
 			
 		} catch (SQLException e) {
-			logger.error("At cancelAutoCommit occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At cancelAutoCommit occur SQLException error!");
+			ErrorHandle("At cancelAutoCommit occur SQLException error", e);
 		}
 	}
 	
@@ -1784,21 +1652,9 @@ public class DVRSmain implements Job{
 				}
 			}
 		} catch (SQLException e) {
-			logger.error("At charge occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At charge occur SQLException error!");
+			ErrorHandle("At charge occur SQLException error", e);
 		} catch (ParseException e) {
-			logger.error("At charge occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At charge occur SQLException error!");
+			ErrorHandle("At charge occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1846,13 +1702,7 @@ public class DVRSmain implements Job{
 			}
 			result = true;
 		} catch (SQLException e) {
-			logger.error("At updateCdr occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At updateCdr occur SQLException error!");
+			ErrorHandle("At updateCdr occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1938,13 +1788,7 @@ public class DVRSmain implements Job{
 			result = true;
 			
 		} catch (SQLException e) {
-			logger.error("At updateCurrentMap occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At updateCurrentMap occur SQLException error!");
+			ErrorHandle("At updateCurrentMap occur SQLException error", e);
 		}finally{
 			try {
 				if(pst!=null)
@@ -2001,13 +1845,7 @@ public class DVRSmain implements Job{
 			
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At updateCurrentMapU occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At updateCurrentMapU occur SQLException error!");
+			ErrorHandle("At updateCurrentMapU occur SQLException error", e);
 		}finally{
 			try {
 				if(pst!=null)
@@ -2075,13 +1913,7 @@ public class DVRSmain implements Job{
 			}
 			result = true;
 		} catch (SQLException e) {
-			logger.error("At insertCurrent occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At insertCurrent occur SQLException error!");
+			ErrorHandle("At insertCurrent occur SQLException error", e);
 		}finally{
 			try {
 				if(pst!=null)
@@ -2150,13 +1982,7 @@ public class DVRSmain implements Job{
 			}
 			result = true;
 		} catch (SQLException e) {
-			logger.error("At insertCurrentDay occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At insertCurrentDay occur SQLException error!");
+			ErrorHandle("At insertCurrentDay occur SQLException error", e);
 		}finally{
 			try {
 				if(pst!=null)
@@ -2169,31 +1995,19 @@ public class DVRSmain implements Job{
 	}
 
 	
-	/**
-	 * 依照額度需求發送警示簡訊
-	 * 第一次，額度一，訊息一
-	 * 
-	 * 
-	 */
-	private void sendAlertSMS(){
-		logger.info("sendAlertSMS...");
-		long subStartTime = System.currentTimeMillis();
-		
-		List<Integer> times=new ArrayList<Integer>();
-		List<Double> bracket=new ArrayList<Double>();
-		List<String> msg=new ArrayList<String>();
-		List<String> suspend=new ArrayList<String>();
-		
-		int smsCount=0;
-		String phone=null;
-		
-		Statement st = null;
-		ResultSet rs = null;
+	List<Integer> times=new ArrayList<Integer>();
+	List<Double> bracket=new ArrayList<Double>();
+	List<String> msg=new ArrayList<String>();
+	List<String> suspend=new ArrayList<String>();
+	
+	public Boolean getSMSsetting(){
 		//載入簡訊設定
 		//times 設定編號，無作用
 		//bracket 警示額度，以0~1的比率
 		//msg 要發送的id，如果多個id以","號分開
 		//suspend 1表示需要中斷，0表示沒有
+		Statement st = null;
+		ResultSet rs = null;
 		try {
 			sql="SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND FROM HUR_SMS_SETTING A ORDER BY ID DESC";	
 			
@@ -2210,13 +2024,7 @@ public class DVRSmain implements Job{
 				logger.info("times:"+times.get(times.size()-1)+",bracket:"+bracket.get(bracket.size()-1)+",msg:"+msg.get(msg.size()-1)+",suspend:"+suspend.get(suspend.size()-1));
 			}
 		} catch (SQLException e) {
-			logger.error("At sendAlertSMS:Load SMSSetting occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At sendAlertSMS:Load SMSSetting occur SQLException error!");
+			ErrorHandle("At sendAlertSMS:Load SMSSetting occur SQLException error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -2226,20 +2034,20 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 			}
 		}
-		
-		
 		if(times.size()==0){
-			logger.error("No SMS Setting!");
-			//sendErrorMail
-			sql="";errorMsg="";
-			sendErrorMail("Can't found SMS Setting!");
-			return;
+			sql="";
+			ErrorHandle("Can't found SMS Setting!");
+			return false;
+		}else{
+			return true;
 		}
 		
+	}
+	Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
+	public Boolean getSMSContents(){
 		//載入簡訊內容
-		
-		Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
-		
+		Statement st = null;
+		ResultSet rs = null;
 		try {
 			sql=
 					"SELECT A.ID,A.CONTENT,A.CHARSET "
@@ -2257,13 +2065,7 @@ public class DVRSmain implements Job{
 			}
 
 		} catch (SQLException e) {
-			logger.error("At sendAlertSMS:Load SMSContent occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At sendAlertSMS:Load SMSContent occur SQLException error!");
+			ErrorHandle("At sendAlertSMS:Load SMSContent occur SQLException error", e);
 		} finally{
 			try {
 				if(st!=null)
@@ -2278,351 +2080,300 @@ public class DVRSmain implements Job{
 			logger.error("No SMS content!");
 			sql="";errorMsg="";
 			sendErrorMail("Can't found SMS Content sentting!");
-			return;
+			return false;
+		}else{
+			return true;
 		}
-		
-		
+	}
+	
+	public void ckeckMonthAlert(){
 		//開始檢查是否發送警示簡訊
 		//月金額警示*************************************
 		//沒有當月資料，不檢查
 		if(currentMap.containsKey(sYearmonth)){
-			smsCount=0;
-			try {
-				st = conn.createStatement();
-				//檢查這個月的資料作警示通知
-				for(String serviceid: currentMap.get(sYearmonth).keySet()){
-					
-					//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
-					if(msisdnMap.containsKey(serviceid))
-						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
-					if(phone==null ||"".equals(phone)){
-						//sendErrorMail
-						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
-						logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
-						continue;
-					}
-					
-					String res="";
-					
-					Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
-					Double oldCharge=(Double) oldChargeMap.get(serviceid);
-					if(oldCharge==null)	oldCharge=0D;
+			
+			String phone = null;
+			int smsCount=0;
 	
-					Double differenceCharge=charge-oldCharge;
-					int smsTimes=(Integer) currentMap.get(sYearmonth).get(serviceid).get("SMS_TIMES");
-					String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
-					Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_THRESHOLD");
-					boolean isCustomized=false;
-					
-					//20141118 修改 約定客戶訂為每5000提醒一次不斷網
-					Double threshold=thresholdMap.get(serviceid);
+			//檢查這個月的資料作警示通知
+			for(String serviceid: currentMap.get(sYearmonth).keySet()){
+				//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
+				if(msisdnMap.containsKey(serviceid))
+					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
+				if(phone==null ||"".equals(phone)){
+					//sendErrorMail
+					sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
+					logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
+					continue;
+				}
+	
+				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
+				Double oldCharge=(Double) oldChargeMap.get(serviceid);
+				if(oldCharge==null)	oldCharge=0D;
 
-					if(threshold==null){
-						threshold=DEFAULT_THRESHOLD;
-					}else{
-						isCustomized=true;
-					}
-					if(lastAlernThreshold==null)
-						lastAlernThreshold=0D;
-					
-					int i=0;
-					boolean sendSMS=false;
-					boolean needSuspend=false;
-					Double alertBracket=0D;
-					String[] contentid=null;
-					
-					//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
-					if(threshold!=0D){
-						//檢查月用量
-						for(;i<times.size();i++){
-							if(((charge>=bracket.get(i)*threshold))&&lastAlernThreshold<bracket.get(i)*threshold){
-								sendSMS=true;
-								alertBracket=bracket.get(i)*threshold;
-								contentid=msg.get(i).split(",");
-								if("1".equals(suspend.get(i)))
-									needSuspend=true;
-								break;
-							}
-						}	
-						
-						//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
-						if(!sendSMS||(sendSMS && i!=0)){
-							if(charge+differenceCharge>=bracket.get(0)*threshold&&lastAlernThreshold<bracket.get(0)*threshold){
-								logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
-								sendSMS=true;
-								alertBracket=bracket.get(0)*threshold;
-								contentid=msg.get(0).split(",");
-								if("1".equals(suspend.get(0))){
-									needSuspend=true;
-								}else{
-									needSuspend=false;
-								}
-								i=0;
-							}
-						}
-					}else{
-						int temp=(int) ((int)(charge/DEFAULT_THRESHOLD)*DEFAULT_THRESHOLD);
-						
-						if(temp>lastAlernThreshold){
-							alertBracket=(double) temp;
+				Double differenceCharge=charge-oldCharge;
+				int smsTimes=(Integer) currentMap.get(sYearmonth).get(serviceid).get("SMS_TIMES");
+				String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
+				Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_THRESHOLD");
+				boolean isCustomized=false;
+				
+				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
+				Double threshold=thresholdMap.get(serviceid);
+
+				if(threshold==null){
+					threshold=DEFAULT_THRESHOLD;
+				}else{
+					isCustomized=true;
+				}
+				if(lastAlernThreshold==null)
+					lastAlernThreshold=0D;
+
+				boolean sendSMS=false;
+				boolean needSuspend=false;
+				Double alertBracket=0D;
+				String[] contentid=null;
+				
+				int msgSettingID=0;
+				
+				//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
+				if(threshold!=0D){
+					//檢查月用量
+					for(;msgSettingID<times.size();msgSettingID++){
+						if(((charge>=bracket.get(msgSettingID)*threshold))&&lastAlernThreshold<bracket.get(msgSettingID)*threshold){
 							sendSMS=true;
-							//如果為VIP客戶預設發3號簡訊
-							contentid=new String[]{"3"};
-						}
-					}
-					
+							alertBracket=bracket.get(msgSettingID)*threshold;
+							contentid=msg.get(msgSettingID).split(",");
 
-					//寄送簡訊
-					if(sendSMS){
-						//查詢所在國家的客服電話
-						String cPhone = null;
-						String nMccmnc=searchMccmncBySERVICEID(serviceid);
-						Map<String,String> map=null;
-						
-						if(nMccmnc!=null && !"".equals(nMccmnc))
-							map = codeMap.get(nMccmnc.substring(0,3));
-						if(map!=null)
-							cPhone=map.get("PHONE");
-						
-						for(String s:contentid){
-							if(s!=null){
-								//寄送簡訊
-								lastAlernThreshold=alertBracket;
-								smsTimes++;
-								logger.info("For "+serviceid+" send "+smsTimes+"th message:"+msg.get(i));
-								
-								String cont = content.get(s).get("CONTENT");
-								
-								cont = new String(cont.getBytes("ISO8859-1"),"big5");
-								
-								cont =processMag(cont,alertBracket,cPhone);
-								
-								//WSDL方式呼叫 WebServer
-								//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
-								
-								//如果判斷客戶在印尼，則分段簡訊進行發送
-								if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
-									int number = 68;
-									
-									int length = cont.length();
-									/*byte[] b =cont.getBytes();
-									length = b.length;*/
-									int msgN = length/number;
-									if(length%number>0)
-										msgN += 1;
-									String [] sub =new String[msgN];
-									
-									for(int j=0;j<msgN;j++){
-										int last = (j+1)*number;
-										if(last>length)
-											last=length;
-											
-										/*byte [] c = new byte[number];
-										System.arraycopy(b, j*number , c, 0, last-j*number);
-										sub[j]=new String(c);*/
-										sub[j]=cont.substring(j*number,last);
-									}
-									String sRes="";
-									for(String sCont : sub){
-										sRes += setSMSPostParam(new String(sCont.getBytes("big5"),"ISO8859-1"),phone);
-										Thread.sleep(3000);
-									}
-									res = sRes.substring(0,sRes.length()-1);
-								}else{
-									res=setSMSPostParam(new String(cont.getBytes("big5"),"ISO8859-1"),phone);
-								}
-	
-								currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", lastAlernThreshold);
-								logger.debug("send message result : "+res);						
-								currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", smsTimes);
-								smsCount++;
-								
-								sql="INSERT INTO HUR_SMS_LOG"
-										+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-										+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-								//寫入資料庫
-								logger.debug("execute SQL : "+sql);
-								st.addBatch(sql);
-							}				
+							if("1".equals(suspend.get(msgSettingID))){
+								needSuspend=true;
+							}
+							break;
 						}
-					}
+					}	
 					
-					//中斷GPRS服務
-					//20141113 新增客制定上限不執行斷網
-					//20150529 將中斷的部分從發送簡訊中獨立出來
-
-					if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
-						String imsi = msisdnMap.get(serviceid).get("IMSI");
-						if(imsi==null || "".equals(imsi))
-							imsi = ServiceIdtoIMSIMap.get(serviceid);
-						
-						if(imsi==null || "".equals(imsi)){
-							logger.debug("Suspend GPRS fail because without mimsi for serviceid is "+serviceid);
-							continue;
+					//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
+					if(!sendSMS||(sendSMS && msgSettingID!=0)){
+						if(charge+differenceCharge>=bracket.get(0)*threshold&&lastAlernThreshold<bracket.get(0)*threshold){
+							logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
+							sendSMS=true;
+							alertBracket=bracket.get(0)*threshold;
+							contentid=msg.get(0).split(",");
+							if("1".equals(suspend.get(0))){
+								needSuspend=true;
+							}else{
+								needSuspend=false;
+							}
+							msgSettingID=0;
 						}
-						logger.debug("Suspend GPRS ... ");		
-						suspend(imsi,phone);
-						currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
 					}
+				}else{
+					int temp=(int) ((int)(charge/DEFAULT_THRESHOLD)*DEFAULT_THRESHOLD);
+					
+					if(temp>lastAlernThreshold){
+						alertBracket=(double) temp;
+						sendSMS=true;
+						//如果為VIP客戶預設發3號簡訊
+						contentid=new String[]{"3"};
+					}
+				}				
+				if(sendSMS){
+					smsCount= sendSMS(serviceid,contentid,alertBracket,phone);
+					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
+					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", (smsTimes+smsCount));
 				}
-				logger.debug("Total send month alert"+smsCount+" ...");
-				logger.debug("Log to table...executeBatch");
-				st.executeBatch();
-			} catch (SQLException e) {
-				logger.error("At sendMonthAlertSMS occur SQLException error!", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At sendMonthAlertSMS occur SQLException error!");
-			}catch(Exception e){
-				logger.error("At sendMonthAlertSMS occur Exception error!", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At sendMonthAlertSMS occur Exception error!");
-			}finally{
-				try {
-					if(st!=null)
-						st.close();
-					if(rs!=null)
-						rs.close();
-				} catch (SQLException e) {
+				
+				if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
+					doSuspend(serviceid,phone);
 				}
 			}
+			logger.debug("Total send month alert"+smsCount+" ...");
+			logger.debug("Log to table...executeBatch");
 		}
+	}
+	
+	public void doSuspend(String serviceid,String phone){
+		//中斷GPRS服務
+		//20141113 新增客制定上限不執行斷網
+		//20150529 將中斷的部分從發送簡訊中獨立出來
+
 		
+		String imsi = msisdnMap.get(serviceid).get("IMSI");
+		if(imsi==null || "".equals(imsi))
+			imsi = ServiceIdtoIMSIMap.get(serviceid);
 		
-		//實做日警示部分，有今日資料才警示*************************************
-		if(currentDayMap.containsKey(sYearmonthday)){
-			smsCount=0;
-			try {
-				st = conn.createStatement();
-				for(String serviceid:currentDayMap.get(sYearmonthday).keySet()){
-					
-					//20141216 add 斷網過後，不發送每日簡訊，避免預估斷網後，每日帶出實際累計引發爭議
-					if(currentMap.containsKey(sYearmonth) && currentMap.get(sYearmonth).containsKey(serviceid)){
-						String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
-						if("1".equals(everSuspend)){
-							continue;
-						}
-					}
-					
-					
-					
-					//檢查門號是否存在，如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
-					if(msisdnMap.containsKey(serviceid))
-						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
-					if(phone==null ||"".equals(phone)){
-						//sendErrorMail
-						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
-						logger.debug("The serviceid:"+serviceid+" can't find msisdn to send! ");
-						continue;
+		if(imsi==null || "".equals(imsi)){
+			logger.debug("Suspend GPRS fail because without mimsi for serviceid is "+serviceid);
+			return;
+		}
+		logger.debug("Suspend GPRS ... ");		
+		suspend(imsi,phone);
+		currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
+		
+	}
+	
+	public int sendSMS(String serviceid,String[] contentid,Double alertBracket,String phone){
+		Statement st =null;
+		int smsCount=0;
+		String res;
+
+		try {
+			st = conn.createStatement();
+			//查詢所在國家的客服電話
+			String cPhone = null;
+			String nMccmnc=searchMccmncBySERVICEID(serviceid);
+			Map<String,String> map=null;
+			
+			if(nMccmnc!=null && !"".equals(nMccmnc))
+				map = codeMap.get(nMccmnc.substring(0,3));
+			if(map!=null)
+				cPhone=map.get("PHONE");
+			
+			for(String s:contentid){
+				if(s!=null){
+					//寄送簡訊
+					String cont = content.get(s).get("CONTENT");
+					if(cont==null || "".equals(cont)){
+						throw new Exception("Can't find mail content id:"+s);
 					}
 
-					Double daycharge=0D;
-					String alerted ="0";
-					String res="";
-					//累計
-					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
-						daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
-						String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("ALERT");
-						if("1".equals(a)) alerted="1";
-					}
+					cont = new String(cont.getBytes("ISO8859-1"),"big5");
 					
-					if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
-						//查詢所在國家的客服電話
-						String cPhone = null;
-						String nMccmnc=searchMccmncBySERVICEID(serviceid);
-						Map<String,String> map=null;
+					cont =processMag(cont,alertBracket,cPhone);
+					
+					//WSDL方式呼叫 WebServer
+					//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
+					
+					//如果判斷客戶在印尼，則分段簡訊進行發送
+					if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
+						/*int number = 68;
 						
-						if(nMccmnc!=null && !"".equals(nMccmnc))
-							map = codeMap.get(nMccmnc.substring(0,3));
-						if(map!=null)
-							cPhone=map.get("PHONE");
+						int length = cont.length();
+						byte[] b =cont.getBytes();
+						length = b.length;
+						int msgN = length/number;
+						if(length%number>0)
+							msgN += 1;
+						String [] sub =new String[msgN];
 						
-						//處理字串，日警示內容ID設定為99
-						//20141209 修改為帶出當月累積金額
-						String cont = content.get("99").get("CONTENT");
-						cont =new String(cont.getBytes("ISO8859-1"),"big5");
-						cont =processMag(cont,(Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"),cPhone);
-						//發送簡訊
-						logger.info("For "+serviceid+" send daily allert message:99");
-						//如果判斷客戶在印尼，則分段簡訊進行發送
-						if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
-							int number = 68;
-							int length = cont.length();
-							int msgN = length/number;
-							if(length%number>0)
-								msgN += 1;
-							String [] sub =new String[msgN];
-							
-							for(int j=0;j<msgN;j++){
-								int last = (j+1)*number;
-								if(last>length)
-									last=length;
-								sub[j]=cont.substring(j*number,last);
-							}
-							String sRes="";
-							for(String sCont : sub){
-								sRes += setSMSPostParam(new String(sCont.getBytes("big5"),"ISO8859-1"),phone);
-							}
-							res = sRes.substring(0,sRes.length()-1);
-						}else{
-							res=setSMSPostParam(new String(cont.getBytes("big5"),"ISO8859-1"),phone);
+						for(int j=0;j<msgN;j++){
+							int last = (j+1)*number;
+							if(last>length)
+								last=length;
+								
+							byte [] c = new byte[number];
+							System.arraycopy(b, j*number , c, 0, last-j*number);
+							sub[j]=new String(c);
+							sub[j]=cont.substring(j*number,last);
+						}*/
+
+						String [] sub =cont.split("\\{\\{bp\\}\\}");
+						String sRes="";
+						for(String sCont : sub){
+							sRes += setSMSPostParam(new String(sCont.getBytes("big5"),"ISO8859-1"),phone);
+							Thread.sleep(3000);
 						}
-						logger.debug("send message result : "+res);	
-						smsCount++;
-						//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
-						for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
-							currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
-						}
-						sql="INSERT INTO HUR_SMS_LOG"
-								+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-								+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-						//寫入資料庫
-						st.addBatch(sql);
-						logger.debug("execute SQL : "+sql);
+						res = sRes.substring(0,sRes.length()-1);
+					}else{
+						cont =cont.replaceAll("\\{\\{bp\\}\\}","");
+						res=setSMSPostParam(new String(cont.getBytes("big5"),"ISO8859-1"),phone);
 					}
+					logger.debug("send message result : "+res);		
+					smsCount++;
+					sql="INSERT INTO HUR_SMS_LOG"
+							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
+					//寫入資料庫
+					logger.debug("execute SQL : "+sql);
+					st.addBatch(sql);
 				}
-				logger.debug("Total send day alert "+smsCount+" ...");
-				logger.debug("Log to table...executeBatch");
-				st.executeBatch();			
-			} catch (SQLException e) {
-				logger.error("At sendDayAlertSMS occur SQLException error!", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At sendDayAlertSMS occur SQLException error!");
-			} catch (IOException e) {
-				logger.error("At sendDayAlertSMS occur SQLException error!", e);
-				//send mail
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
-				sendErrorMail("At sendDayAlertSMS occur SQLException error!");
-			} finally{
-				try {
-					if(st!=null)
-						st.close();
-					if(rs!=null)
-						rs.close();
-				} catch (SQLException e) {
-				}
-			}	
+			}
+			st.executeBatch();
+		} catch (SQLException e) {
+			ErrorHandle("At send alert SMS occur SQLException error!", e);
+		} catch (UnsupportedEncodingException e) {
+			ErrorHandle("At send alert SMS occur UnsupportedEncodingException error!", e);
+		} catch (IOException e) {
+			ErrorHandle("At send alert SMS occur IOException error!", e);
+		} catch (InterruptedException e) {
+			ErrorHandle("At send alert SMS occur InterruptedException error!", e);
+		} catch (Exception e) {
+			ErrorHandle("At send alert SMS occur Exception error!", e);
+		}
+		return smsCount;
+	}
+	
+	public static void ErrorHandle(String cont){
+		ErrorHandle(cont,null);
+	}
+	public static void ErrorHandle(String cont,Exception e){
+		if(e!=null){
+			logger.error(cont, e);
+			
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			//send mail
+			errorMsg+=s;
+		}else{
+			logger.error(cont);
 		}
 		
-		
-		//降速提醒簡訊判斷*************************************
-		
+		sendErrorMail(cont);
+	}
+	
+
+	
+	public void checkDailyAlert(){
+		//實做日警示部分，有今日資料才警示*************************************
+		if(currentDayMap.containsKey(sYearmonthday)){
+			int smsCount=0;
+			String phone = null;
+			for(String serviceid:currentDayMap.get(sYearmonthday).keySet()){
+				
+				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
+				
+				//20141216 add 斷網過後，不發送每日簡訊，避免預估斷網後，每日帶出實際累計引發爭議
+				if(currentMap.containsKey(sYearmonth) && currentMap.get(sYearmonth).containsKey(serviceid)){
+					String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
+					if("1".equals(everSuspend)){
+						continue;
+					}
+				}
+				
+				//檢查門號是否存在，如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
+				if(msisdnMap.containsKey(serviceid))
+					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
+				if(phone==null ||"".equals(phone)){
+					//sendErrorMail
+					sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
+					logger.debug("The serviceid:"+serviceid+" can't find msisdn to send! ");
+					continue;
+				}
+
+				Double daycharge=0D;
+				String alerted ="0";
+				//累計
+				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
+					daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
+					String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("ALERT");
+					if("1".equals(a)) alerted="1";
+				}
+				
+				String[] contentid={"99"};
+				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
+					smsCount=sendSMS(serviceid,contentid,charge,phone);	
+					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
+					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
+						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
+					}
+				}		
+			}
+			logger.debug("Total send day alert "+smsCount+" ...");
+			logger.debug("Log to table...executeBatch");
+		}
+	}
+	
+	public void checkNTTVolumeAlert(){
 		//NTT
-		
 		//暫存數據用量資料 Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
 		//是否需要計算的pricePlanid
@@ -2674,9 +2425,9 @@ public class DVRSmain implements Job{
 				}
 			}
 		}
-		
+		Statement st=null;
 		try {
-			smsCount=0;
+			int smsCount=0;
 			st=conn.createStatement();
 			for(String serviceid:tempMap.keySet()){
 				Double volume=tempMap.get(serviceid);
@@ -2687,12 +2438,12 @@ public class DVRSmain implements Job{
 				//NTT 流量警示內容為100～103
 				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 					//2.0 GB 簡訊中文102，英文103
-					msgid=102;
+					msgid=105;
 					sendmsg=true;
 				}
 				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
 					//1.5 GB 簡訊中文100，英文101
-					msgid=100;
+					msgid=104;
 					sendmsg=true;
 				}
 				
@@ -2713,16 +2464,21 @@ public class DVRSmain implements Job{
 					String mail_sender="HKNet@sim2travel.com";
 					String mail_receiver=HKNetReceiver;
 					//發送簡訊
-					if(msgid==100){
+					if(msgid==104){
 						mail_subject = "Notification on FUP 75% 1.5GB";
-						mail_content = content.get("104").get("CONTENT");
+						mail_content = content.get(msgid.toString()).get("CONTENT");
 						logger.info("For "+serviceid+" send 1.5GB decrease speed  message !");
 					}
-					if(msgid==102){
+					if(msgid==105){
 						mail_subject = "Notification on FUP 100% 2GB";
-						mail_content = content.get("105").get("CONTENT");
+						mail_content = content.get(msgid.toString()).get("CONTENT");
 						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
 					}
+					
+					if(mail_content==null || "".equals(mail_content)){
+						throw new Exception("Can't find mail content id:"+msgid);
+					}
+						
 					
 					mail_content = processMag(mail_content,null,cPhone,msisdnMap.get(serviceid).get("ICCID"));
 					smsCount++;
@@ -2746,41 +2502,26 @@ public class DVRSmain implements Job{
 			logger.debug("Total send NTT volume alert mail "+smsCount+" ...");
 			//st.executeBatch();			
 		} catch (SQLException e) {
-			logger.error("At send NTT volume alert mail occur SQLException error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At send NTT volume alert mail occur SQLException error!");
+			ErrorHandle("At send NTT volume alert mail occur SQLException error!", e);
 		} catch (UnsupportedEncodingException e) {
-			logger.error("At send NTT volume alert mail occur UnsupportedEncodingException error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At send NTT volume alert mail occur UnsupportedEncodingException error!");
+			ErrorHandle("At send NTT volume alert mail occur UnsupportedEncodingException error!", e);
 		} catch (Exception e) {
-			logger.error("At send NTT volume alert mail occur Exception error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At send NTT volume alert mail occur Exception error!");
+			ErrorHandle("At send NTT volume alert mail occur Exception error!", e);
 		} finally{
 			try {
 				if(st!=null)
 					st.close();
-				if(rs!=null)
-					rs.close();
 			} catch (SQLException e) {
 			}
 		}
-		
+	}
+	
+
+	
+	public void addonVolumeAlert(){
 		//20150623 新增華人上網包
-		tempMap.clear();
+		//暫存數據用量資料 Key:SERVICEID,Value:Volume
+		Map<String,Double> tempMap = new HashMap<String,Double>();
 		for(String day : currentDayMap.keySet()){
 			//這個月的月資料
 			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
@@ -2807,121 +2548,68 @@ public class DVRSmain implements Job{
 				}
 			}
 		}
-		
-		try {
-			smsCount=0;
-			st = conn.createStatement();
-			for(String serviceid:tempMap.keySet()){
-				Double volume=tempMap.get(serviceid);
-				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
-				//超過發簡訊，另外確認是否已通知過
-				boolean sendmsg=false;
-				Integer msgid=0;
-				//華人上網包簡訊內容
-				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
-					//2.0 GB 簡訊中文102，英文103
-					msgid=102;
-					sendmsg=true;
-				}
-				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
-					//1.5 GB 簡訊中文100，英文101
-					msgid=100;
-					sendmsg=true;
-				}
-				
-				if(sendmsg){
-					//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
-					if(msisdnMap.containsKey(serviceid))
-						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
-					if(phone==null ||"".equals(phone)){
-						//sendErrorMail
-						sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
-						logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
-						continue;
-					}
-					
-					//查詢所在國家的客服電話
-					String cPhone = null;
-					String nMccmnc=searchMccmncBySERVICEID(serviceid);
-					Map<String,String> map=null;
-					
-					if(nMccmnc!=null && !"".equals(nMccmnc))
-						map = codeMap.get(nMccmnc.substring(0,3));
-					if(map!=null)
-						cPhone=map.get("PHONE");
 
-					//中文
-					//處理字串
-					String cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
-					//發送簡訊
-					String res = setSMSPostParam(cont,phone);
-					logger.debug("send chinese message result : "+res);	
-
-					smsCount++;
-					
-					sql="INSERT INTO HUR_SMS_LOG"
-							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-					//寫入資料庫
-					st.addBatch(sql);
-					logger.debug("execute SQL : "+sql); 
-					
-					
-					//英文
-					msgid+=1;
-					//處理字串
-					cont =processMag(content.get(msgid.toString()).get("CONTENT"),null,cPhone);
-					//發送簡訊
-					res = setSMSPostParam(cont,phone);
-					logger.debug("send english message result : "+res);	
-					smsCount++;
-					
-					sql="INSERT INTO HUR_SMS_LOG"
-							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+cont+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-					//寫入資料庫
-					st.addBatch(sql);
-					logger.debug("execute SQL : "+sql); 
-					
-					//更新CurrentMap
-					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
-				}	
-			}
-			logger.debug("Total send 華人上網包 volume alert SMS "+smsCount+" ...");
-			//st.executeBatch();			
-		} catch (SQLException e) {
-			logger.error("At addon volume Alert SMS occur SQLException error!", e);
-			//send mail
+		int smsCount=0;
+		String phone = null;
+		for(String serviceid:tempMap.keySet()){
+			Double volume=tempMap.get(serviceid);
+			Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
 			
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
+			//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
+			if(msisdnMap.containsKey(serviceid))
+				phone=(String) msisdnMap.get(serviceid).get("MSISDN");
+			if(phone==null ||"".equals(phone)){
+				//sendErrorMail
+				sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
+				logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
+				continue;
 			}
-			sendErrorMail("At addon volume Alert SMS occur SQLException error!");
-		} catch (UnsupportedEncodingException e) {
-			logger.error("At addon volume Alert SMS occur UnsupportedEncodingException error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
+			
+			//超過發簡訊，另外確認是否已通知過
+			boolean sendmsg=false;
+			Integer msgid=0;
+			//華人上網包簡訊內容
+			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
+				//2.0 GB 簡訊中文102，英文103
+				msgid=107;
+				sendmsg=true;
 			}
-			sendErrorMail("At addon volume Alert SMS occur UnsupportedEncodingException error!");
-		} catch (Exception e) {
-			logger.error("At addon volume Alert SMS occur Exception error!", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
+			if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
+				//1.5 GB 簡訊中文100，英文101
+				msgid=106;
+				sendmsg=true;
 			}
-			sendErrorMail("At addon volume Alert SMS occur Exception error!");
-		} finally{
-			try {
-				if(st!=null)
-					st.close();
-				if(rs!=null)
-					rs.close();
-			} catch (SQLException e) {
-			}
+			String [] contentid = {msgid.toString()};
+			if(sendmsg){
+				
+				smsCount=sendSMS(serviceid,contentid,null,phone);
+				
+				//更新CurrentMap
+				currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
+			}	
+		}
+		logger.debug("Total send 華人上網包 volume alert SMS "+smsCount+" ...");
+		
+	}
+	
+	/**
+	 * 依照額度需求發送警示簡訊
+	 * 第一次，額度一，訊息一
+	 * 
+	 * 
+	 */
+	private void sendAlertSMS(){
+		logger.info("sendAlertSMS...");
+		long subStartTime = System.currentTimeMillis();
+
+		if(getSMSsetting()&&getSMSContents()){
+			ckeckMonthAlert();
+			checkDailyAlert();
+			//降速提醒簡訊判斷*************************************
+			checkNTTVolumeAlert();
+			addonVolumeAlert();
+		}else{
+			return;
 		}
 		
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
@@ -2943,8 +2631,9 @@ public class DVRSmain implements Job{
 		
 		//金額
 		if(bracket==null)
-			bracket=0D;
-		msg=msg.replace("{{bracket}}", tool.FormatNumString(bracket,"NT#,##0.00"));
+			msg=msg.replace("{{bracket}}", "");
+		else
+			msg=msg.replace("{{bracket}}", tool.FormatNumString(bracket,"NT#,##0.00"));
 		
 		//客服電話
 		if(cPhone==null)
@@ -3065,37 +2754,13 @@ public class DVRSmain implements Job{
 			if(sus.Temprs!=null) sus.Temprs.close();
 			
 		} catch (SQLException e) {
-			logger.error("At suspend occur SQLException error!", e);
-			//send mail
-			sendErrorMail("At suspend occur SQLException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At suspend occur SQLException error!", e);
 		} catch (IOException e) {
-			logger.error("At suspend occur IOException error!", e);
-			//send mail
-			sendErrorMail("At suspend occur IOException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At suspend occur IOException error!", e);
 		} catch (ClassNotFoundException e) {
-			logger.error("At suspend occur ClassNotFoundException error!", e);
-			//send mail
-			sendErrorMail("At suspend occur ClassNotFoundException error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At suspend occur ClassNotFoundException error!", e);
 		} catch (Exception e) {
-			logger.error("At suspend occur Exception error!", e);
-			//send mail
-			sendErrorMail("At suspend occur Exception error!");
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
+			ErrorHandle("At suspend occur Exception error!", e);
 		}
 	}
 	
@@ -3289,29 +2954,11 @@ public class DVRSmain implements Job{
 				st5.close();
 				
 			} catch (InterruptedException e) {
-				logger.error("At processSuspendNBR occur InterruptedException error!", e);
-				//send mail
-				sendErrorMail("At processSuspendNBR occur InterruptedException error!");
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
+				ErrorHandle("At processSuspendNBR occur InterruptedException error!", e);
 			} catch (SQLException e) {
-				logger.error("At processSuspendNBR occur SQLException error!", e);
-				//send mail
-				sendErrorMail("At processSuspendNBR occur SQLException error!");
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
+				ErrorHandle("At processSuspendNBR occur SQLException error!", e);
 			} catch (IOException e) {
-				logger.error("At processSuspendNBR occur IOException error!", e);
-				//send mail
-				sendErrorMail("At processSuspendNBR occur IOException error!");
-				errorMsg="";
-				for(StackTraceElement s :e.getStackTrace()){
-					errorMsg+=s.toString()+"<br>\n";
-				}
+				ErrorHandle("At processSuspendNBR occur IOException error!", e);
 			}
 		}
 	}
@@ -3395,8 +3042,7 @@ public class DVRSmain implements Job{
 			//keyin();// 以等待使用者keyin的方式暫停
 
 		} catch (SchedulerException e) {
-			e.printStackTrace();
-			sendErrorMail("at regularTimeRun occure error!");
+			ErrorHandle("at regularTimeRun occure error!",e);
 		}
 	}
 	
@@ -3416,13 +3062,7 @@ public class DVRSmain implements Job{
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					logger.error("At waiting thread occur error", e);
-					//send mail
-					sendErrorMail("At waiting thread occur error!");
-					errorMsg="";
-					for(StackTraceElement s :e.getStackTrace()){
-						errorMsg+=s.toString()+"<br>\n";
-					}
+					ErrorHandle("At waiting thread occur error", e);
 				}
 			}
 			//離開等待狀態
@@ -3436,8 +3076,7 @@ public class DVRSmain implements Job{
 		try {
 			process();
 		} catch (Exception e) {
-			e.printStackTrace();
-			sendErrorMail("process error!");
+			ErrorHandle("process error!");
 		}finally{
 			//將動作交給下個thread
 			executing=false;
