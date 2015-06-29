@@ -33,7 +33,14 @@ public class hello {
 	static IJatool tool =new Jatool();
 	public static void main(String[] args) throws UnknownHostException {
 		
-
+		//indexOf 測試
+		
+		String tesmsg="send message result : <HTML><HEAD><TITLE>Message Submitted"
+				+ "</TITLE></HEAD><BODY><p>Message Submitted<p><a href=\"javascript:history.back()\">Continue"
+				+ "</a><p></BODY></HTML>";
+		
+		if(tesmsg.indexOf("Message Submitted")==-1)
+				System.out.println("index:"+tesmsg.indexOf("Message Submitted"));
 		//時間測試
 		/*try {
 			Date testTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse("2015/06/23 15:35:44");
@@ -53,6 +60,7 @@ public class hello {
 		//簡訊測試   分段
 		String msg = "*環球卡高用量提醒*提醒您本月數據用量上網金額統計至前{{bp}}一小時加部份推估，已約達NT65,000.00，"
 				+ "實際用量及使用金額以帳單為準。另您已{{bp}}約定上網金額不設限，感謝您的留意。如需諮詢請電客服*123#。";
+		
 		
 	
 		/*int number = 100;

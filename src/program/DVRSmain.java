@@ -2180,6 +2180,15 @@ public class DVRSmain implements Job{
 					smsCount= sendSMS(serviceid,contentid,alertBracket,phone);
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
 					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", (smsTimes+smsCount));
+					
+					//20150629 add
+					Set<String> set2 = new HashSet<String>();
+
+					if(updateMap.containsKey(sYearmonth)){	
+						set2 = updateMap.get(sYearmonth);
+					}
+					set2.add(serviceid);
+					updateMap.put(sYearmonth, set2);
 				}
 				
 				if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
@@ -2231,10 +2240,11 @@ public class DVRSmain implements Job{
 			for(String s:contentid){
 				if(s!=null){
 					//寄送簡訊
-					String cont = content.get(s).get("CONTENT");
-					if(cont==null || "".equals(cont)){
+					
+					if(content.get(s)==null){
 						throw new Exception("Can't find mail content id:"+s);
 					}
+					String cont = content.get(s).get("CONTENT");
 
 					cont = new String(cont.getBytes("ISO8859-1"),"big5");
 					
@@ -2364,6 +2374,20 @@ public class DVRSmain implements Job{
 					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
+						
+						//20150505 add
+						Map <String,Set<String>> map6 = new HashMap<String,Set<String>>();
+						Set<String> set1 = new HashSet<String>();					
+
+						if(updateMapD.containsKey(sYearmonthday)){	
+							map6 = updateMapD.get(sYearmonthday);
+							if(map6.containsKey(serviceid)){
+								set1 = map6.get(serviceid);
+							}
+						}
+						set1.add(nccNet);
+						map6.put(serviceid, set1);
+						updateMapD.put(sYearmonthday, map6);
 					}
 				}		
 			}
@@ -2463,6 +2487,12 @@ public class DVRSmain implements Job{
 					String mail_content="";
 					String mail_sender="HKNet@sim2travel.com";
 					String mail_receiver=HKNetReceiver;
+					
+					
+					if(content.get(msgid.toString())==null){
+						throw new Exception("Can't find mail content id:"+msgid);
+					}
+					
 					//發送簡訊
 					if(msgid==104){
 						mail_subject = "Notification on FUP 75% 1.5GB";
@@ -2474,11 +2504,6 @@ public class DVRSmain implements Job{
 						mail_content = content.get(msgid.toString()).get("CONTENT");
 						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
 					}
-					
-					if(mail_content==null || "".equals(mail_content)){
-						throw new Exception("Can't find mail content id:"+msgid);
-					}
-						
 					
 					mail_content = processMag(mail_content,null,cPhone,msisdnMap.get(serviceid).get("ICCID"));
 					smsCount++;
@@ -2496,6 +2521,15 @@ public class DVRSmain implements Job{
 					
 					//更新CurrentMap
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
+					
+					//20150629 add
+					Set<String> set2 = new HashSet<String>();
+
+					if(updateMap.containsKey(sYearmonth)){	
+						set2 = updateMap.get(sYearmonth);
+					}
+					set2.add(serviceid);
+					updateMap.put(sYearmonth, set2);
 				}
 				
 			}
@@ -2533,7 +2567,6 @@ public class DVRSmain implements Job{
 				}
 				for(String serviceid:currentDayMap.get(day).keySet()){
 					for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
-						//XXX
 						int check=checkQosAddon(null, mccNet, dayTime,serviceid);
 						if(check==1){
 							//進行累計
@@ -2586,6 +2619,15 @@ public class DVRSmain implements Job{
 				
 				//更新CurrentMap
 				currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
+				
+				//20150629 add
+				Set<String> set2 = new HashSet<String>();
+
+				if(updateMap.containsKey(sYearmonth)){	
+					set2 = updateMap.get(sYearmonth);
+				}
+				set2.add(serviceid);
+				updateMap.put(sYearmonth, set2);
 			}	
 		}
 		logger.debug("Total send 華人上網包 volume alert SMS "+smsCount+" ...");
