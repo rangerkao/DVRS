@@ -50,17 +50,26 @@
 package program;
 
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -115,7 +124,6 @@ public class DVRSmain implements Job{
 	static String mailSubject="mail test";
 	static String mailContent="mail content text";
 	
-	static IJatool tool=new Jatool();
 	SimpleDateFormat spf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
 	private static String sql="";
@@ -197,11 +205,11 @@ public class DVRSmain implements Job{
 		
 		//系統時間提前一小時
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY)-1);
-		sYearmonth=tool.DateFormat(calendar.getTime(), MONTH_FORMATE);
-		sYearmonthday=tool.DateFormat(calendar.getTime(),DAY_FORMATE);
+		sYearmonth=DateFormat(calendar.getTime(), MONTH_FORMATE);
+		sYearmonthday=DateFormat(calendar.getTime(),DAY_FORMATE);
 		//上個月時間，減掉Month會-30天，採取到1號向前，確定跨月
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
-		sYearmonth2=tool.DateFormat(calendar.getTime(), MONTH_FORMATE);
+		sYearmonth2=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		
 		calendar.clear();
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
@@ -1165,7 +1173,7 @@ public class DVRSmain implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
 			
-			conn=tool.connDB(props.getProperty("Oracle.DriverClass"), url, 
+			conn=connDB(props.getProperty("Oracle.DriverClass"), url, 
 					props.getProperty("Oracle.UserName"), 
 					props.getProperty("Oracle.PassWord")
 					);
@@ -1193,7 +1201,7 @@ public class DVRSmain implements Job{
 					.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
 					.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
 			
-			conn2=tool.connDB(props.getProperty("mBOSS.DriverClass"),url, 
+			conn2=connDB(props.getProperty("mBOSS.DriverClass"),url, 
 					props.getProperty("mBOSS.UserName"), 
 					props.getProperty("mBOSS.PassWord"));
 			
@@ -1205,6 +1213,30 @@ public class DVRSmain implements Job{
 			sql="";
 			ErrorHandle("At connDB2 occur SQLException error", e);;
 		}
+	}
+	
+	public Connection connDB(String DriverClass, String URL,
+			String UserName, String PassWord) throws ClassNotFoundException, SQLException {
+		Connection conn = null;
+
+			Class.forName(DriverClass);
+			conn = DriverManager.getConnection(URL, UserName, PassWord);
+		return conn;
+	}
+	
+	public Connection connDB(String DriverClass,
+			String DBType,String ip,String port,String DBNameorSID,String charset,
+			String UserName,String PassWord) throws ClassNotFoundException, SQLException{
+
+			Class.forName(DriverClass);
+			String url="jdbc:{{DBType}}:thin:@{{Host}}:{{Port}}:{{ServiceName}}{{charset}}"
+					.replace("{{DBType}}", DBType)
+					.replace("{{Host}}", ip)
+					.replace("{{Port}}", port)
+					.replace("{{ServiceName}}", DBNameorSID)
+					.replace("{{charset}}", (charset!=null?"?charset="+charset:""));
+			
+		return connDB(DriverClass, url, UserName, PassWord);
 	}
 	
 	/**
@@ -1233,6 +1265,92 @@ public class DVRSmain implements Job{
 			}
 
 		}
+	}
+	
+	public Double FormatDouble(Double value,String form){
+		
+		if(form==null || "".equals(form)){
+			form="0.00";
+		}
+			
+		/*DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);*/
+		
+		return Double.valueOf(new DecimalFormat(form).format(value));
+	}
+	
+	static String iniform= "yyyy/MM/dd HH:mm:ss";
+	public static String DateFormat(){
+		DateFormat dateFormat = new SimpleDateFormat(iniform);
+		return dateFormat.format(new Date());
+	}
+	public Date DateFormat(String dateString, String form) throws ParseException {
+		Date result=new Date();
+		
+		if(dateString==null) return result;
+
+		if(form==null ||"".equals(form)) form=iniform;
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		result=dateFormat.parse(dateString);
+		
+		return result;
+	}
+	public String DateFormat(Date date, String form) {
+		
+		if(date==null) date=new Date();
+		if(form==null ||"".equals(form)) form=iniform;
+		
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		return dateFormat.format(date);
+	}
+	public String FormatNumString(Double value,String form){
+		if(form==null || "".equals(form)){
+			form="#,##0.00";
+		}
+			
+		DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);
+		
+		return str;
+	}
+	public String HttpPost(String url,String param,String charset) throws IOException{
+		URL obj = new URL(url);
+		
+		if(charset!=null && !"".equals(charset))
+			param=URLEncoder.encode(param, charset);
+		
+		
+		HttpURLConnection con =  (HttpURLConnection) obj.openConnection();
+ 
+		//add reuqest header
+		/*con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");*/
+ 
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(param);
+		wr.flush();
+		wr.close();
+ 
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + new String(param.getBytes("ISO8859-1")));
+		System.out.println("Response Code : " + responseCode);
+ 
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+ 
+		//print result
+		return(response.toString());
 	}
 	
 	/**
@@ -1507,7 +1625,7 @@ public class DVRSmain implements Job{
 
 					
 					//格式化至小數點後四位
-					charge=tool.FormatDouble(charge, "0.0000");
+					charge=FormatDouble(charge, "0.0000");
 
 					//將此筆CDR結果記錄，稍後回寫到USAGE TABLE
 					cdrChargeMap.put(usageId, charge);
@@ -1528,7 +1646,7 @@ public class DVRSmain implements Job{
 						nccNet=DEFAULT_MCCMNC;
 					}
 					
-					String cDay=tool.DateFormat(callTime, DAY_FORMATE);
+					String cDay=DateFormat(callTime, DAY_FORMATE);
 					Double oldCharge=0D;
 					Double oldvolume=0D;
 					String alert="0";
@@ -1549,7 +1667,7 @@ public class DVRSmain implements Job{
 								
 								//summary charge
 								charge=oldCharge+charge;
-								charge=tool.FormatDouble(charge, "0.0000");
+								charge=FormatDouble(charge, "0.0000");
 								if(serviceid.equals("26234"))
 									System.out.println();
 								alert=(String)map3.get("ALERT");
@@ -1628,7 +1746,7 @@ public class DVRSmain implements Job{
 					map4.put("LAST_DATA_TIME", sCallTime);
 					
 					charge=preCharge+charge;
-					charge=tool.FormatDouble(charge, "0.0000");
+					charge=FormatDouble(charge, "0.0000");
 					map4.put("CHARGE", charge);
 					logMsg+="The final month charge is "+map4.get("CHARGE")+". ";
 					
@@ -2648,7 +2766,8 @@ public class DVRSmain implements Job{
 			ckeckMonthAlert();
 			checkDailyAlert();
 			//降速提醒簡訊判斷*************************************
-			checkNTTVolumeAlert();
+			//20150702 cancel
+			//checkNTTVolumeAlert();
 			addonVolumeAlert();
 		}else{
 			return;
@@ -2675,7 +2794,7 @@ public class DVRSmain implements Job{
 		if(bracket==null)
 			msg=msg.replace("{{bracket}}", "");
 		else
-			msg=msg.replace("{{bracket}}", tool.FormatNumString(bracket,"NT#,##0.00"));
+			msg=msg.replace("{{bracket}}",FormatNumString(bracket,"NT#,##0.00"));
 		
 		//客服電話
 		if(cPhone==null)
@@ -2760,7 +2879,7 @@ public class DVRSmain implements Job{
 		
 		
 		
-		return tool.HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+		return HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
 	}
 	
 	/**
@@ -2860,7 +2979,7 @@ public class DVRSmain implements Job{
 		mailReceiver=props.getProperty("mail.Receiver");
 		mailSubject="DVRS Warnning Mail";
 		mailContent="Error :"+msg+"<br>\n"
-				+ "Error occurr time: "+tool.DateFormat()+"<br>\n"
+				+ "Error occurr time: "+DateFormat()+"<br>\n"
 				+ "SQL : "+sql+"<br>\n"
 				+ "Error Msg : "+errorMsg;	
 		

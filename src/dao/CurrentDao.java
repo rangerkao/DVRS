@@ -3,6 +3,7 @@ package dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public class CurrentDao extends BaseDao {
 				CurrentMonth c = new CurrentMonth();
 				c.setMonth(rs.getString("MONTH"));
 				c.setImsi(imsi);
-				c.setCharge(tool.FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
 				c.setVolume(rs.getDouble("VOLUME"));
 				c.setSmsTimes(rs.getInt("SMS_TIMES"));
 				c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
@@ -147,7 +148,7 @@ public class CurrentDao extends BaseDao {
 				CurrentMonth c = new CurrentMonth();
 				c.setMonth(rs.getString("MONTH"));
 				c.setImsi(rimsi);
-				c.setCharge(tool.FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
 				c.setVolume(rs.getDouble("VOLUME"));
 				c.setSmsTimes(rs.getInt("SMS_TIMES"));
 				c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
@@ -206,7 +207,7 @@ public class CurrentDao extends BaseDao {
 				c.setDay(rs.getString("DAY"));
 				c.setMccmnc(rs.getString("MCCMNC"));
 				c.setImsi(imsi);
-				c.setCharge(tool.FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
 				c.setVolume(rs.getDouble("VOLUME"));
 				c.setAlert(("0".equals(rs.getString("ALERT"))?false:true));
 				c.setLastFileId(rs.getInt("LAST_FILEID"));
@@ -285,7 +286,7 @@ public class CurrentDao extends BaseDao {
 				c.setDay(rs.getString("DAY"));
 				c.setMccmnc(rs.getString("MCCMNC"));
 				c.setImsi(rimsi);
-				c.setCharge(tool.FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
 				c.setVolume(rs.getDouble("VOLUME"));
 				c.setAlert(("0".equals(rs.getString("ALERT"))?false:true));
 				c.setLastFileId(rs.getInt("LAST_FILEID"));
@@ -299,6 +300,17 @@ public class CurrentDao extends BaseDao {
 			closeConnection();
 		return list;
 		
+	}
+	public Double FormatDouble(Double value,String form){
+		
+		if(form==null || "".equals(form)){
+			form="0.00";
+		}
+			
+		/*DecimalFormat df = new DecimalFormat(form);   
+		String str=df.format(value);*/
+		
+		return Double.valueOf(new DecimalFormat(form).format(value));
 	}
 	
 

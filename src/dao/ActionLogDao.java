@@ -30,8 +30,8 @@ public class ActionLogDao extends BaseDao{
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
 			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setDate(1, tool.convertJaveUtilDate_To_JavaSqlDate(fromDate) );
-			pst.setDate(2, tool.convertJaveUtilDate_To_JavaSqlDate(toDate));
+			pst.setDate(1, convertJaveUtilDate_To_JavaSqlDate(fromDate) );
+			pst.setDate(2, convertJaveUtilDate_To_JavaSqlDate(toDate));
 			ResultSet rs=pst.executeQuery();
 			
 			while(rs.next()){
@@ -54,6 +54,11 @@ public class ActionLogDao extends BaseDao{
 			pst.close();
 		return list;
 
+	}
+	
+	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
+		
+		return new java.sql.Date(date.getTime());
 	}
 	
 	public List<ActionLog> queryActionLog() throws SQLException{

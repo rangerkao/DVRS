@@ -6,18 +6,12 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v6.0"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/iTextAsianCmaps.jar/iTextAsianCmaps.jar"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/quartz-2.2.1/lib/c3p0-0.9.1.1.jar"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/quartz-2.2.1/lib/log4j-1.2.16.jar"/>
@@ -27,7 +21,13 @@
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/quartz-2.2.1/lib/slf4j-log4j12-1.6.6.jar"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/mingliu.jar"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/ojdbc14.jar"/>
-	<classpathentry kind="lib" path="G:/Dropbox/download/slf4j-1.7.7/slf4j-nop-1.7.7.jar"/>
 	<classpathentry kind="lib" path="G:/Dropbox/download/jar/postgresql-9.3-1102.jdbc3.jar"/>
+	<classpathentry kind="lib" path="G:/Dropbox/download/slf4j-1.7.7/slf4j-nop-1.7.7.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v6.0"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

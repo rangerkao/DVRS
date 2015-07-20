@@ -14,8 +14,6 @@ import org.apache.struts2.interceptor.SessionAware;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import program.IJatool;
-import program.Jatool;
 import bean.User;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -34,7 +32,6 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	protected static String result;
 	protected String exception;
 	protected Map<String, Object> session;
-	protected IJatool tool= new Jatool();
 	protected ActionLogControl actionLogControl = new ActionLogControl();
 	
 	public BaseAction() throws Exception {

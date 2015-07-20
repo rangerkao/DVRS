@@ -416,10 +416,14 @@ public class SMSDao extends BaseDao{
 		PreparedStatement pst = conn.prepareStatement(sql);
 		pst.setString(1, phone);
 		pst.setString(2, msgid);
-		pst.setDate(3,tool.convertJaveUtilDate_To_JavaSqlDate(new Date()));
+		pst.setDate(3,convertJaveUtilDate_To_JavaSqlDate(new Date()));
 		pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 		pst.executeUpdate();
 		pst.close();		
+	}
+	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
+		
+		return new java.sql.Date(date.getTime());
 	}
 	
 	public String queryVLR(String imsi) throws SQLException{

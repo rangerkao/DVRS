@@ -3,16 +3,11 @@ package dao;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import program.IJatool;
-import program.Jatool;
-
-
 public class BaseDao {
 
 	protected String sql="";
 	protected Connection conn=null;
 	protected Connection conn2=null;
-	protected IJatool tool= new Jatool();
 	
 	BaseDao() throws Exception{
 		createConnection();

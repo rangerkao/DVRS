@@ -3,8 +3,11 @@ package action;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import bean.ActionLog;
@@ -36,8 +39,8 @@ public class ActionLogAction extends BaseAction {
 				actionLoglist=actionLogControl.queryActionLog();
 			}
 			else{
-				actionLoglist=actionLogControl.queryActionLog(tool.DateFormat(dateFrom, "yyyy-MM-dd"),
-						tool.DateFormat(dateTo, "yyyy-MM-dd"));		
+				actionLoglist=actionLogControl.queryActionLog(DateFormat(dateFrom, "yyyy-MM-dd"),
+						DateFormat(dateTo, "yyyy-MM-dd"));		
 			}
 
 			result=makeResult(actionLoglist, null);
@@ -51,6 +54,30 @@ public class ActionLogAction extends BaseAction {
 		}
 		
 		return SUCCESS;
+	}
+	static String iniform= "yyyy/MM/dd HH:mm:ss";
+	public static String DateFormat(){
+		DateFormat dateFormat = new SimpleDateFormat(iniform);
+		return dateFormat.format(new Date());
+	}
+	public Date DateFormat(String dateString, String form) throws ParseException {
+		Date result=new Date();
+		
+		if(dateString==null) return result;
+
+		if(form==null ||"".equals(form)) form=iniform;
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		result=dateFormat.parse(dateString);
+		
+		return result;
+	}
+	public String DateFormat(Date date, String form) {
+		
+		if(date==null) date=new Date();
+		if(form==null ||"".equals(form)) form=iniform;
+		
+		DateFormat dateFormat = new SimpleDateFormat(form);
+		return dateFormat.format(date);
 	}
 
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -23,8 +24,6 @@ import javax.mail.internet.AddressException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import program.IJatool;
-import program.Jatool;
 import dao.CurrentDao;
 import action.BaseAction;
 
@@ -52,7 +51,6 @@ public class CacheAction extends BaseAction {
 	static boolean batchExcute = false;
 	
 	CurrentDao currentDao = new CurrentDao();
-	protected static IJatool tool= new Jatool();
 	static String classPath = "12312313";
 	static String sql="";
 	
@@ -129,7 +127,7 @@ public class CacheAction extends BaseAction {
 		url=url.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""));
 		System.out.println(url);
 		url=url.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
-		conn=tool.connDB(props.getProperty("Oracle.DriverClass"), url, 
+		conn=connDB(props.getProperty("Oracle.DriverClass"), url, 
 				props.getProperty("Oracle.UserName"), 
 				props.getProperty("Oracle.PassWord")
 				);
@@ -145,7 +143,7 @@ public class CacheAction extends BaseAction {
 				.replace("{{Port}}", props.getProperty("mBOSS.Port"))
 				.replace("{{ServiceName}}", (props.getProperty("mBOSS.ServiceName")!=null?props.getProperty("mBOSS.ServiceName"):""))
 				.replace("{{SID}}", (props.getProperty("mBOSS.SID")!=null?props.getProperty("mBOSS.SID"):""));
-		conn2=tool.connDB(props.getProperty("mBOSS.DriverClass"), url, 
+		conn2=connDB(props.getProperty("mBOSS.DriverClass"), url, 
 				props.getProperty("mBOSS.UserName"), 
 				props.getProperty("mBOSS.PassWord")
 				);
@@ -153,6 +151,29 @@ public class CacheAction extends BaseAction {
 				throw new Exception("DB Connect2 null !");
 			}
 		return conn2;
+	}
+	public static Connection connDB(String DriverClass, String URL,
+			String UserName, String PassWord) throws ClassNotFoundException, SQLException {
+		Connection conn = null;
+
+			Class.forName(DriverClass);
+			conn = DriverManager.getConnection(URL, UserName, PassWord);
+		return conn;
+	}
+	
+	public Connection connDB(String DriverClass,
+			String DBType,String ip,String port,String DBNameorSID,String charset,
+			String UserName,String PassWord) throws ClassNotFoundException, SQLException{
+
+			Class.forName(DriverClass);
+			String url="jdbc:{{DBType}}:thin:@{{Host}}:{{Port}}:{{ServiceName}}{{charset}}"
+					.replace("{{DBType}}", DBType)
+					.replace("{{Host}}", ip)
+					.replace("{{Port}}", port)
+					.replace("{{ServiceName}}", DBNameorSID)
+					.replace("{{charset}}", (charset!=null?"?charset="+charset:""));
+			
+		return connDB(DriverClass, url, UserName, PassWord);
 	}
 	/**
 	 * 建立連線
@@ -290,21 +311,26 @@ public class CacheAction extends BaseAction {
 	protected static void sendMail(String Receiver,String Subject,String Content){
 	
 		try {
-			tool.sendMail(null, props, "DVRS UI", Receiver, Subject, Content);
-		} catch (AddressException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			sendMail(Subject, Content, "DVRS UI", Receiver);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+	static void sendMail(String mailSubject,String mailContent,String mailSender,String mailReceiver){
+		String [] cmd=new String[3];
+		cmd[0]="/bin/bash";
+		cmd[1]="-c";
+		cmd[2]= "/bin/echo \""+mailContent+"\" | /bin/mail -s \""+mailSubject+"\" -r "+mailSender+" "+mailReceiver;
+
+		try{
+			Process p = Runtime.getRuntime().exec (cmd);
+			p.waitFor();
+			System.out.println("send mail cmd:"+cmd);
+		}catch (Exception e){
+			System.out.println("send mail fail:"+mailContent);
+		}
 	}
 	
 	private static void setIMSItoServiceID() throws Exception{	

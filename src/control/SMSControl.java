@@ -1,7 +1,13 @@
 package control;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
@@ -16,13 +22,10 @@ import bean.SMSLog;
 import bean.SMSSetting;
 import dao.SMSDao;
 import program.DVRSmain;
-import program.IJatool;
-import program.Jatool;
 
 public class SMSControl extends BaseControl{
 
 	SMSDao smsDao = new SMSDao();
-	IJatool tool =new Jatool();
 	String smsId="6";
 	
 	public SMSControl() throws Exception {
@@ -150,7 +153,47 @@ public class SMSControl extends BaseControl{
 		
 		
 		
-		return tool.HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+		return HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+	}
+	
+	public String HttpPost(String url,String param,String charset) throws IOException{
+		URL obj = new URL(url);
+		
+		if(charset!=null && !"".equals(charset))
+			param=URLEncoder.encode(param, charset);
+		
+		
+		HttpURLConnection con =  (HttpURLConnection) obj.openConnection();
+ 
+		//add reuqest header
+		/*con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");*/
+ 
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(param);
+		wr.flush();
+		wr.close();
+ 
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + new String(param.getBytes("ISO8859-1")));
+		System.out.println("Response Code : " + responseCode);
+ 
+		BufferedReader in = new BufferedReader(
+		        new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+ 
+		//print result
+		return(response.toString());
 	}
 	private String queryCustmerServicePhone(String imsi) throws SQLException{
 		String cphone=null;
