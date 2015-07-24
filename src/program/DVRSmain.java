@@ -1392,14 +1392,14 @@ public class DVRSmain implements Job{
 	 *確認華人上網包 
 	 *20150115 ALTER 取消檢查門號
 	 */
-	private int checkQosAddon(String imsi,String mccmnc,Date callTime,String serviceID){
+	private int checkQosAddon(String serviceID,String mccmnc,Date callTime){
 		
 
 		int cd=0;
-		
-		if(imsi!=null && !"".equals(imsi)){
+		//20150724
+		/*if(imsi!=null && !"".equals(imsi)){
 			//String msisdn=null;
-			/*if(msisdnMap.containsKey(imsi)) {*/
+			if(msisdnMap.containsKey(imsi)) {
 				//msisdn=msisdnMap.get(imsi).get("MSISDN");
 			for(Map<String,Object> m : addonDataList){
 				if(imsi.equals(m.get("IMSI"))&&
@@ -1411,8 +1411,8 @@ public class DVRSmain implements Job{
 					break;
 				}
 			}
-			/*}*/
-		}
+			}
+		}*/
 				
 		//20150623 search by serviceid 
 		if(serviceID!=null && !"".equals(serviceID)){
@@ -1533,10 +1533,11 @@ public class DVRSmain implements Job{
 					
 					//20150115 add
 					String serviceid = null;
-					if(msisdnMap.get(imsi)!=null)
-						serviceid = msisdnMap.get(imsi).get("SERVICEID");
 					
-					if(serviceid==null || "".equals(serviceid))
+					/*if(msisdnMap.get(imsi)!=null)
+						serviceid = msisdnMap.get(imsi).get("SERVICEID");*/
+					
+					if(IMSItoServiceIdMap.get(imsi)!=null)
 						serviceid = IMSItoServiceIdMap.get(imsi);
 					
 					if(serviceid==null || "".equals(serviceid)){
@@ -1546,8 +1547,8 @@ public class DVRSmain implements Job{
 					
 					
 					String pricplanID=null;
-					if(msisdnMap.containsKey(imsi))
-						pricplanID=msisdnMap.get(imsi).get("PRICEPLANID");
+					if(msisdnMap.containsKey(serviceid))
+						pricplanID=msisdnMap.get(serviceid).get("PRICEPLANID");
 					
 					
 					if(!dataRate.containsKey(pricplanID)){
@@ -1577,7 +1578,7 @@ public class DVRSmain implements Job{
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
-					int cd=checkQosAddon(imsi, mccmnc, callTime,null);
+					int cd=checkQosAddon(serviceid, mccmnc, callTime);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
@@ -2685,7 +2686,7 @@ public class DVRSmain implements Job{
 				}
 				for(String serviceid:currentDayMap.get(day).keySet()){
 					for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
-						int check=checkQosAddon(null, mccNet, dayTime,serviceid);
+						int check=checkQosAddon(serviceid, mccNet, dayTime);
 						if(check==1){
 							//進行累計
 							Double oldVolume=0D;
