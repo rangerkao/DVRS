@@ -1329,6 +1329,7 @@ public class DVRSmain implements Job{
  
 		// Send post request
 		con.setDoOutput(true);
+		
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(param);
 		wr.flush();
