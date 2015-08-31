@@ -249,7 +249,7 @@ function tqueryTWNMSISDN(){
 			<label id="y" >y.index</label>
 			<label id="menuAuth"></label>
 		</div>
-		<div class="col-xs-12">
+		<div class="col-xs-12" style="padding-right: 0px;padding-left: 0px;">
 			<div class="col-xs-12">
 				<!-- <input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled"> -->
 				<input 	type="text" id="tText" class="col-xs-12"
