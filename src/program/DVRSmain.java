@@ -147,11 +147,11 @@ public class DVRSmain implements Job{
 	//預設值
 	private static int RUN_INTERVAL=3600;//單位秒
 	private static String DEFAULT_MCCMNC=null;//預設mssmnc
-	private static Double DEFAULT_THRESHOLD=null;//預設月警示量
-	private static Double DEFAULT_DAY_THRESHOLD=null;//預設日警示量
-	private static Double DEFAULT_DAYCAP=null;
-	private static Double DEFAULT_VOLUME_THRESHOLD=null;//預設流量警示(降速)，1.5GB;
-	private static Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
+	//private static Double DEFAULT_THRESHOLD=null;//預設月警示量
+	//private static Double DEFAULT_DAY_THRESHOLD=null;//預設日警示量
+	//private static Double DEFAULT_DAYCAP=null;
+	//private static Double DEFAULT_VOLUME_THRESHOLD=null;//預設流量警示(降速)，1.5GB;
+	//private static Double DEFAULT_VOLUME_THRESHOLD2=null;//預設流量警示(降速)，15GB;
 	private static String DEFAULT_PHONE=null;
 	private static Boolean TEST_MODE=true;
 	private static String HKNetReceiver;
@@ -185,6 +185,7 @@ public class DVRSmain implements Job{
 	List<Map<String,Object>> IPtoMccmncList = new ArrayList<Map<String,Object>>();
 	Set<String> sSX001 = new HashSet<String>();
 	Set<String> sSX002 = new HashSet<String>();
+	Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
 		
 	/*************************************************************************
 	 *************************************************************************
@@ -249,6 +250,71 @@ public class DVRSmain implements Job{
 	 *                                表格資料設定
 	 *************************************************************************
 	 *************************************************************************/
+
+	/**
+	 * NTD_MONTH_LIMIT
+	 * NTD_DAY_LIMIT
+	 * HKD_MONTH_LIMIT
+	 * HKD_DAY_LIMIT
+	 * VOLUME_LIMIT1
+	 * VOLUME_LIMIT2
+	 */
+	public boolean setSystemConfig(){
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			sql="SELECT A.NAME,A.VALUE,A.DESCR,A.PRICE_PLAN_ID FROM HUR_DVRS_CONFIG A";
+			st = conn.createStatement();
+			logger.debug("Query SystemConfig SQL : "+sql);
+			rs = st.executeQuery(sql);
+
+			while(rs.next()){
+				String pricePlanId = rs.getString("PRICE_PLAN_ID");
+				if(pricePlanId==null)
+					pricePlanId = "0"; //global parameter
+				
+				for(String id : pricePlanId.split(",")){
+					Map<String,Object> m = new HashMap<String,Object>();
+					if(systemConfig.containsKey(id)){
+						m = systemConfig.get(id);
+					}
+					m.put(rs.getString("NAME"), rs.getObject("VALUE"));
+					systemConfig.put(id, m);
+				}
+			}
+
+			/*//必須資料Check
+			Set<String> checkList = new HashSet<String>();
+			checkList.add("NTD_MONTH_LIMIT");
+			checkList.add("HKD_MONTH_LIMIT");
+			checkList.add("NTD_DAY_LIMIT");
+			checkList.add("HKD_DAY_LIMIT");
+			checkList.add("VOLUME_LIMIT1");//1.5GB
+			checkList.add("VOLUME_LIMIT2");//2.0GB
+			
+			for(String s: checkList){
+				if(systemConfig.get(s)==null){
+					sql="";
+					ErrorHandle("Can' found set parameter "+s);
+					return false;
+				}
+			}*/
+			
+			return true;
+		} catch (SQLException e) {
+			ErrorHandle("At set SystemConfig Got a SQLException", e);
+			return false;
+		}finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	/**
 	 * 尋找最後一次更改的fileID，以及目標處理的最終ID
@@ -379,7 +445,7 @@ public class DVRSmain implements Job{
 		
 		if(currentMap.containsKey(sYearmonth)){
 			for(String serviceid : currentMap.get(sYearmonth).keySet()){
-				oldChargeMap.put(serviceid, (Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
+				oldChargeMap.put(serviceid, (Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
 			}
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
@@ -547,8 +613,48 @@ public class DVRSmain implements Job{
 	}
 	
 	/**
+	 * 取出以Priceplan對應到的幣別
+	 */
+	public boolean setCurrencyMap(){
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			sql=
+					"SELECT  A.PRICEPLANID,A.CURRENCY "
+					+ "FROM HUR_DATA_RATE A "
+					+ "GROUP BY A.PRICEPLANID,A.CURRENCY ";
+			st = conn.createStatement();
+			logger.debug("Query Currency And IMSI SQL : "+sql);
+			rs = st.executeQuery(sql);
+
+			while(rs.next()){
+				String id = rs.getString("PRICEPLANID");
+				String currency = rs.getString("CURRENCY");
+				
+				if(id!=null && !"".equals(id)&& 
+						currency!=null && !"".equals(currency))
+					pricePlanIdtoCurrency.put(id, currency);
+			}
+			return true;
+		} catch (SQLException e) {
+			ErrorHandle("At setCurrencyMap occur SQLException error", e);
+			return false;
+		}finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}			
+	}
+	
+	/**
 	 * 取出HUR_THRESHOLD
 	 * 建立MAP Key:IMSI,VALUE:THRESHOLD
+	 * 可以變更成使用者自定義上限，目前不使用全填上null
 	 * @return 
 	 */
 	private boolean setThreshold(){
@@ -573,13 +679,7 @@ public class DVRSmain implements Job{
 			}
 			result =true;
 		} catch (SQLException e) {
-			logger.error("At setThreshold occur SQLException error", e);
-			//send mail
-			errorMsg="";
-			for(StackTraceElement s :e.getStackTrace()){
-				errorMsg+=s.toString()+"<br>\n";
-			}
-			sendErrorMail("At setThreshold occur SQLException error!");
+			ErrorHandle("At setThreshold occur SQLException error!");
 		}finally{
 			try {
 				if(st!=null)
@@ -1015,19 +1115,21 @@ public class DVRSmain implements Job{
 			result =true;
 		} catch (SQLException e) {
 			ErrorHandle("At setIMSItoServiceIDMap occur SQLException error!", e);
-		}finally{
+	}finally{
 			try {
 				if(st!=null)
 					st.close();
 				if(rs!=null)
 					rs.close();
 			} catch (SQLException e) {
+
 			}
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return result;
 	}
-	
+
+
 	private boolean setServiceIDtoImsiMap(){
 		logger.info("setServiceIDtoImsiMap...");
 		long subStartTime = System.currentTimeMillis();
@@ -1123,11 +1225,11 @@ public class DVRSmain implements Job{
 			logger.info("Logger Load Success!");
 
 			DEFAULT_MCCMNC=props.getProperty("progrma.DEFAULT_MCCMNC");//預設mssmnc
-			DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//預設月警示量
-			DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//預設日警示量
-			DEFAULT_DAYCAP=(props.getProperty("progrma.DEFAULT_DAYCAP")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAYCAP")):500D);
-			DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024D);//預設流量警示(降速)，1.5GB;
-			DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
+			//DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//預設月警示量
+			//DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//預設日警示量
+			//DEFAULT_DAYCAP=(props.getProperty("progrma.DEFAULT_DAYCAP")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAYCAP")):500D);
+			//DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024D);//預設流量警示(降速)，1.5GB;
+			//DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
 			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
 			RUN_INTERVAL=(props.getProperty("progrma.RUN_INTERVAL")!=null?Integer.parseInt(props.getProperty("progrma.RUN_INTERVAL")):3600);
 			HKNetReceiver = props.getProperty("program.HKNetReceiver");
@@ -1140,11 +1242,11 @@ public class DVRSmain implements Job{
 			
 			logger.info(
 					"DEFAULT_MCCMNC : "+DEFAULT_MCCMNC+"\n"
-					+ "DEFAULT_THRESHOLD : "+DEFAULT_THRESHOLD+"\n"
-					+ "DEFAULT_DAY_THRESHOLD : "+DEFAULT_DAY_THRESHOLD+"\n"
-					+ "DEFAULT_DAYCAP : "+DEFAULT_DAYCAP+"\n"
-					+ "DEFAULT_VOLUME_THRESHOLD : "+DEFAULT_VOLUME_THRESHOLD+"\n"
-					+ "DEFAULT_VOLUME_THRESHOLD2 : "+DEFAULT_VOLUME_THRESHOLD2+"\n"
+					//+ "DEFAULT_THRESHOLD : "+DEFAULT_THRESHOLD+"\n"
+					//+ "DEFAULT_DAY_THRESHOLD : "+DEFAULT_DAY_THRESHOLD+"\n"
+					//+ "DEFAULT_DAYCAP : "+DEFAULT_DAYCAP+"\n"
+					//+ "DEFAULT_VOLUME_THRESHOLD : "+DEFAULT_VOLUME_THRESHOLD+"\n"
+					//+ "DEFAULT_VOLUME_THRESHOLD2 : "+DEFAULT_VOLUME_THRESHOLD2+"\n"
 					+ "DEFAULT_PHONE : "+DEFAULT_PHONE+"\n"
 					+ "RUN_INTERVAL : "+RUN_INTERVAL+"\n"
 					+ "HKNetReceiver : "+HKNetReceiver +"\n"
@@ -1155,8 +1257,10 @@ public class DVRSmain implements Job{
 					+ "kByte : "+kByte+"\n");
 			
 		} catch (FileNotFoundException e) {
+			sql="";
 			ErrorHandle("At loadProperties occur file not found error \n <br> file path="+path);
 		} catch (IOException e) {
+			sql="";
 			ErrorHandle("At loadProperties occur IOException error !\n <br> file path="+path);
 		}
 	}
@@ -1474,7 +1578,6 @@ public class DVRSmain implements Job{
 		}
 		return mccmnc;
 	}
-	
 	/**
 	 * 開始批價
 	 */
@@ -1493,6 +1596,7 @@ public class DVRSmain implements Job{
 		try {
 			count=dataCount();
 			defaultRate=defaultRate();
+			setQosData();
 
 			//批次Query 避免ram空間不足
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
@@ -1527,39 +1631,45 @@ public class DVRSmain implements Job{
 					Integer fileID=rs.getInt("FILEID");	
 					Double charge=0D;
 					Double dayCap=null;
-										
-					
 					//20141211 add
 					String ipaddr = rs.getString("SGSNADDRESS");
 					
+					
+					//抓到對應的Serviceid
 					//20150115 add
 					String serviceid = null;
-					
 					/*if(msisdnMap.get(imsi)!=null)
 						serviceid = msisdnMap.get(imsi).get("SERVICEID");*/
-					
+					//從換卡記錄找IMSI最後的ServiceID
 					if(IMSItoServiceIdMap.get(imsi)!=null)
 						serviceid = IMSItoServiceIdMap.get(imsi);
 					
 					if(serviceid==null || "".equals(serviceid)){
-						sendErrorMail("For CDR usageId="+usageId+" which can't find  ServceID." );
+						sql="";
+						ErrorHandle("For CDR usageId="+usageId+" which can't find  ServceID." );
 						continue;
 					}
 					
-					
+					//抓到對應的PricePlanid
 					String pricplanID=null;
 					if(msisdnMap.containsKey(serviceid))
 						pricplanID=msisdnMap.get(serviceid).get("PRICEPLANID");
 					
-					
-					if(!dataRate.containsKey(pricplanID)){
-						sql="";errorMsg="";
-						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
-						sendErrorMail("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
+			
+					String currency = null;
+					if(dataRate.containsKey(pricplanID)){
+						//20141210 add
+						currency=pricePlanIdtoCurrency.get(pricplanID);
 						
+						if(mccmnc==null || "".equals(mccmnc)){
+							mccmnc=searchMccmncBySERVICEID(serviceid);
+						}
+					}else{
+						sql="";
+						ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 					}
 					
-					
+					//取的資料所在的Mccmnc
 					//20141211 add
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc=searchMccmncByIP(ipaddr);
@@ -1579,6 +1689,12 @@ public class DVRSmain implements Job{
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
+					//判斷Mccmnc是否在Datarate中
+					if(!dataRate.get(pricplanID).containsKey(mccmnc)){
+						sql="";
+						ErrorHandle("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+					}
+					
 					int cd=checkQosAddon(serviceid, mccmnc, callTime);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
@@ -1595,22 +1711,22 @@ public class DVRSmain implements Job{
 								Date sdate = (Date) m.get("STARTTIME");
 								Date edate = (Date) m.get("ENDTIME");
 								if(sdate.equals(callTime)||sdate.before(callTime)&&(edate==null || edate.after(callTime))){
-									String currency=(String) m.get("CURRENCY");
-									if("HKD".equalsIgnoreCase(currency))
-										ec=exchangeRate;
+									
+									//取消幣別轉換，直接以原幣計價
+									/*if("HKD".equalsIgnoreCase(currency))
+										ec=exchangeRate;*/
 										
-									Double rate=(Double)m.get("RATE");
-									Double unit=(Double)m.get("CHARGEUNIT");
+									Double rate=(Double) m.get("RATE");
+									Double unit=(Double) m.get("CHARGEUNIT");
 									charge=Math.ceil(volume*kByte)*rate*ec/unit;
-									dayCap=(Double)m.get("DAYCAP");
+									dayCap=(Double) m.get("DAYCAP");
 									haveRate=true;
 									break;
 								}
 							}		
 							if(!haveRate){
-								sql="";errorMsg="";
-								logger.error("usageId:"+usageId+",CALLTIME:"+callTime.toString()+" can't charge correctly without Rate table ! ");
-								sendErrorMail("usageId:"+usageId+",CALLTIME:"+callTime.toString()+" can't charge correctly without Rate table ! ");
+								sql="";
+								ErrorHandle("usageId:"+usageId+",CALLTIME:"+callTime.toString()+" can't charge correctly without Rate table ! ");
 								continue;
 							}							
 						}else{
@@ -1618,10 +1734,12 @@ public class DVRSmain implements Job{
 							//沒有PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者，作法：統計流量，
 							//沒有對應的PRICEPLANID(月租方案)，MCCMNC，無法判斷區域業者
 							//以預設費率計費
-							sql="";errorMsg="";
-							logger.error("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
-							sendErrorMail("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
-							charge=Math.ceil(volume*kByte)*defaultRate;
+							
+							//20141210 假設幣值為港幣，將平均台幣換算成平均港幣
+							double ec=1;					
+							if("HKD".equalsIgnoreCase(currency))
+								ec=exchangeRate;
+							charge=Math.ceil(volume*kByte)*defaultRate/ec;
 						}
 					}
 
@@ -1663,17 +1781,15 @@ public class DVRSmain implements Job{
 							if( map2.containsKey(nccNet)){
 								map3=map2.get(nccNet);
 
-								oldCharge=(Double)map3.get("CHARGE");
+								oldCharge=(Double) map3.get("CHARGE");
 								
 								logMsg+="The old Daily charge is "+oldCharge+". ";
 								
 								//summary charge
 								charge=oldCharge+charge;
 								charge=FormatDouble(charge, "0.0000");
-								if(serviceid.equals("26234"))
-									System.out.println();
 								alert=(String)map3.get("ALERT");
-								oldvolume=(Double)map3.get("VOLUME");
+								oldvolume=(Double) map3.get("VOLUME");
 							
 								if(fileID<(Integer) map3.get("LAST_FILEID"))
 									fileID=(Integer) map3.get("LAST_FILEID");
@@ -1731,10 +1847,10 @@ public class DVRSmain implements Job{
 						
 						preCharge=(Double)map4.get("CHARGE")-oldCharge;
 						
-						logMsg+="The old month charge is "+(Double)map4.get("CHARGE")+". ";
+						logMsg+="The old month charge is "+(Double) map4.get("CHARGE")+". ";
 						smsTimes=(Integer) map4.get("SMS_TIMES");
 						suspend=(String) map4.get("EVER_SUSPEND");
-						volume=(Double)map4.get("VOLUME")+volume;
+						volume=(Double) map4.get("VOLUME")+volume;
 						lastAlertThreshold=(Double) map4.get("LAST_ALERN_THRESHOLD");
 						volumeAlert=(Double) map4.get("LAST_ALERN_VOLUME");
 						
@@ -1774,7 +1890,11 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			ErrorHandle("At charge occur SQLException error", e);
 		} catch (ParseException e) {
-			ErrorHandle("At charge occur SQLException error", e);
+			sql="";
+			ErrorHandle("At charge occur ParseException error", e);
+		} catch (Exception e) {
+			sql="";
+			ErrorHandle("At charge occur Exception error", e);
 		}finally{
 			try {
 				if(st!=null)
@@ -1859,14 +1979,14 @@ public class DVRSmain implements Job{
 			//20141201 add change another method to distinguish insert and update
 			/*for(String mon : currentMap.keySet()){
 				for(String serviceid : currentMap.get(mon).keySet()){
-					pst.setDouble(1,(Double) currentMap.get(mon).get(serviceid).get("CHARGE"));
+					pst.setDouble(1,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("CHARGE"));
 					pst.setInt(2, (Integer) currentMap.get(mon).get(serviceid).get("LAST_FILEID"));
 					pst.setInt(3, (Integer) currentMap.get(mon).get(serviceid).get("SMS_TIMES"));
 					pst.setString(4, spf.format((Date) currentMap.get(mon).get(serviceid).get("LAST_DATA_TIME")));
-					pst.setDouble(5,(Double) currentMap.get(mon).get(serviceid).get("VOLUME"));
+					pst.setDouble(5,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("VOLUME"));
 					pst.setString(6,(String) currentMap.get(mon).get(serviceid).get("EVER_SUSPEND"));
-					pst.setDouble(7,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
-					pst.setDouble(8,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_VOLUME"));
+					pst.setDouble(7,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
+					pst.setDouble(8,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("LAST_ALERN_VOLUME"));
 					pst.setString(9, mon);
 					pst.setString(10, serviceid);//具有mccmnc
 					pst.addBatch();
@@ -2114,7 +2234,7 @@ public class DVRSmain implements Job{
 		return result;
 	}
 
-	
+	/*
 	List<Integer> times=new ArrayList<Integer>();
 	List<Double> bracket=new ArrayList<Double>();
 	List<String> msg=new ArrayList<String>();
@@ -2162,7 +2282,86 @@ public class DVRSmain implements Job{
 			return true;
 		}
 		
+	}*/
+	/**
+	 * 設定簡訊設定
+	 * Map Key priceplanID，Value: ID,BRACKET,MEGID,SUSPEND,PRICEPLANID< List>
+	 */
+	Map<String,Map<String,List<Object>>> smsSettingMap = new HashMap<String,Map<String,List<Object>>>();
+	
+	private Boolean getSMSsetting(){
+		
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			sql =
+					"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
+					+ "FROM HUR_SMS_SETTING A "
+					+ "ORDER BY PRICEPLANID,ID DESC";
+			
+			st = conn.createStatement();
+			logger.debug("Query SMSSetting SQL : "+sql);
+			rs = st.executeQuery(sql);
+
+			while(rs.next()){
+				String pId=rs.getString("PRICEPLANID");
+				if(pId != null){
+					for(String id : pId.split(",")){
+						Map<String,List<Object>> map = new HashMap<String,List<Object>>();
+						
+						List<Object> l1=new ArrayList<Object>(); //ID
+						List<Object> l2=new ArrayList<Object>();
+						List<Object> l3=new ArrayList<Object>();
+						List<Object> l4=new ArrayList<Object>();
+						if(smsSettingMap.containsKey(id)){
+							map=smsSettingMap.get(id);
+							if(map.containsKey("ID")) 
+								l1=map.get("ID");
+							if(map.containsKey("BRACKET")) 
+								l2=map.get("BRACKET");
+							if(map.containsKey("MEGID")) 
+								l3=map.get("MEGID");
+							if(map.containsKey("SUSPEND")) 
+								l4=map.get("SUSPEND");
+						}
+						
+						l1.add(rs.getInt("ID"));
+						l2.add(rs.getDouble("BRACKET"));
+						l3.add(rs.getString("MEGID"));
+						l4.add(rs.getString("SUSPEND"));
+						
+						map.put("ID", l1);
+						map.put("BRACKET", l2);
+						map.put("MEGID", l3);
+						map.put("SUSPEND", l4);
+						smsSettingMap.put(id, map);
+					}
+				}	
+			}
+			
+		} catch (SQLException e) {
+			ErrorHandle("At setTADIGtoMCCMNC occur SQLException error", e);
+			return false;
+		}finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if(smsSettingMap.size()==0){
+			sql="";
+			ErrorHandle("Can't found SMS Setting!");
+			return false;
+		}else{
+			return true;
+		}
 	}
+
 	Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
 	public Boolean getSMSContents(){
 		//載入簡訊內容
@@ -2186,6 +2385,8 @@ public class DVRSmain implements Job{
 
 		} catch (SQLException e) {
 			ErrorHandle("At sendAlertSMS:Load SMSContent occur SQLException error", e);
+		} catch (Exception e) {
+			ErrorHandle("At sendAlertSMS:Load SMSContent occur Exception error", e);
 		} finally{
 			try {
 				if(st!=null)
@@ -2197,9 +2398,7 @@ public class DVRSmain implements Job{
 		}
 		
 		if(content.size()==0){
-			logger.error("No SMS content!");
-			sql="";errorMsg="";
-			sendErrorMail("Can't found SMS Content sentting!");
+			ErrorHandle("Can't found SMS Content sentting!");
 			return false;
 		}else{
 			return true;
@@ -2221,50 +2420,95 @@ public class DVRSmain implements Job{
 				if(msisdnMap.containsKey(serviceid))
 					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 				if(phone==null ||"".equals(phone)){
-					//sendErrorMail
-					sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
-					logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
 					continue;
 				}
+				//取得Priceplanid
+				String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
+				if(priceplanid==null ||"".equals(priceplanid)){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
+					continue;
+				}
+				
+				//
+				if(smsSettingMap.get(priceplanid)==null){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
+					continue;
+					//XXX 尚未在Smssetting 上依 priceplanID 設定
+					/*for(String s:smsSettingMap.keySet()){
+						priceplanid = s;
+					}*/
+				}
+				
+				List<Object> ids = smsSettingMap.get(priceplanid).get("ID");
+				List<Object> brackets = smsSettingMap.get(priceplanid).get("BRACKET");
+				List<Object> msgids = smsSettingMap.get(priceplanid).get("MEGID");
+				List<Object> suspends = smsSettingMap.get(priceplanid).get("SUSPEND");
 	
-				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
+				//取得此次批價前費用
 				Double oldCharge=(Double) oldChargeMap.get(serviceid);
 				if(oldCharge==null)	oldCharge=0D;
-
+				//目前累計費用
+				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
+				//兩者的費用差，運用在預估推測
 				Double differenceCharge=charge-oldCharge;
+
+				
 				int smsTimes=(Integer) currentMap.get(sYearmonth).get(serviceid).get("SMS_TIMES");
 				String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
 				Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_THRESHOLD");
-				boolean isCustomized=false;
+				Double DEFAULT_THRESHOLD = null;
+				String[] contentid=null;
+				
+				//抓取不同幣別月上限
+				if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
+				if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 				Double threshold=thresholdMap.get(serviceid);
 
+				//判斷客戶是不是VIP
+				boolean isCustomized=false;
+				//目前不設計自訂上限，取有表示客戶為VIP，取無則是非VIP
 				if(threshold==null){
 					threshold=DEFAULT_THRESHOLD;
 				}else{
 					isCustomized=true;
 				}
+				
+				//如果不是VIP，並取不到任何上限值 跳過
+				if(!isCustomized && threshold==null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
+					continue;
+				}
+				
 				if(lastAlernThreshold==null)
 					lastAlernThreshold=0D;
 
 				boolean sendSMS=false;
 				boolean needSuspend=false;
 				Double alertBracket=0D;
-				String[] contentid=null;
+				
 				
 				int msgSettingID=0;
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
 				if(threshold!=0D){
 					//檢查月用量
-					for(;msgSettingID<times.size();msgSettingID++){
-						if(((charge>=bracket.get(msgSettingID)*threshold))&&lastAlernThreshold<bracket.get(msgSettingID)*threshold){
+					for(;msgSettingID<ids.size();msgSettingID++){
+						Double bracket = (Double) brackets.get(msgSettingID);
+						if(((charge>=bracket*threshold))&&lastAlernThreshold<bracket*threshold){
 							sendSMS=true;
-							alertBracket=bracket.get(msgSettingID)*threshold;
-							contentid=msg.get(msgSettingID).split(",");
+							alertBracket=bracket*threshold;
+							contentid=((String)msgids.get(msgSettingID)).split(",");
 
-							if("1".equals(suspend.get(msgSettingID))){
+							if("1".equals((String)suspends.get(msgSettingID))){
 								needSuspend=true;
 							}
 							break;
@@ -2273,17 +2517,17 @@ public class DVRSmain implements Job{
 					
 					//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
 					if(!sendSMS||(sendSMS && msgSettingID!=0)){
-						if(charge+differenceCharge>=bracket.get(0)*threshold&&lastAlernThreshold<bracket.get(0)*threshold){
+						Double bracket = (Double) brackets.get(0);
+						if(charge+differenceCharge>=bracket*threshold&&lastAlernThreshold<bracket*threshold){
 							logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
 							sendSMS=true;
-							alertBracket=bracket.get(0)*threshold;
-							contentid=msg.get(0).split(",");
-							if("1".equals(suspend.get(0))){
-								needSuspend=true;
-							}else{
-								needSuspend=false;
-							}
 							msgSettingID=0;
+							
+							alertBracket=bracket*threshold;
+							contentid=((String)msgids.get(0)).split(",");
+							if("1".equals((String)suspends.get(0))){
+								needSuspend=true;
+							}
 						}
 					}
 				}else{
@@ -2297,9 +2541,9 @@ public class DVRSmain implements Job{
 					}
 				}				
 				if(sendSMS){
-					smsCount= sendSMS(serviceid,contentid,alertBracket,phone);
+					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,pricePlanIdtoCurrency.get(priceplanid));
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
-					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", (smsTimes+smsCount));
+					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", (smsTimes+1));
 					
 					//20150629 add
 					Set<String> set2 = new HashSet<String>();
@@ -2315,9 +2559,27 @@ public class DVRSmain implements Job{
 					doSuspend(serviceid,phone);
 				}
 			}
-			logger.debug("Total send month alert"+smsCount+" ...");
+			logger.debug("Total send month alert "+smsCount+" ...");
 			logger.debug("Log to table...executeBatch");
 		}
+	}
+	
+	public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
+		String result = getSystemConfigParam(pricePlanid,paramName);
+		return (result!=null? Double.parseDouble(result):null);
+	}
+	
+	
+	public String getSystemConfigParam(String pricePlanid,String paramName){
+		String result = null;
+		
+		if(systemConfig.get(pricePlanid)!=null)
+			result = (String) systemConfig.get(pricePlanid).get(paramName);
+			 
+		if(result == null)
+			result = (String) systemConfig.get("0").get(paramName);
+		
+		return result;
 	}
 	
 	public void doSuspend(String serviceid,String phone){
@@ -2340,7 +2602,7 @@ public class DVRSmain implements Job{
 		
 	}
 	
-	public int sendSMS(String serviceid,String[] contentid,Double alertBracket,String phone){
+	public int sendSMS(String serviceid,String[] contentid,Double alertBracket,String phone,String currency){
 		Statement st =null;
 		int smsCount=0;
 		String res;
@@ -2362,13 +2624,13 @@ public class DVRSmain implements Job{
 					//寄送簡訊
 					
 					if(content.get(s)==null){
-						throw new Exception("Can't find mail content id:"+s);
+						throw new Exception("Can't find sms content id:"+s);
 					}
 					String cont = content.get(s).get("CONTENT");
 
 					cont = new String(cont.getBytes("ISO8859-1"),"big5");
 					
-					cont =processMag(cont,alertBracket,cPhone);
+					cont =processMag(cont,alertBracket,cPhone,currency);
 					
 					//WSDL方式呼叫 WebServer
 					//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
@@ -2421,12 +2683,16 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			ErrorHandle("At send alert SMS occur SQLException error!", e);
 		} catch (UnsupportedEncodingException e) {
+			sql="";
 			ErrorHandle("At send alert SMS occur UnsupportedEncodingException error!", e);
 		} catch (IOException e) {
+			sql="";
 			ErrorHandle("At send alert SMS occur IOException error!", e);
 		} catch (InterruptedException e) {
+			sql="";
 			ErrorHandle("At send alert SMS occur InterruptedException error!", e);
 		} catch (Exception e) {
+			sql="";
 			ErrorHandle("At send alert SMS occur Exception error!", e);
 		}
 		return smsCount;
@@ -2442,9 +2708,10 @@ public class DVRSmain implements Job{
 			StringWriter s = new StringWriter();
 			e.printStackTrace(new PrintWriter(s));
 			//send mail
-			errorMsg+=s;
+			errorMsg=s.toString();
 		}else{
 			logger.error(cont);
+			errorMsg="";
 		}
 		
 		sendErrorMail(cont);
@@ -2473,24 +2740,60 @@ public class DVRSmain implements Job{
 				if(msisdnMap.containsKey(serviceid))
 					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 				if(phone==null ||"".equals(phone)){
-					//sendErrorMail
-					sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
-					logger.debug("The serviceid:"+serviceid+" can't find msisdn to send! ");
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send! ");
+					continue;
+				}
+				
+				String pricePlanID = msisdnMap.get(serviceid).get("PRICEPLANID");
+				if(pricePlanID==null ||"".equals(pricePlanID)){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The ServiceID:"+serviceid+" can't find pricePlanID!");
 					continue;
 				}
 
 				Double daycharge=0D;
 				String alerted ="0";
+				Double DEFAULT_DAY_THRESHOLD = null;
+				String[] contentid=null;
+				
+				//抓取不同幣別日上限
+				if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
+					String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
+					if(contentids != null )
+						contentid = contentids.split(",");
+				}
+				if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
+					String contentids = getSystemConfigParam(pricePlanID,"HKD_DAY_LIMIT_MSG_ID");
+					if(contentids != null )
+						contentid = contentids.split(",");
+				}
+				
+				//取不到每日上限 跳過
+				if(DEFAULT_DAY_THRESHOLD== null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
+					continue;
+				}
+				//取不到每日上限 簡訊內容跳過
+				if(contentid == null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
+					continue;
+				}
+				
+				
 				//累計
 				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
-					daycharge=daycharge+(Double)currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
+					daycharge=daycharge+(Double) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
 					String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("ALERT");
 					if("1".equals(a)) alerted="1";
 				}
-				
-				String[] contentid={"99"};
+
 				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
-					smsCount=sendSMS(serviceid,contentid,charge,phone);	
+					smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
 					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
@@ -2569,6 +2872,17 @@ public class DVRSmain implements Job{
 				}
 			}
 		}
+		//1.5 GB
+		Double DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT1");
+		//2.0 GB
+		Double DEFAULT_VOLUME_THRESHOLD2 = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
+		
+		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
+			sql="";
+			ErrorHandle("At checkNTTVolumeAlert can't find DEFAULT_VOLUME_THRESHOLD!");
+			return;
+		}
+		
 		Statement st=null;
 		try {
 			int smsCount=0;
@@ -2578,17 +2892,32 @@ public class DVRSmain implements Job{
 				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
 				//超過發簡訊，另外確認是否已通知過
 				boolean sendmsg=false;
-				Integer msgid=0;
+				String[] msgContent=null;
 				//NTT 流量警示內容為100～103
 				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
-					//2.0 GB 簡訊中文102，英文103
-					msgid=105;
-					sendmsg=true;
+					//2.0 GB 
+					String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MAIL_ID");
+					if(msgids!=null){
+						msgContent = msgids.split(",");
+						sendmsg=true;
+					}else{
+						sql="";
+						ErrorHandle("Cannot get VOLUME_LIMIT2_MAIL_ID! ");
+						continue;
+					}
 				}
 				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
-					//1.5 GB 簡訊中文100，英文101
-					msgid=104;
-					sendmsg=true;
+					//1.5 GB 
+					String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MAIL_ID");
+					if(msgids!=null){
+						msgContent = msgids.split(",");
+						sendmsg=true;
+					}else{
+						sql="";
+						ErrorHandle("Cannot get VOLUME_LIMIT1_MAIL_ID! ");
+						continue;
+					}
+					
 				}
 				
 				if(sendmsg){
@@ -2608,20 +2937,18 @@ public class DVRSmain implements Job{
 					String mail_sender="HKNet@sim2travel.com";
 					String mail_receiver=HKNetReceiver;
 					
+					//發送Mail
 					
-					if(content.get(msgid.toString())==null){
-						throw new Exception("Can't find mail content id:"+msgid);
-					}
-					
-					//發送簡訊
-					if(msgid==104){
+					String contentID = msgContent[0];
+
+					if("104".equals(contentID)){
 						mail_subject = "Notification on FUP 75% 1.5GB";
-						mail_content = content.get(msgid.toString()).get("CONTENT");
+						mail_content = content.get(contentID).get("CONTENT");
 						logger.info("For "+serviceid+" send 1.5GB decrease speed  message !");
 					}
-					if(msgid==105){
+					if("105".equals(contentID)){
 						mail_subject = "Notification on FUP 100% 2GB";
-						mail_content = content.get(msgid.toString()).get("CONTENT");
+						mail_content = content.get(contentID).get("CONTENT");
 						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
 					}
 					
@@ -2658,8 +2985,10 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			ErrorHandle("At send NTT volume alert mail occur SQLException error!", e);
 		} catch (UnsupportedEncodingException e) {
+			sql="";
 			ErrorHandle("At send NTT volume alert mail occur UnsupportedEncodingException error!", e);
 		} catch (Exception e) {
+			sql="";
 			ErrorHandle("At send NTT volume alert mail occur Exception error!", e);
 		} finally{
 			try {
@@ -2701,7 +3030,17 @@ public class DVRSmain implements Job{
 				}
 			}
 		}
-
+		//1.5 GB
+		Double DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+		//2.0 GB
+		Double DEFAULT_VOLUME_THRESHOLD2 = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
+		
+		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
+			sql="";
+			ErrorHandle("At addonVolumeAlert can't find DEFAULT_VOLUME_THRESHOLD!");
+			return;
+		}
+		
 		int smsCount=0;
 		String phone = null;
 		for(String serviceid:tempMap.keySet()){
@@ -2712,30 +3051,42 @@ public class DVRSmain implements Job{
 			if(msisdnMap.containsKey(serviceid))
 				phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 			if(phone==null ||"".equals(phone)){
-				//sendErrorMail
-				sendErrorMail("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
-				logger.error("The serviceid:"+serviceid+" can't find msisdn to send! ");
+				sql="";
+				ErrorHandle("At addonVolumeAlert occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
 				continue;
 			}
 			
 			//超過發簡訊，另外確認是否已通知過
 			boolean sendmsg=false;
-			Integer msgid=0;
+			String [] contentid = null;
 			//華人上網包簡訊內容
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
-				//2.0 GB 簡訊中文102，英文103
-				msgid=107;
-				sendmsg=true;
+				//2.0 GB 
+				String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
+				if(msgids!=null){
+					contentid = msgids.split(",");
+					sendmsg=true;
+				}else{
+					sql="";
+					ErrorHandle("Cannot get VOLUME_LIMIT2_MSG_ID! ");
+					continue;
+				}
 			}
 			if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
-				//1.5 GB 簡訊中文100，英文101
-				msgid=106;
-				sendmsg=true;
+				//1.5 GB 
+				String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
+				if(msgids!=null){
+					contentid = msgids.split(",");
+					sendmsg=true;
+				}else{
+					sql="";
+					ErrorHandle("Cannot get VOLUME_LIMIT1_MSG_ID! ");
+					continue;
+				}
 			}
-			String [] contentid = {msgid.toString()};
+			
 			if(sendmsg){
-				
-				smsCount=sendSMS(serviceid,contentid,null,phone);
+				smsCount+=sendSMS(serviceid,contentid,null,phone,null);
 				
 				//更新CurrentMap
 				currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
@@ -2765,12 +3116,17 @@ public class DVRSmain implements Job{
 		long subStartTime = System.currentTimeMillis();
 
 		if(getSMSsetting()&&getSMSContents()){
-			ckeckMonthAlert();
-			checkDailyAlert();
-			//降速提醒簡訊判斷*************************************
-			//20150702 cancel
-			//checkNTTVolumeAlert();
-			addonVolumeAlert();
+			try {
+				ckeckMonthAlert();
+				checkDailyAlert();
+				//降速提醒簡訊判斷*************************************
+				//20150702 cancel
+				//checkNTTVolumeAlert();
+				addonVolumeAlert();
+			} catch (Exception e) {
+				sql="";
+				ErrorHandle("At sendAlertSMS got Exception!",e);
+			}
 		}else{
 			return;
 		}
@@ -2786,17 +3142,19 @@ public class DVRSmain implements Job{
 	 * @return
 	 */
 	
-	private String processMag(String msg,Double bracket,String cPhone){
-		return processMag(msg,bracket,cPhone,null);
+	private String processMag(String msg,Double bracket,String cPhone,String currency){
+		return processMag(msg,bracket,cPhone,null,currency);
 	}
 	
-	private String processMag(String msg,Double bracket,String cPhone,String ICCID){
+	private String processMag(String msg,Double bracket,String cPhone,String ICCID,String currency){
 		
 		//金額
-		if(bracket==null)
+		if(bracket==null){
 			msg=msg.replace("{{bracket}}", "");
-		else
-			msg=msg.replace("{{bracket}}",FormatNumString(bracket,"NT#,##0.00"));
+		}else{
+			
+			msg=msg.replace("{{bracket}}",FormatNumString(bracket,currency+"#,##0.00"));
+		}
 		
 		//客服電話
 		if(cPhone==null)
@@ -2919,10 +3277,13 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			ErrorHandle("At suspend occur SQLException error!", e);
 		} catch (IOException e) {
+			sql="";
 			ErrorHandle("At suspend occur IOException error!", e);
 		} catch (ClassNotFoundException e) {
+			sql="";
 			ErrorHandle("At suspend occur ClassNotFoundException error!", e);
 		} catch (Exception e) {
+			sql="";
 			ErrorHandle("At suspend occur Exception error!", e);
 		}
 	}
@@ -3058,7 +3419,7 @@ public class DVRSmain implements Job{
 				//如果狀態更新失敗，沒有動作發送錯誤Email
 				//20150317 change ,if result_flag is not equal to "000" then send alert mail.
 				if(!"000".equalsIgnoreCase(cMesg)){
-					sendErrorMail("Suspend does not work for"+"<br>"
+					ErrorHandle("Suspend does not work for"+"<br>"
 							+ "IMSI : "+NBR.get("imsi")+"<br>"
 							+ "MSISDN : "+NBR.get("msisdn")+"<br>"
 							+ "WorkOrderNBR : "+NBR.get("cWorkOrderNBR")+"<br>"
@@ -3117,10 +3478,12 @@ public class DVRSmain implements Job{
 				st5.close();
 				
 			} catch (InterruptedException e) {
+				sql="";
 				ErrorHandle("At processSuspendNBR occur InterruptedException error!", e);
 			} catch (SQLException e) {
 				ErrorHandle("At processSuspendNBR occur SQLException error!", e);
 			} catch (IOException e) {
+				sql="";
 				ErrorHandle("At processSuspendNBR occur IOException error!", e);
 			}
 		}
@@ -3205,6 +3568,7 @@ public class DVRSmain implements Job{
 			//keyin();// 以等待使用者keyin的方式暫停
 
 		} catch (SchedulerException e) {
+			sql="";
 			ErrorHandle("at regularTimeRun occure error!",e);
 		}
 	}
@@ -3225,6 +3589,7 @@ public class DVRSmain implements Job{
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
+					sql="";
 					ErrorHandle("At waiting thread occur error", e);
 				}
 			}
@@ -3239,6 +3604,7 @@ public class DVRSmain implements Job{
 		try {
 			process();
 		} catch (Exception e) {
+			sql="";
 			ErrorHandle("process error!");
 		}finally{
 			//將動作交給下個thread
@@ -3282,6 +3648,8 @@ public class DVRSmain implements Job{
 					setCostomerNumber()&&//國碼對應表(客服,國名)
 					setAddonData()&&//華人上網包申請資料
 					setQosData()&&//設定SX001,SX002資料
+					setCurrencyMap()&&//設定PricePlanID對應幣別
+					setSystemConfig()&&//系統Comfig設定
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					(oldChargeMap.size()!=0||setoldChargeMap())&&//設定old
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
@@ -3308,13 +3676,7 @@ public class DVRSmain implements Job{
 							conn.rollback();
 						} catch (SQLException e1) {
 						}
-						logger.error("At commit occur SQLException error!", e);
-						//send mail
-						errorMsg="";
-						for(StackTraceElement s :e.getStackTrace()){
-							errorMsg+=s.toString()+"<br>\n";
-						}
-						sendErrorMail("At commit occur SQLException error!");
+						ErrorHandle("At commit occur SQLException error!",e);
 					}
 
 					//suspend的後續追蹤處理
@@ -3327,8 +3689,8 @@ public class DVRSmain implements Job{
 			closeConnect();
 
 		} else {
-			logger.error("connect is null!");
-			sendErrorMail("Cannot connect to DB!");
+			sql="";
+			ErrorHandle("Cannot connect to DB(connect is null)!!");
 		}
 	}	
 }

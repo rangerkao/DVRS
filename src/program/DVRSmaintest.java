@@ -976,6 +976,11 @@ public class DVRSmaintest implements Job{
 		}
 	}
 	
+	
+	
+	
+	
+	
 	/**
 	 * 設定簡訊設定
 	 * Map Key priceplanID，Value: ID,BRACKET,MEGID,SUSPEND,PRICEPLANID< List>
@@ -1037,6 +1042,8 @@ public class DVRSmaintest implements Job{
 				e.printStackTrace();
 			}
 		}
+
+
 	}
 	
 	/**
@@ -1588,9 +1595,7 @@ public class DVRSmaintest implements Job{
 					
 					//20141210 add
 					String currency=null;
-					
-					
-					
+
 					//20150115 add
 					String serviceid = msisdnMap.get(imsi).get("SERVICEID");
 					
@@ -2097,6 +2102,7 @@ public class DVRSmaintest implements Job{
 					//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 					Double threshold=thresholdMap.get(serviceid);
 
+					//目前不設計自訂上限，取有表示客戶為VIP，取無則是非VIP
 					if(threshold==null){
 						threshold=DEFAULT_THRESHOLD;
 					}else{

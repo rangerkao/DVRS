@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -411,12 +412,12 @@ public class SMSDao extends BaseDao{
 	public void logSendSMS(String phone,String msgid,String res) throws SQLException{
 		sql="INSERT INTO HUR_SMS_LOG"
 				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,?,?,SYSDATE)";
+				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,to_date(?,'yyyyMMddhh24miss'),?,SYSDATE)";
 		
 		PreparedStatement pst = conn.prepareStatement(sql);
 		pst.setString(1, phone);
 		pst.setString(2, msgid);
-		pst.setDate(3,convertJaveUtilDate_To_JavaSqlDate(new Date()));
+		pst.setString(3,new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 		pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
 		pst.executeUpdate();
 		pst.close();		
