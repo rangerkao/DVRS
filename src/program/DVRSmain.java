@@ -82,21 +82,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 
-public class DVRSmain implements Job{
+
+public class DVRSmain extends TimerTask{
 
 	
 	//DB config
@@ -185,7 +178,8 @@ public class DVRSmain implements Job{
 	List<Map<String,Object>> IPtoMccmncList = new ArrayList<Map<String,Object>>();
 	Set<String> sSX001 = new HashSet<String>();
 	Set<String> sSX002 = new HashSet<String>();
-	Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
+	//TODO new version
+	//Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
 		
 	/*************************************************************************
 	 *************************************************************************
@@ -223,6 +217,9 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setQosData(){
 		logger.info("setQosData...");
+		sSX001.clear();
+		sSX002.clear();
+		
 		long subStartTime = System.currentTimeMillis();
 		//sSX001
 		sSX001.add("45412");
@@ -250,7 +247,7 @@ public class DVRSmain implements Job{
 	 *                                表格資料設定
 	 *************************************************************************
 	 *************************************************************************/
-
+	//TODO new Version
 	/**
 	 * NTD_MONTH_LIMIT
 	 * NTD_DAY_LIMIT
@@ -259,7 +256,7 @@ public class DVRSmain implements Job{
 	 * VOLUME_LIMIT1
 	 * VOLUME_LIMIT2
 	 */
-	public boolean setSystemConfig(){
+	/*public boolean setSystemConfig(){
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -283,7 +280,7 @@ public class DVRSmain implements Job{
 				}
 			}
 
-			/*//必須資料Check
+			//必須資料Check
 			Set<String> checkList = new HashSet<String>();
 			checkList.add("NTD_MONTH_LIMIT");
 			checkList.add("HKD_MONTH_LIMIT");
@@ -298,7 +295,7 @@ public class DVRSmain implements Job{
 					ErrorHandle("Can' found set parameter "+s);
 					return false;
 				}
-			}*/
+			}
 			
 			return true;
 		} catch (SQLException e) {
@@ -311,10 +308,9 @@ public class DVRSmain implements Job{
 				if(rs!=null)
 					rs.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * 尋找最後一次更改的fileID，以及目標處理的最終ID
@@ -369,8 +365,9 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setCurrentMap(){
 		logger.info("setCurrentMap...");
-		long subStartTime = System.currentTimeMillis();
+		currentMap.clear();
 		
+		long subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result = false;
@@ -441,8 +438,9 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setoldChargeMap(){
 		logger.info("setoldChargeMap...");
-		long subStartTime = System.currentTimeMillis();
+		oldChargeMap.clear();
 		
+		long subStartTime = System.currentTimeMillis();
 		if(currentMap.containsKey(sYearmonth)){
 			for(String serviceid : currentMap.get(sYearmonth).keySet()){
 				oldChargeMap.put(serviceid, (Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
@@ -463,6 +461,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setCurrentMapDay(){
 		logger.info("setCurrentMapDay...");
+		currentDayMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -550,6 +549,7 @@ public class DVRSmain implements Job{
 	//20150324 modify add network info
 	private boolean setDataRate(){
 		logger.info("setDataRate...");
+		dataRate.clear();
 		long subStartTime = System.currentTimeMillis();
 		boolean result = false;
 		Statement st = null;
@@ -616,6 +616,7 @@ public class DVRSmain implements Job{
 	 * 取出以Priceplan對應到的幣別
 	 */
 	public boolean setCurrencyMap(){
+		pricePlanIdtoCurrency.clear();
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -659,6 +660,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setThreshold(){
 		logger.info("setThreshold...");
+		thresholdMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -699,6 +701,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setSERVICEIDtoVLN(){
 		logger.info("setSERVICEIDtoVLN...");
+		SERVICEIDtoVLN.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -744,6 +747,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setVLNtoTADIG(){
 		logger.info("setVLNtoTADIG...");
+		VLNtoTADIG.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -787,6 +791,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setTADIGtoMCCMNC(){
 		logger.info("setTADIGtoMCCMNC...");
+		TADIGtoMCCMNC.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -830,6 +835,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setCostomerNumber(){
 		logger.info("setCostomerNumber...");
+		codeMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -874,7 +880,6 @@ public class DVRSmain implements Job{
 	private int dataCount(){
 		logger.info("dataCount...");
 		long subStartTime = System.currentTimeMillis();
-		
 		Statement st = null;
 		ResultSet rs = null;
 		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.CHARGE is null ";
@@ -929,8 +934,9 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setAddonData(){
 		logger.info("setAddonData...");
-		long subStartTime = System.currentTimeMillis();
+		addonDataList.clear();
 		
+		long subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result = false;
@@ -975,6 +981,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setIPtoMccmncList(){
 		logger.info("setIPtoMccmncList...");
+		IPtoMccmncList.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -1022,6 +1029,7 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setMsisdnMap(){
 		logger.info("setMsisdnMap...");
+		msisdnMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -1077,6 +1085,9 @@ public class DVRSmain implements Job{
 	 */
 	private boolean setIMSItoServiceIDMap(){
 		logger.info("setIMSItoServiceIDMap...");
+		logger.info("setServiceIDtoImsiMap...");
+		IMSItoServiceIdMap.clear();
+		ServiceIdtoIMSIMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
@@ -1111,6 +1122,7 @@ public class DVRSmain implements Job{
 			
 			while(rs.next()){
 				IMSItoServiceIdMap.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
+				ServiceIdtoIMSIMap.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
 			}
 			result =true;
 		} catch (SQLException e) {
@@ -1130,8 +1142,9 @@ public class DVRSmain implements Job{
 	}
 
 
-	private boolean setServiceIDtoImsiMap(){
+	/*private boolean setServiceIDtoImsiMap(){
 		logger.info("setServiceIDtoImsiMap...");
+		ServiceIdtoIMSIMap.clear();
 		long subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
@@ -1181,7 +1194,7 @@ public class DVRSmain implements Job{
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return result;
-	}
+	}*/
 
 	/*************************************************************************
 	 *************************************************************************
@@ -1228,8 +1241,8 @@ public class DVRSmain implements Job{
 			//DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//預設月警示量
 			//DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//預設日警示量
 			//DEFAULT_DAYCAP=(props.getProperty("progrma.DEFAULT_DAYCAP")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAYCAP")):500D);
-			//DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024D);//預設流量警示(降速)，1.5GB;
-			//DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024D);//預設流量警示(降速)，15GB;
+			//DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024*1024D);//預設流量警示(降速)，1.5GB;
+			//DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024*1024D);//預設流量警示(降速)，15GB;
 			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
 			RUN_INTERVAL=(props.getProperty("progrma.RUN_INTERVAL")!=null?Integer.parseInt(props.getProperty("progrma.RUN_INTERVAL")):3600);
 			HKNetReceiver = props.getProperty("program.HKNetReceiver");
@@ -1587,6 +1600,7 @@ public class DVRSmain implements Job{
 		
 		updateMap.clear();
 		updateMapD.clear();
+		cdrChargeMap.clear();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -1944,6 +1958,7 @@ public class DVRSmain implements Job{
 		} catch (SQLException e) {
 			ErrorHandle("At updateCdr occur SQLException error", e);
 		}finally{
+			cdrChargeMap.clear();
 			try {
 				if(st!=null)
 					st.close();
@@ -2305,40 +2320,41 @@ public class DVRSmain implements Job{
 
 			while(rs.next()){
 				String pId=rs.getString("PRICEPLANID");
-				if(pId != null){
-					for(String id : pId.split(",")){
-						Map<String,List<Object>> map = new HashMap<String,List<Object>>();
-						
-						List<Object> l1=new ArrayList<Object>(); //ID
-						List<Object> l2=new ArrayList<Object>();
-						List<Object> l3=new ArrayList<Object>();
-						List<Object> l4=new ArrayList<Object>();
-						if(smsSettingMap.containsKey(id)){
-							map=smsSettingMap.get(id);
-							if(map.containsKey("ID")) 
-								l1=map.get("ID");
-							if(map.containsKey("BRACKET")) 
-								l2=map.get("BRACKET");
-							if(map.containsKey("MEGID")) 
-								l3=map.get("MEGID");
-							if(map.containsKey("SUSPEND")) 
-								l4=map.get("SUSPEND");
-						}
-						
-						l1.add(rs.getInt("ID"));
-						l2.add(rs.getDouble("BRACKET"));
-						l3.add(rs.getString("MEGID"));
-						l4.add(rs.getString("SUSPEND"));
-						
-						map.put("ID", l1);
-						map.put("BRACKET", l2);
-						map.put("MEGID", l3);
-						map.put("SUSPEND", l4);
-						smsSettingMap.put(id, map);
+				if(pId == null){
+					pId = "0";
+				}
+				
+				for(String id : pId.split(",")){
+					Map<String,List<Object>> map = new HashMap<String,List<Object>>();
+					
+					List<Object> l1=new ArrayList<Object>(); //ID
+					List<Object> l2=new ArrayList<Object>();
+					List<Object> l3=new ArrayList<Object>();
+					List<Object> l4=new ArrayList<Object>();
+					if(smsSettingMap.containsKey(id)){
+						map=smsSettingMap.get(id);
+						if(map.containsKey("ID")) 
+							l1=map.get("ID");
+						if(map.containsKey("BRACKET")) 
+							l2=map.get("BRACKET");
+						if(map.containsKey("MEGID")) 
+							l3=map.get("MEGID");
+						if(map.containsKey("SUSPEND")) 
+							l4=map.get("SUSPEND");
 					}
+					
+					l1.add(rs.getInt("ID"));
+					l2.add(rs.getDouble("BRACKET"));
+					l3.add(rs.getString("MEGID"));
+					l4.add(rs.getString("SUSPEND"));
+					
+					map.put("ID", l1);
+					map.put("BRACKET", l2);
+					map.put("MEGID", l3);
+					map.put("SUSPEND", l4);
+					smsSettingMap.put(id, map);
 				}	
 			}
-			
 		} catch (SQLException e) {
 			ErrorHandle("At setTADIGtoMCCMNC occur SQLException error", e);
 			return false;
@@ -2349,7 +2365,6 @@ public class DVRSmain implements Job{
 				if(rs!=null)
 					rs.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
 			}
 		}
 		
@@ -2425,7 +2440,9 @@ public class DVRSmain implements Job{
 					continue;
 				}
 				//取得Priceplanid
-				String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
+				String priceplanid = "0";
+				//TODO new version
+				/*String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
 				if(priceplanid==null ||"".equals(priceplanid)){
 					sql="";
 					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
@@ -2437,11 +2454,7 @@ public class DVRSmain implements Job{
 					sql="";
 					ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
 					continue;
-					//XXX 尚未在Smssetting 上依 priceplanID 設定
-					/*for(String s:smsSettingMap.keySet()){
-						priceplanid = s;
-					}*/
-				}
+				}*/
 				
 				List<Object> ids = smsSettingMap.get(priceplanid).get("ID");
 				List<Object> brackets = smsSettingMap.get(priceplanid).get("BRACKET");
@@ -2455,19 +2468,30 @@ public class DVRSmain implements Job{
 				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
 				//兩者的費用差，運用在預估推測
 				Double differenceCharge=charge-oldCharge;
-
 				
 				int smsTimes=(Integer) currentMap.get(sYearmonth).get(serviceid).get("SMS_TIMES");
-				String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
+				//String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
 				Double lastAlernThreshold=(Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_THRESHOLD");
-				Double DEFAULT_THRESHOLD = null;
+				Double DEFAULT_THRESHOLD = 5000D;
 				String[] contentid=null;
 				
+				//TODO new version
+				/*
+				Double DEFAULT_THRESHOLD = null;
+				String[] contentid=null;
 				//抓取不同幣別月上限
 				if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
 					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
 				if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
 					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
+				
+				//取不到任何上限值 跳過
+				if(DEFAULT_THRESHOLD = null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
+					continue;
+				}
+					*/
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 				Double threshold=thresholdMap.get(serviceid);
@@ -2479,13 +2503,6 @@ public class DVRSmain implements Job{
 					threshold=DEFAULT_THRESHOLD;
 				}else{
 					isCustomized=true;
-				}
-				
-				//如果不是VIP，並取不到任何上限值 跳過
-				if(!isCustomized && threshold==null){
-					sql="";
-					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
-					continue;
 				}
 				
 				if(lastAlernThreshold==null)
@@ -2554,8 +2571,9 @@ public class DVRSmain implements Job{
 					set2.add(serviceid);
 					updateMap.put(sYearmonth, set2);
 				}
-				
-				if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
+				//20151001 cancel if have been suspend then not do
+				//if(needSuspend &&"0".equals(everSuspend)&&!isCustomized){
+				if(needSuspend &&!isCustomized){
 					doSuspend(serviceid,phone);
 				}
 			}
@@ -2564,13 +2582,14 @@ public class DVRSmain implements Job{
 		}
 	}
 	
-	public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
+	//TODO new version
+	/*public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
 		String result = getSystemConfigParam(pricePlanid,paramName);
 		return (result!=null? Double.parseDouble(result):null);
-	}
+	}*/
 	
-	
-	public String getSystemConfigParam(String pricePlanid,String paramName){
+	//TODO new Version
+	/*public String getSystemConfigParam(String pricePlanid,String paramName){
 		String result = null;
 		
 		if(systemConfig.get(pricePlanid)!=null)
@@ -2580,7 +2599,7 @@ public class DVRSmain implements Job{
 			result = (String) systemConfig.get("0").get(paramName);
 		
 		return result;
-	}
+	}*/
 	
 	public void doSuspend(String serviceid,String phone){
 		//中斷GPRS服務
@@ -2754,9 +2773,11 @@ public class DVRSmain implements Job{
 
 				Double daycharge=0D;
 				String alerted ="0";
-				Double DEFAULT_DAY_THRESHOLD = null;
+				Double DEFAULT_DAY_THRESHOLD =  500D;
+				String[]  contentid = {"99"};
+				//TODO new version
+				/*Double DEFAULT_DAY_THRESHOLD = null;
 				String[] contentid=null;
-				
 				//抓取不同幣別日上限
 				if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
 					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
@@ -2783,7 +2804,7 @@ public class DVRSmain implements Job{
 					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
 					continue;
 				}
-				
+				*/
 				
 				//累計
 				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
@@ -2819,7 +2840,8 @@ public class DVRSmain implements Job{
 		}
 	}
 	
-	public void checkNTTVolumeAlert(){
+	//canceled
+	/*public void checkNTTVolumeAlert(){
 		//NTT
 		//暫存數據用量資料 Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
@@ -2997,7 +3019,7 @@ public class DVRSmain implements Job{
 			} catch (SQLException e) {
 			}
 		}
-	}
+	}*/
 	
 
 	
@@ -3031,9 +3053,14 @@ public class DVRSmain implements Job{
 			}
 		}
 		//1.5 GB
-		Double DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+		Double DEFAULT_VOLUME_THRESHOLD = 1.5*1024*1024*1024D;
+		//TODO new version
+		//Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+		
 		//2.0 GB
-		Double DEFAULT_VOLUME_THRESHOLD2 = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
+		Double DEFAULT_VOLUME_THRESHOLD2 = 2.0*1024*1024*1024D;
+		//TODO new version
+		//Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
 		
 		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
 			sql="";
@@ -3062,27 +3089,32 @@ public class DVRSmain implements Job{
 			//華人上網包簡訊內容
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
-				String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
-				if(msgids!=null){
-					contentid = msgids.split(",");
-					sendmsg=true;
-				}else{
+				String msgids = "107";
+				//TODO new version
+				/*String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
+				if(msgids == null){
 					sql="";
 					ErrorHandle("Cannot get VOLUME_LIMIT2_MSG_ID! ");
 					continue;
 				}
+				*/
+				contentid = msgids.split(",");
+				sendmsg=true;
+	
 			}
 			if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
 				//1.5 GB 
-				String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
-				if(msgids!=null){
-					contentid = msgids.split(",");
-					sendmsg=true;
-				}else{
+				String msgids = "106";
+				//TODO new version
+				/*String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
+				 if(msgids == null){
 					sql="";
 					ErrorHandle("Cannot get VOLUME_LIMIT1_MSG_ID! ");
 					continue;
 				}
+				*/
+				contentid = msgids.split(",");
+				sendmsg=true;
 			}
 			
 			if(sendmsg){
@@ -3231,15 +3263,15 @@ public class DVRSmain implements Job{
 		if(PID==null)PID="";
 		if(DCS==null)DCS="";
 		param=param.replace("{{PhoneNumber}}",PhoneNumber );
-		param=param.replace("{{Text}}",Text );
+		param=param.replace("{{Text}}",Text.replaceAll("/+", "%2b") );
 		param=param.replace("{{charset}}",charset );
 		param=param.replace("{{InfoCharCounter}}",InfoCharCounter );
 		param=param.replace("{{PID}}",PID );
 		param=param.replace("{{DCS}}",DCS );
 		
 		
-		
-		return HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+		//20151022 change ip from 192.168.10.125 to 10.42.200.100
+		return HttpPost("http://10.42.200.100:8800/Send%20Text%20Message.htm", param,"");
 	}
 	
 	/**
@@ -3529,53 +3561,32 @@ public class DVRSmain implements Job{
 
 		IniProgram();
 
-		//DVRSmain rf =new DVRSmain();
-		//rf.process();
-		
-		regularTimeRun();
+		/*DVRSmain rf =new DVRSmain();
+		rf.process();*/
 
+		regilarHandle();
 	}
 	
-	public static void regularTimeRun(){
-		try {
-			// Grab the Scheduler instance from the Factory
-			Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-
-			// define the job and tie it to our HelloJob class ->
-			// JobBuilder.newJob()
-			JobDetail job = JobBuilder.newJob(DVRSmain.class)
-					.withIdentity("job1", "group1").build();
-
-			// Trigger the job to run now, and then repeat every 40 seconds ->
-			// TriggerBuilder.newTrigger()
-			Trigger trigger = TriggerBuilder
-					.newTrigger()
-					.withIdentity("trigger1", "group1")
-					.startNow()
-					.withSchedule(
-							SimpleScheduleBuilder.simpleSchedule()
-									.withIntervalInSeconds(RUN_INTERVAL)
-									.repeatForever()).build();
-
-			// Tell quartz to schedule the job using our trigger
-			scheduler.scheduleJob(job, trigger);
+	public static void regilarHandle(){
 		
-			// and start it off
-			scheduler.start();
-			
-			// 使程式暫停，Job持續運作
-			//pause();// 以sleep的方式暫停
-			//keyin();// 以等待使用者keyin的方式暫停
 
-		} catch (SchedulerException e) {
-			sql="";
-			ErrorHandle("at regularTimeRun occure error!",e);
-		}
+		Calendar c = Calendar.getInstance();
+		
+		if(c.get(Calendar.MINUTE)>=30)
+			c.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY)+1);
+		
+		c.set(Calendar.MINUTE, 30);
+		c.set(Calendar.SECOND, 0);
+		
+		logger.info("First run Time:"+c.getTime());
+		
+		long runPeriod = 1000*60*60;
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new DVRSmain(), c.getTime(), runPeriod);
+		
 	}
 	
-	@Override
-	public void execute(JobExecutionContext arg0){
-		
+	public void run(){
 		//如果已有等待的thread，結束自己
 		if(hasWaiting) {
 			logger.debug("****************************      Found had wating thread doesn't execute!");
@@ -3610,8 +3621,6 @@ public class DVRSmain implements Job{
 			//將動作交給下個thread
 			executing=false;
 		}
-
-		//sendErrorMail("test mail " + new Date());
 	}
 	
 	private void process() {
@@ -3636,7 +3645,7 @@ public class DVRSmain implements Job{
 			if(
 					setDayDate() && //設定日期
 					setIMSItoServiceIDMap()&&//設定IMSI至ServiecId的對應
-					setServiceIDtoImsiMap()&&//設定ServiecId至IMSI的對應
+					//setServiceIDtoImsiMap()&&//設定ServiecId至IMSI的對應
 					//setLastFileID()&&//取得最後更新的FileID
 					setThreshold()&&//取出HUR_THRESHOLD
 					setDataRate()&&//取出HUR_DATARATE
@@ -3649,9 +3658,10 @@ public class DVRSmain implements Job{
 					setAddonData()&&//華人上網包申請資料
 					setQosData()&&//設定SX001,SX002資料
 					setCurrencyMap()&&//設定PricePlanID對應幣別
-					setSystemConfig()&&//系統Comfig設定
+					//TODO new Version
+					//setSystemConfig()&&//系統Comfig設定
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
-					(oldChargeMap.size()!=0||setoldChargeMap())&&//設定old
+					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
 				
 				

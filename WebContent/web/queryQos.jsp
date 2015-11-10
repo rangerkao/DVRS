@@ -8,8 +8,7 @@
 <title></title>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
-	var tHead=[
-	           {name:"provision ID",col:"provisionID",_width:"20%"},
+	var tHead=[{name:"provision ID",col:"provisionID",_width:"20%"},
 	           {name:"IMSI",col:"imsi",_width:"20%"},
 	           {name:"門號",col:"msisdn",_width:"15%"},
 	           {name:"動作",col:"action",_width:"5%"},

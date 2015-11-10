@@ -153,7 +153,7 @@ public class SMSControl extends BaseControl{
 		
 		
 		
-		return HttpPost("http://192.168.10.125:8800/Send%20Text%20Message.htm", param,"");
+		return HttpPost("http://10.42.200.100:8800/Send%20Text%20Message.htm", param,"");
 	}
 	
 	public String HttpPost(String url,String param,String charset) throws IOException{

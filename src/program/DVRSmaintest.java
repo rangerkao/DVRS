@@ -2982,7 +2982,7 @@ public class DVRSmaintest implements Job{
 
 			// define the job and tie it to our HelloJob class ->
 			// JobBuilder.newJob()
-			JobDetail job = JobBuilder.newJob(DVRSmain.class)
+			JobDetail job = JobBuilder.newJob(DVRSmaintest.class)
 					.withIdentity("job1", "group1").build();
 
 			// Trigger the job to run now, and then repeat every 40 seconds ->

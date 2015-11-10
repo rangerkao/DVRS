@@ -18,9 +18,6 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -34,7 +31,7 @@ public class CacheAction extends BaseAction {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	static Properties props =null;
+	public static Properties props =null;
 	static Logger logger ;
 
 	//IMSI SERVICEID ¹ïÀ³ªí
@@ -127,6 +124,8 @@ public class CacheAction extends BaseAction {
 		url=url.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""));
 		System.out.println(url);
 		url=url.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
+		System.out.println(url);		
+		
 		conn=connDB(props.getProperty("Oracle.DriverClass"), url, 
 				props.getProperty("Oracle.UserName"), 
 				props.getProperty("Oracle.PassWord")
