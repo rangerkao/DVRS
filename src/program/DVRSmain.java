@@ -1,45 +1,45 @@
 
 /** Program History
  * 
- * 20141008 ¶}©lCODING¡A²Ä¤@ª©
- * 20141009 ±N¥\¯à¶°¦X¦¨¤u¨ãjavaÀÉ¡A§¹¦¨mail±H°e¥\¯à
- * 20141009 §¹¦¨§å»ù¥\¯à¡A­×¥¿§å¦¸Query»yªk¿ù»~(±Nrownum¥Hminus¨ú¥N)
- * 20141209 ­×§ï¤éÂ²°T¤º®e±a¥X·í¤ë²Ö­pª÷ÃB
- * 20141013 §¹¦¨Äµ¥ÜÂ²°T¥\¯à
- * 20141013 ¨M©wCDRµLMCCMNC®Éªº³B²z¤è¦¡
- * 20141014 §¹¦¨GPRS¤¤¤î¥\¯à
- * 20141014 ·s¼W¹ïÀ³ªí¡A­×¥¿¤é´Á¤ñ¹ï¤è¦¡a.before(b)
- * 20141015 ½Õ¾ãmailµo°e
- * 20141015 ·s¼W©w®É°õ¦æ±Æµ{¥\¯à
- * 20141016 UIºİ«Ø¥ß¡A§¹¦¨Åv­­ÅçÃÒ
- * 20141021 §¹¦¨UI°õ¦æ¥~³¡µ{¦¡¥\¯à
- * 20141029 ­×§ïSMS±H°e¤è¦¡¡A±q¥æ¥Ñsmppµo°e§ï¬°¨Ï¥Îhttp post¤è¦¡
- * 20141029 ­×§ïÂ²°TTable¡A±N³]©w»P¤º®e¤À¶}¡A¥Hmsg ID ¹ïÀ³
- * 20141029 §¹¦¨¥ÑUI¥i¶i¦æ¾Ş§@Proccess¥\¯à
- * 20141103 ´ú¸Õ¨Ã¤w½T»{GPRS¤¤¤î¥\¯à¥i¹B§@
- * 20141104 UI·s¼WÄµ¥Ü¤W­­­¶­±¡Amenu¤º®e¥Ñ«áºİ±±¨î
- * 20141113 ­×§ïVIP«È¤á¤£¶i¦æÂ_ºô
- * 20141113 ·s¼W1.5G¡B2.0G¬y¶qÄµ¥Ü¥\¯à
- * 20141118 ­×§ïVIP«È¤á¥H¨C5000¶ô¶i¦æÄµ¥Ü
- * 20141118 ¦Ò¼{¤§«á¤]³\¦³«È¨î¤W­­¥\¯à¡A­×§ïtable Schema¡A¥Ø«e¥H0ªí¥Ü
- * 20141118 ·s¼W°lÂÜ¤¤Â_GPRS­n¨Dªºª¬ºA
- * 20141118 ·s¼WµØ¤H¤Wºô¥]¤£§å»ù­p¶O
- * 20141125 UI ®M¥ÎBootStrap¼Ë¦¡
- * 20141125 ­×§ïDaycap§PÂ_¡A¦pªG¬°­t­È¡Aªí¥Ü¤£°Ñ¦Ò
- * 20141201 ·s¼WÂÂ¸ê®Æ§PÂ_Set¶°¦X
- * 20141204 UI·s¼W¤é¡B¤ë²Ö­p­¶­±
- * 20141204 ·s¼Wmenu¤p¤u¨ã¡A¥HID¬d¸ßÂ²°T¡A¥Hªù¸¹¬d¸ßVIP
- * 20141209 ·s¼W¨C¤é500¶ôÄµ¥Ü
- * 20141209 ±N¨ú¥X¤é²Ö­p¥Ñ¥¼­­¨î§ï¬°¥u¨úªñ¨â­Ó¤ë
- * 20141211 ·s¼W¥ÑIP¹ïÀ³¨ìMCCMNC¥\¯à
- * 20141215 ¤Gª©(¥¼¤W½u)¡A¨Ì¸ê¶O®M¥ÎÂ²°T³]©w¡A§å»ù¤£Âà´«¹ô§O¡A³¡¤À³]©w§ï¥Htable¨ú¥X
- * 20141216 ­×§ï¡A¦]¨C¤é500Â²°T·|±a¥X·í¤ëª÷ÃB¡A­×§ï·í«È¤á¤w¸gÂ_ºô«á¤£µo°e¨C¤é500Äµ¥Ü
- * 20150115 ±N²Ö­p¥ÑIMSI§ï¬°SERVICE ID¬°³æ¦ì²Ö­p(Á×§K´«¥d´«¸¹³y¦¨µLªk²Ö­p)
- * 20150115 ­×§ïµØ¤H¤Wºô¥]ÀË¬d¡A¨ú®øÀË¬dªù¸¹
- * 20150309 NTT­n¨D¥Hmail³qª¾¬y¶qÄµ¥Ü
- * 20150316 ­×§ïJtoolÀÉ®×¡A¨ú®øµo°e±b¸¹»P±H¥óªÌ¬Û¦Pªº­­¨î(©Ò¥H¤§«eµo°eµ¹ntt¤£¦¨¥\)
- * 20150317 ·s¼W§PÂ_¡A¦pªGGPRS¤¤Â_­n¨Dµ²ªG¤£¦¨¥\(000)¡Aµo°eÄµ¥Üamil
- * 20150324 ­×§ï¤é²Ö­pMccmnc¨ì·skey­È(°ê½X+·~ªÌ¦WºÙ)
+ * 20141008 é–‹å§‹CODINGï¼Œç¬¬ä¸€ç‰ˆ
+ * 20141009 å°‡åŠŸèƒ½é›†åˆæˆå·¥å…·javaæª”ï¼Œå®Œæˆmailå¯„é€åŠŸèƒ½
+ * 20141009 å®Œæˆæ‰¹åƒ¹åŠŸèƒ½ï¼Œä¿®æ­£æ‰¹æ¬¡Queryèªæ³•éŒ¯èª¤(å°‡rownumä»¥minuså–ä»£)
+ * 20141209 ä¿®æ”¹æ—¥ç°¡è¨Šå…§å®¹å¸¶å‡ºç•¶æœˆç´¯è¨ˆé‡‘é¡
+ * 20141013 å®Œæˆè­¦ç¤ºç°¡è¨ŠåŠŸèƒ½
+ * 20141013 æ±ºå®šCDRç„¡MCCMNCæ™‚çš„è™•ç†æ–¹å¼
+ * 20141014 å®ŒæˆGPRSä¸­æ­¢åŠŸèƒ½
+ * 20141014 æ–°å¢å°æ‡‰è¡¨ï¼Œä¿®æ­£æ—¥æœŸæ¯”å°æ–¹å¼a.before(b)
+ * 20141015 èª¿æ•´mailç™¼é€
+ * 20141015 æ–°å¢å®šæ™‚åŸ·è¡Œæ’ç¨‹åŠŸèƒ½
+ * 20141016 UIç«¯å»ºç«‹ï¼Œå®Œæˆæ¬Šé™é©—è­‰
+ * 20141021 å®ŒæˆUIåŸ·è¡Œå¤–éƒ¨ç¨‹å¼åŠŸèƒ½
+ * 20141029 ä¿®æ”¹SMSå¯„é€æ–¹å¼ï¼Œå¾äº¤ç”±smppç™¼é€æ”¹ç‚ºä½¿ç”¨http postæ–¹å¼
+ * 20141029 ä¿®æ”¹ç°¡è¨ŠTableï¼Œå°‡è¨­å®šèˆ‡å…§å®¹åˆ†é–‹ï¼Œä»¥msg ID å°æ‡‰
+ * 20141029 å®Œæˆç”±UIå¯é€²è¡Œæ“ä½œProccessåŠŸèƒ½
+ * 20141103 æ¸¬è©¦ä¸¦å·²ç¢ºèªGPRSä¸­æ­¢åŠŸèƒ½å¯é‹ä½œ
+ * 20141104 UIæ–°å¢è­¦ç¤ºä¸Šé™é é¢ï¼Œmenuå…§å®¹ç”±å¾Œç«¯æ§åˆ¶
+ * 20141113 ä¿®æ”¹VIPå®¢æˆ¶ä¸é€²è¡Œæ–·ç¶²
+ * 20141113 æ–°å¢1.5Gã€2.0Gæµé‡è­¦ç¤ºåŠŸèƒ½
+ * 20141118 ä¿®æ”¹VIPå®¢æˆ¶ä»¥æ¯5000å¡Šé€²è¡Œè­¦ç¤º
+ * 20141118 è€ƒæ…®ä¹‹å¾Œä¹Ÿè¨±æœ‰å®¢åˆ¶ä¸Šé™åŠŸèƒ½ï¼Œä¿®æ”¹table Schemaï¼Œç›®å‰ä»¥0è¡¨ç¤º
+ * 20141118 æ–°å¢è¿½è¹¤ä¸­æ–·GPRSè¦æ±‚çš„ç‹€æ…‹
+ * 20141118 æ–°å¢è¯äººä¸Šç¶²åŒ…ä¸æ‰¹åƒ¹è¨ˆè²»
+ * 20141125 UI å¥—ç”¨BootStrapæ¨£å¼
+ * 20141125 ä¿®æ”¹Daycapåˆ¤æ–·ï¼Œå¦‚æœç‚ºè² å€¼ï¼Œè¡¨ç¤ºä¸åƒè€ƒ
+ * 20141201 æ–°å¢èˆŠè³‡æ–™åˆ¤æ–·Seté›†åˆ
+ * 20141204 UIæ–°å¢æ—¥ã€æœˆç´¯è¨ˆé é¢
+ * 20141204 æ–°å¢menuå°å·¥å…·ï¼Œä»¥IDæŸ¥è©¢ç°¡è¨Šï¼Œä»¥é–€è™ŸæŸ¥è©¢VIP
+ * 20141209 æ–°å¢æ¯æ—¥500å¡Šè­¦ç¤º
+ * 20141209 å°‡å–å‡ºæ—¥ç´¯è¨ˆç”±æœªé™åˆ¶æ”¹ç‚ºåªå–è¿‘å…©å€‹æœˆ
+ * 20141211 æ–°å¢ç”±IPå°æ‡‰åˆ°MCCMNCåŠŸèƒ½
+ * 20141215 äºŒç‰ˆ(æœªä¸Šç·š)ï¼Œä¾è³‡è²»å¥—ç”¨ç°¡è¨Šè¨­å®šï¼Œæ‰¹åƒ¹ä¸è½‰æ›å¹£åˆ¥ï¼Œéƒ¨åˆ†è¨­å®šæ”¹ä»¥tableå–å‡º
+ * 20141216 ä¿®æ”¹ï¼Œå› æ¯æ—¥500ç°¡è¨Šæœƒå¸¶å‡ºç•¶æœˆé‡‘é¡ï¼Œä¿®æ”¹ç•¶å®¢æˆ¶å·²ç¶“æ–·ç¶²å¾Œä¸ç™¼é€æ¯æ—¥500è­¦ç¤º
+ * 20150115 å°‡ç´¯è¨ˆç”±IMSIæ”¹ç‚ºSERVICE IDç‚ºå–®ä½ç´¯è¨ˆ(é¿å…æ›å¡æ›è™Ÿé€ æˆç„¡æ³•ç´¯è¨ˆ)
+ * 20150115 ä¿®æ”¹è¯äººä¸Šç¶²åŒ…æª¢æŸ¥ï¼Œå–æ¶ˆæª¢æŸ¥é–€è™Ÿ
+ * 20150309 NTTè¦æ±‚ä»¥mailé€šçŸ¥æµé‡è­¦ç¤º
+ * 20150316 ä¿®æ”¹Jtoolæª”æ¡ˆï¼Œå–æ¶ˆç™¼é€å¸³è™Ÿèˆ‡å¯„ä»¶è€…ç›¸åŒçš„é™åˆ¶(æ‰€ä»¥ä¹‹å‰ç™¼é€çµ¦nttä¸æˆåŠŸ)
+ * 20150317 æ–°å¢åˆ¤æ–·ï¼Œå¦‚æœGPRSä¸­æ–·è¦æ±‚çµæœä¸æˆåŠŸ(000)ï¼Œç™¼é€è­¦ç¤ºamil
+ * 20150324 ä¿®æ”¹æ—¥ç´¯è¨ˆMccmncåˆ°æ–°keyå€¼(åœ‹ç¢¼+æ¥­è€…åç¨±)
  * 
  */
 
@@ -123,33 +123,33 @@ public class DVRSmain extends TimerTask{
 	private static String errorMsg="";
 	
 	//Hur Data conf
-	private static Integer dataThreshold=null;//CDR¸ê®Æ¤@§å¦¸¨ú¥X¼Æ¶q
-	//private static Integer lastfileID=null;//³Ì«á§å»ùÀÉ®×¸¹
-	private static Double exchangeRate=null; //´ä¹ô¹ï¥x¹ô¶×²v¡A¼È­q¬°4
-	private static Double kByte=null;//RATE³æ¦ìKB¡AUSAGE³æ¦ìB
+	private static Integer dataThreshold=null;//CDRè³‡æ–™ä¸€æ‰¹æ¬¡å–å‡ºæ•¸é‡
+	//private static Integer lastfileID=null;//æœ€å¾Œæ‰¹åƒ¹æª”æ¡ˆè™Ÿ
+	private static Double exchangeRate=null; //æ¸¯å¹£å°å°å¹£åŒ¯ç‡ï¼Œæš«è¨‚ç‚º4
+	private static Double kByte=null;//RATEå–®ä½KBï¼ŒUSAGEå–®ä½B
 	
-	//¤é´Á³]©w
+	//æ—¥æœŸè¨­å®š
 	private String MONTH_FORMATE="yyyyMM";
-	//¨t²Î®É¶¡¡A»~®t¤@¤p®É¡A¨t²Î¸ê®Æ³B²z®É¶¡¬°·í®É®É¶¡´£«e¤@¤p®É
+	//ç³»çµ±æ™‚é–“ï¼Œèª¤å·®ä¸€å°æ™‚ï¼Œç³»çµ±è³‡æ–™è™•ç†æ™‚é–“ç‚ºç•¶æ™‚æ™‚é–“æå‰ä¸€å°æ™‚
 	private String sYearmonth="";
 	private String sYearmonthday="";
-	//¤W­Ó¤ë
+	//ä¸Šå€‹æœˆ
 	private String sYearmonth2="";
 	private String DAY_FORMATE="yyyyMMdd";	
 	
-	//¹w³]­È
-	private static int RUN_INTERVAL=3600;//³æ¦ì¬í
-	private static String DEFAULT_MCCMNC=null;//¹w³]mssmnc
-	//private static Double DEFAULT_THRESHOLD=null;//¹w³]¤ëÄµ¥Ü¶q
-	//private static Double DEFAULT_DAY_THRESHOLD=null;//¹w³]¤éÄµ¥Ü¶q
+	//é è¨­å€¼
+	private static int RUN_INTERVAL=3600;//å–®ä½ç§’
+	private static String DEFAULT_MCCMNC=null;//é è¨­mssmnc
+	//private static Double DEFAULT_THRESHOLD=null;//é è¨­æœˆè­¦ç¤ºé‡
+	//private static Double DEFAULT_DAY_THRESHOLD=null;//é è¨­æ—¥è­¦ç¤ºé‡
 	//private static Double DEFAULT_DAYCAP=null;
-	//private static Double DEFAULT_VOLUME_THRESHOLD=null;//¹w³]¬y¶qÄµ¥Ü(­°³t)¡A1.5GB;
-	//private static Double DEFAULT_VOLUME_THRESHOLD2=null;//¹w³]¬y¶qÄµ¥Ü(­°³t)¡A15GB;
+	//private static Double DEFAULT_VOLUME_THRESHOLD=null;//é è¨­æµé‡è­¦ç¤º(é™é€Ÿ)ï¼Œ1.5GB;
+	//private static Double DEFAULT_VOLUME_THRESHOLD2=null;//é è¨­æµé‡è­¦ç¤º(é™é€Ÿ)ï¼Œ15GB;
 	private static String DEFAULT_PHONE=null;
 	private static Boolean TEST_MODE=true;
 	private static String HKNetReceiver;
 	
-	//¦h±Æµ{³B²z
+	//å¤šæ’ç¨‹è™•ç†
 	private static boolean executing =false;
 	private static boolean hasWaiting = false;
 	
@@ -183,26 +183,26 @@ public class DVRSmain extends TimerTask{
 		
 	/*************************************************************************
 	 *************************************************************************
-	 *                                µ{¦¡°Ñ¼Æ³]©w
+	 *                                ç¨‹å¼åƒæ•¸è¨­å®š
 	 *************************************************************************
 	 *************************************************************************/
 	
 	/**
-	 * ³]©w­p¶O¶g´Á
-	 * ¨ú¯S©w¤é´Á¨º­Ó¤ëªº¡A«e­±¥[¤Wcalendar.setTime(date);³]©wdate¤é´Á
+	 * è¨­å®šè¨ˆè²»é€±æœŸ
+	 * å–ç‰¹å®šæ—¥æœŸé‚£å€‹æœˆçš„ï¼Œå‰é¢åŠ ä¸Šcalendar.setTime(date);è¨­å®šdateæ—¥æœŸ
 	 */
 	private boolean setDayDate(){
 		logger.info("setMonthDate...");
 		long subStartTime = System.currentTimeMillis();
 
-		//¥Ø«e®É¶¡
+		//ç›®å‰æ™‚é–“
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
-		//¨t²Î®É¶¡´£«e¤@¤p®É
+		//ç³»çµ±æ™‚é–“æå‰ä¸€å°æ™‚
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY)-1);
 		sYearmonth=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		sYearmonthday=DateFormat(calendar.getTime(),DAY_FORMATE);
-		//¤W­Ó¤ë®É¶¡¡A´î±¼Month·|-30¤Ñ¡A±Ä¨ú¨ì1¸¹¦V«e¡A½T©w¸ó¤ë
+		//ä¸Šå€‹æœˆæ™‚é–“ï¼Œæ¸›æ‰Monthæœƒ-30å¤©ï¼Œæ¡å–åˆ°1è™Ÿå‘å‰ï¼Œç¢ºå®šè·¨æœˆ
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
 		sYearmonth2=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		
@@ -213,7 +213,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ³]©wµØ¤H¤Wºô¥]MCCMNC¸ê®Æ 20141118 ±Æ°£µØ¤H¤Wºô¥]
+	 * è¨­å®šè¯äººä¸Šç¶²åŒ…MCCMNCè³‡æ–™ 20141118 æ’é™¤è¯äººä¸Šç¶²åŒ…
 	 */
 	private boolean setQosData(){
 		logger.info("setQosData...");
@@ -244,7 +244,7 @@ public class DVRSmain extends TimerTask{
 
 	/*************************************************************************
 	 *************************************************************************
-	 *                                ªí®æ¸ê®Æ³]©w
+	 *                                è¡¨æ ¼è³‡æ–™è¨­å®š
 	 *************************************************************************
 	 *************************************************************************/
 	//TODO new Version
@@ -280,7 +280,7 @@ public class DVRSmain extends TimerTask{
 				}
 			}
 
-			//¥²¶·¸ê®ÆCheck
+			//å¿…é ˆè³‡æ–™Check
 			Set<String> checkList = new HashSet<String>();
 			checkList.add("NTD_MONTH_LIMIT");
 			checkList.add("HKD_MONTH_LIMIT");
@@ -313,7 +313,7 @@ public class DVRSmain extends TimerTask{
 	}*/
 
 	/**
-	 * ´M§ä³Ì«á¤@¦¸§ó§ïªºfileID¡A¥H¤Î¥Ø¼Ğ³B²zªº³Ì²×ID
+	 * å°‹æ‰¾æœ€å¾Œä¸€æ¬¡æ›´æ”¹çš„fileIDï¼Œä»¥åŠç›®æ¨™è™•ç†çš„æœ€çµ‚ID
 	 */
 	/*private boolean setLastFileID(){
 		logger.info("setLastFileID...");
@@ -358,8 +358,8 @@ public class DVRSmain extends TimerTask{
 	}*/
 	
 	/**
-	 * ¨ú¥X HUR_CURRENTE table¸ê®Æ
-	 * «Ø¥ß¦¨
+	 * å–å‡º HUR_CURRENTE tableè³‡æ–™
+	 * å»ºç«‹æˆ
 	 * Map 
 	 * Key:MONTH,Value:Map(serviceid,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_VOLUME)))
 	 */
@@ -372,7 +372,7 @@ public class DVRSmain extends TimerTask{
 		ResultSet rs = null;
 		boolean result = false;
 		
-		//³]©wHUR_CURRENT­p¶O¡A§ì¥X³o­Ó¤ë»P¤U­Ó¤ë
+		//è¨­å®šHUR_CURRENTè¨ˆè²»ï¼ŒæŠ“å‡ºé€™å€‹æœˆèˆ‡ä¸‹å€‹æœˆ
 		try {
 			sql=
 					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
@@ -409,7 +409,7 @@ public class DVRSmain extends TimerTask{
 				
 				
 				
-				//20141201 add ³]©w¦s¦b¸ê®Æ
+				//20141201 add è¨­å®šå­˜åœ¨è³‡æ–™
 				Set<String> set =new HashSet<String>();
 				if(existMap.containsKey(month)){
 					set=existMap.get(month);
@@ -434,7 +434,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * «O¯d³o­Ó¤ëÂÂ¸ê®Æ¡A§@¬°¹w´ú¶O¥Î¨Ï¥Î
+	 * ä¿ç•™é€™å€‹æœˆèˆŠè³‡æ–™ï¼Œä½œç‚ºé æ¸¬è²»ç”¨ä½¿ç”¨
 	 */
 	private boolean setoldChargeMap(){
 		logger.info("setoldChargeMap...");
@@ -452,12 +452,12 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú¥X HUR_CURRENTE_DAY table¸ê®Æ
-	 * «Ø¥ß¦¨
+	 * å–å‡º HUR_CURRENTE_DAY tableè³‡æ–™
+	 * å»ºç«‹æˆ
 	 * Map 
 	 * Key:day , value:Map(SERVICEID,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
-	 * ³]©wHUR_CURRENT_DAY­p¶O,¥Ø«e¤£°µ§R°£°Ê§@¡A¤§«á¦Ò¼{¬O§_¯d2­Ó¤ë¸ê®Æ
-	 * 20141209 ­×§ï¨ú¥Xªñ¨â­Ó¤ë
+	 * è¨­å®šHUR_CURRENT_DAYè¨ˆè²»,ç›®å‰ä¸åšåˆªé™¤å‹•ä½œï¼Œä¹‹å¾Œè€ƒæ…®æ˜¯å¦ç•™2å€‹æœˆè³‡æ–™
+	 * 20141209 ä¿®æ”¹å–å‡ºè¿‘å…©å€‹æœˆ
 	 */
 	private boolean setCurrentMapDay(){
 		logger.info("setCurrentMapDay...");
@@ -508,7 +508,7 @@ public class DVRSmain extends TimerTask{
 					map3.put(serviceid, map2);
 					currentDayMap.put(day,map3);
 
-					//20141201 add ³]©w¦s¦b¸ê®Æ
+					//20141201 add è¨­å®šå­˜åœ¨è³‡æ–™
 					Map<String,Set<String>> map5 = new HashMap<String,Set<String>>();
 					Set<String> set =new HashSet<String>();
 					if(existMapD.containsKey(day)){
@@ -543,8 +543,8 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú¥X HUR_DATA_RATE
-	 * «Ø¥ß¦¨MAP Key:PRICEPLANID,Value:Map(MCCMNC,MAP(CURRENCY,CHARGEUNIT,RATE,NETWORK))
+	 * å–å‡º HUR_DATA_RATE
+	 * å»ºç«‹æˆMAP Key:PRICEPLANID,Value:Map(MCCMNC,MAP(CURRENCY,CHARGEUNIT,RATE,NETWORK))
 	 */
 	//20150324 modify add network info
 	private boolean setDataRate(){
@@ -613,7 +613,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú¥X¥HPriceplan¹ïÀ³¨ìªº¹ô§O
+	 * å–å‡ºä»¥Priceplanå°æ‡‰åˆ°çš„å¹£åˆ¥
 	 */
 	public boolean setCurrencyMap(){
 		pricePlanIdtoCurrency.clear();
@@ -653,9 +653,9 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú¥XHUR_THRESHOLD
-	 * «Ø¥ßMAP Key:IMSI,VALUE:THRESHOLD
-	 * ¥i¥HÅÜ§ó¦¨¨Ï¥ÎªÌ¦Û©w¸q¤W­­¡A¥Ø«e¤£¨Ï¥Î¥ş¶ñ¤Wnull
+	 * å–å‡ºHUR_THRESHOLD
+	 * å»ºç«‹MAP Key:IMSI,VALUE:THRESHOLD
+	 * å¯ä»¥è®Šæ›´æˆä½¿ç”¨è€…è‡ªå®šç¾©ä¸Šé™ï¼Œç›®å‰ä¸ä½¿ç”¨å…¨å¡«ä¸Šnull
 	 * @return 
 	 */
 	private boolean setThreshold(){
@@ -696,7 +696,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ³]©w IMSI ¦Ü VLN ªº¹ïÀ³ªí
+	 * è¨­å®š IMSI è‡³ VLN çš„å°æ‡‰è¡¨
 	 * Map Key:IMSI,VALUE:VLN
 	 */
 	private boolean setSERVICEIDtoVLN(){
@@ -739,11 +739,11 @@ public class DVRSmain extends TimerTask{
 	
 	/**
 	 * 
-	 * «Ø¥ß VLN¦ÜTADIG¹ïÀ³ªí
+	 * å»ºç«‹ VLNè‡³TADIGå°æ‡‰è¡¨
 	 * 
-	 * ±qSERVICEIDtoVLN¨ú±oVALUE¥²¶·ÁY¦ì¤Ç°t
+	 * å¾SERVICEIDtoVLNå–å¾—VALUEå¿…é ˆç¸®ä½åŒ¹é…
 	 * 
-	 * MAP KEY¡GVLN,VALUE:TADIG
+	 * MAP KEYï¼šVLN,VALUE:TADIG
 	 */
 	private boolean setVLNtoTADIG(){
 		logger.info("setVLNtoTADIG...");
@@ -785,9 +785,9 @@ public class DVRSmain extends TimerTask{
 	
 	/**
 	 * 
-	 * «Ø¥ß TADIG¦ÜMCCMNC¹ïÀ³ªí
+	 * å»ºç«‹ TADIGè‡³MCCMNCå°æ‡‰è¡¨
 	 * 
-	 * MAP KEY¡GTADIG,VALUE:MCCMNC
+	 * MAP KEYï¼šTADIG,VALUE:MCCMNC
 	 */
 	private boolean setTADIGtoMCCMNC(){
 		logger.info("setTADIGtoMCCMNC...");
@@ -829,9 +829,9 @@ public class DVRSmain extends TimerTask{
 
 	/**
 	 * 
-	 * «Ø¥ß °ê½X¹ï«ÈªA¹q¸Ü¡A°ê®a ¹ïÀ³ªí
+	 * å»ºç«‹ åœ‹ç¢¼å°å®¢æœé›»è©±ï¼Œåœ‹å®¶ å°æ‡‰è¡¨
 	 * 
-	 * MAP KEY¡GCODE,VALUE:(PHONE,NAME)
+	 * MAP KEYï¼šCODE,VALUE:(PHONE,NAME)
 	 */
 	private boolean setCostomerNumber(){
 		logger.info("setCostomerNumber...");
@@ -874,7 +874,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú±o¸ê®Æµ§¼Æ
+	 * å–å¾—è³‡æ–™ç­†æ•¸
 	 * @return
 	 */
 	private int dataCount(){
@@ -884,7 +884,7 @@ public class DVRSmain extends TimerTask{
 		ResultSet rs = null;
 		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.CHARGE is null ";
 		int count=0;
-		//§ä¥XÁ`¶q
+		//æ‰¾å‡ºç¸½é‡
 		
 		try {
 			st = conn.prepareStatement(sql);
@@ -914,7 +914,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú±o¹w³]­p¶O¤ñ²v¡]Á`¶O²v¥­§¡¡^¡A¹ïMCCNOC¦³«oµLªk¹ïÀ³¸ê®Æ­p¶O
+	 * å–å¾—é è¨­è¨ˆè²»æ¯”ç‡ï¼ˆç¸½è²»ç‡å¹³å‡ï¼‰ï¼Œå°MCCNOCæœ‰å»ç„¡æ³•å°æ‡‰è³‡æ–™è¨ˆè²»
 	 * @return
 	 */
 	private double defaultRate(){
@@ -928,7 +928,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * «Ø¥ßµØ¤H¤Wºô¥]¹ïÀ³¸ê®Æ
+	 * å»ºç«‹è¯äººä¸Šç¶²åŒ…å°æ‡‰è³‡æ–™
 	 * 
 	 * List Map KEY:MSISDN,VALUE(IMSI,MSISDN,SERVICEID,SERVICECODE,STARTDATE,ENDDATE)>
 	 */
@@ -1022,10 +1022,10 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú¥Xmsisdn
-	 * «Ø¥ßmsisdnMap
+	 * å–å‡ºmsisdn
+	 * å»ºç«‹msisdnMap
 	 * Key:imsi,Value:Map(MSISDN,PRICEPLANID,SUBSIDIARYID,NCODE,SERVICEID)
-	 * ¼W¥[serviceid to map¡A°µ¥Hserviceid¤Ï¬d
+	 * å¢åŠ serviceid to mapï¼Œåšä»¥serviceidåæŸ¥
 	 */
 	private boolean setMsisdnMap(){
 		logger.info("setMsisdnMap...");
@@ -1078,10 +1078,10 @@ public class DVRSmain extends TimerTask{
 	Map<String,String> IMSItoServiceIdMap = new HashMap<String,String>();
 	Map<String,String> ServiceIdtoIMSIMap = new HashMap<String,String>();
 	/**
-	 * ³]©wIMSI¹ïÀ³¨ìServiceID Map 20150115 add
+	 * è¨­å®šIMSIå°æ‡‰åˆ°ServiceID Map 20150115 add
 	 * 
-	 * ¥ı±qMSISDN MAP(IMSI table ¸ê®Æ§ä´M SERVICEID)
-	 * §ä¤£¨ì¦A±q¦¹Table(´«¥d°O¿ı)§ä´M
+	 * å…ˆå¾MSISDN MAP(IMSI table è³‡æ–™æ‰¾å°‹ SERVICEID)
+	 * æ‰¾ä¸åˆ°å†å¾æ­¤Table(æ›å¡è¨˜éŒ„)æ‰¾å°‹
 	 */
 	private boolean setIMSItoServiceIDMap(){
 		logger.info("setIMSItoServiceIDMap...");
@@ -1203,18 +1203,18 @@ public class DVRSmain extends TimerTask{
 	 *************************************************************************/
 	
 	/**
-	 * µ{¦¡ªì©l¤Æ
+	 * ç¨‹å¼åˆå§‹åŒ–
 	 */
 	private static void IniProgram(){
-		// ªì©l¤Ælog
+		// åˆå§‹åŒ–log
 		// iniLog4j();
 		loadProperties();
 
 	}
 
 	/**
-	 * ªì©l¤Æ
-	 * ¸ü¤JLog4j Properties
+	 * åˆå§‹åŒ–
+	 * è¼‰å…¥Log4j Properties
 	 */
 	@SuppressWarnings("unused")
 	private  void iniLog4j(){
@@ -1224,9 +1224,9 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ªì©l¤Æ
-	 * ¸ü¤JLog4j Properties
-	 * ¦P®É¸ü¤J°Ñ¼Æporps
+	 * åˆå§‹åŒ–
+	 * è¼‰å…¥Log4j Properties
+	 * åŒæ™‚è¼‰å…¥åƒæ•¸porps
 	 */
 	private static  void loadProperties(){
 		System.out.println("initial Log4j, property !");
@@ -1237,21 +1237,21 @@ public class DVRSmain extends TimerTask{
 			logger =Logger.getLogger(DVRSmain.class);
 			logger.info("Logger Load Success!");
 
-			DEFAULT_MCCMNC=props.getProperty("progrma.DEFAULT_MCCMNC");//¹w³]mssmnc
-			//DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//¹w³]¤ëÄµ¥Ü¶q
-			//DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//¹w³]¤éÄµ¥Ü¶q
+			DEFAULT_MCCMNC=props.getProperty("progrma.DEFAULT_MCCMNC");//é è¨­mssmnc
+			//DEFAULT_THRESHOLD=(props.getProperty("progrma.DEFAULT_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_THRESHOLD")):5000D);//é è¨­æœˆè­¦ç¤ºé‡
+			//DEFAULT_DAY_THRESHOLD=(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAY_THRESHOLD")):500D);//é è¨­æ—¥è­¦ç¤ºé‡
 			//DEFAULT_DAYCAP=(props.getProperty("progrma.DEFAULT_DAYCAP")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_DAYCAP")):500D);
-			//DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024*1024D);//¹w³]¬y¶qÄµ¥Ü(­°³t)¡A1.5GB;
-			//DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024*1024D);//¹w³]¬y¶qÄµ¥Ü(­°³t)¡A15GB;
+			//DEFAULT_VOLUME_THRESHOLD=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD")):1.5*1024*1024*1024D);//é è¨­æµé‡è­¦ç¤º(é™é€Ÿ)ï¼Œ1.5GB;
+			//DEFAULT_VOLUME_THRESHOLD2=(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")!=null?Double.parseDouble(props.getProperty("progrma.DEFAULT_VOLUME_THRESHOLD2")):1.5*1024*1024*1024D);//é è¨­æµé‡è­¦ç¤º(é™é€Ÿ)ï¼Œ15GB;
 			DEFAULT_PHONE=props.getProperty("progrma.DEFAULT_PHONE");
 			RUN_INTERVAL=(props.getProperty("progrma.RUN_INTERVAL")!=null?Integer.parseInt(props.getProperty("progrma.RUN_INTERVAL")):3600);
 			HKNetReceiver = props.getProperty("program.HKNetReceiver");
 			TEST_MODE=("true".equalsIgnoreCase(props.getProperty("progrma.TEST_MODE"))?true:false);
 			
-			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDR¸ê®Æ¤@§å¦¸¨ú¥X¼Æ¶q
-			//lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//³Ì«á§å»ùÀÉ®×¸¹
-			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):4); //´ä¹ô¹ï¥x¹ô¶×²v¡A¼È­q¬°4
-			kByte=(props.getProperty("progrma.kByte")!=null?Double.parseDouble(props.getProperty("progrma.kByte")):1/1024D);//RATE³æ¦ìKB¡AUSAGE³æ¦ìB
+			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDRè³‡æ–™ä¸€æ‰¹æ¬¡å–å‡ºæ•¸é‡
+			//lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//æœ€å¾Œæ‰¹åƒ¹æª”æ¡ˆè™Ÿ
+			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):4); //æ¸¯å¹£å°å°å¹£åŒ¯ç‡ï¼Œæš«è¨‚ç‚º4
+			kByte=(props.getProperty("progrma.kByte")!=null?Double.parseDouble(props.getProperty("progrma.kByte")):1/1024D);//RATEå–®ä½KBï¼ŒUSAGEå–®ä½B
 			
 			logger.info(
 					"DEFAULT_MCCMNC : "+DEFAULT_MCCMNC+"\n"
@@ -1279,7 +1279,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ³s½u¦ÜDB1
+	 * é€£ç·šè‡³DB1
 	 */
 	private void connectDB(){
 		//conn=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
@@ -1306,10 +1306,10 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ³s½u¦ÜDB2
+	 * é€£ç·šè‡³DB2
 	 */
 	private void connectDB2(){
-		// ¶i¦æDB³s½u
+		// é€²è¡ŒDBé€£ç·š
 		//conn2=tool.connDB(logger, DriverClass, URL, UserName, PassWord);
 		try {
 			String url=props.getProperty("mBOSS.URL")
@@ -1357,7 +1357,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * Ãö³¬³s½u
+	 * é—œé–‰é€£ç·š
 	 */
 	private void closeConnect() {
 		
@@ -1472,7 +1472,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¨ú®øconnectionªºAuto commit
+	 * å–æ¶ˆconnectionçš„Auto commit
 	 */
 	private void cancelAutoCommit(){
 		logger.info("cancelAutoCommit...");
@@ -1487,7 +1487,7 @@ public class DVRSmain extends TimerTask{
 	
 	
 	/**
-	 * ±qimsi§ä´M¥Ø«eªºmccmnc
+	 * å¾imsiæ‰¾å°‹ç›®å‰çš„mccmnc
 	 */
 	public String searchMccmncBySERVICEID(String serviceid){
 		String mccmnc=null;
@@ -1507,8 +1507,8 @@ public class DVRSmain extends TimerTask{
 
 	
 	/**
-	 *½T»{µØ¤H¤Wºô¥] 
-	 *20150115 ALTER ¨ú®øÀË¬dªù¸¹
+	 *ç¢ºèªè¯äººä¸Šç¶²åŒ… 
+	 *20150115 ALTER å–æ¶ˆæª¢æŸ¥é–€è™Ÿ
 	 */
 	private int checkQosAddon(String serviceID,String mccmnc,Date callTime){
 		
@@ -1564,13 +1564,13 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¥ÑIP§ä´MMCCMNC  20141211 add
+	 * ç”±IPæ‰¾å°‹MCCMNC  20141211 add
 	 * @param ipaddr
 	 * @return
 	 */
 	private String searchMccmncByIP(String ipaddr){
 		String mccmnc=null;
-		//20141211 add ÂÇ¥Ñºô°ì¸ê®Æ§P©w,Map Value:START_NUM,END_NUM,MCCMNC
+		//20141211 add è—‰ç”±ç¶²åŸŸè³‡æ–™åˆ¤å®š,Map Value:START_NUM,END_NUM,MCCMNC
 		if(ipaddr.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$")){
 			String [] ips = ipaddr.split("\\.");
 			long ipNumber =0L;
@@ -1592,7 +1592,7 @@ public class DVRSmain extends TimerTask{
 		return mccmnc;
 	}
 	/**
-	 * ¶}©l§å»ù
+	 * é–‹å§‹æ‰¹åƒ¹
 	 */
 	private void charge(){
 		logger.info("charge...");
@@ -1612,7 +1612,7 @@ public class DVRSmain extends TimerTask{
 			defaultRate=defaultRate();
 			setQosData();
 
-			//§å¦¸Query Á×§KramªÅ¶¡¤£¨¬
+			//æ‰¹æ¬¡Query é¿å…ramç©ºé–“ä¸è¶³
 			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
 				sql=
 						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
@@ -1649,12 +1649,12 @@ public class DVRSmain extends TimerTask{
 					String ipaddr = rs.getString("SGSNADDRESS");
 					
 					
-					//§ì¨ì¹ïÀ³ªºServiceid
+					//æŠ“åˆ°å°æ‡‰çš„Serviceid
 					//20150115 add
 					String serviceid = null;
 					/*if(msisdnMap.get(imsi)!=null)
 						serviceid = msisdnMap.get(imsi).get("SERVICEID");*/
-					//±q´«¥d°O¿ı§äIMSI³Ì«áªºServiceID
+					//å¾æ›å¡è¨˜éŒ„æ‰¾IMSIæœ€å¾Œçš„ServiceID
 					if(IMSItoServiceIdMap.get(imsi)!=null)
 						serviceid = IMSItoServiceIdMap.get(imsi);
 					
@@ -1664,7 +1664,7 @@ public class DVRSmain extends TimerTask{
 						continue;
 					}
 					
-					//§ì¨ì¹ïÀ³ªºPricePlanid
+					//æŠ“åˆ°å°æ‡‰çš„PricePlanid
 					String pricplanID=null;
 					if(msisdnMap.containsKey(serviceid))
 						pricplanID=msisdnMap.get(serviceid).get("PRICEPLANID");
@@ -1683,7 +1683,7 @@ public class DVRSmain extends TimerTask{
 						ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 					}
 					
-					//¨úªº¸ê®Æ©Ò¦bªºMccmnc
+					//å–çš„è³‡æ–™æ‰€åœ¨çš„Mccmnc
 					//20141211 add
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc=searchMccmncByIP(ipaddr);
@@ -1697,13 +1697,13 @@ public class DVRSmain extends TimerTask{
 							logger.debug("For CDR usageId="+usageId+" which is without mccmnc. Found mccmnc="+mccmnc+" by serviceid.");
 					}
 
-					//ÁÙ¬O§ä¤£¨ì¡Aµ¹¤©¹w³]¡A¥²¶·¦³
+					//é‚„æ˜¯æ‰¾ä¸åˆ°ï¼Œçµ¦äºˆé è¨­ï¼Œå¿…é ˆæœ‰
 					if(mccmnc==null || "".equals(mccmnc)){
 						mccmnc= DEFAULT_MCCMNC;
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
-					//§PÂ_Mccmnc¬O§_¦bDatarate¤¤
+					//åˆ¤æ–·Mccmncæ˜¯å¦åœ¨Datarateä¸­
 					if(!dataRate.get(pricplanID).containsKey(mccmnc)){
 						sql="";
 						ErrorHandle("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
@@ -1711,7 +1711,7 @@ public class DVRSmain extends TimerTask{
 					
 					int cd=checkQosAddon(serviceid, mccmnc, callTime);
 					if(cd==0){
-						//§PÂ_¬O§_¥i¥H§ä¨ì¹ïÀ³ªº¶O²vªí¡A¨Ã­pºâ¦¹µ§CDRªº»ù®æ(charge)
+						//åˆ¤æ–·æ˜¯å¦å¯ä»¥æ‰¾åˆ°å°æ‡‰çš„è²»ç‡è¡¨ï¼Œä¸¦è¨ˆç®—æ­¤ç­†CDRçš„åƒ¹æ ¼(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 								dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
 							
@@ -1726,7 +1726,7 @@ public class DVRSmain extends TimerTask{
 								Date edate = (Date) m.get("ENDTIME");
 								if(sdate.equals(callTime)||sdate.before(callTime)&&(edate==null || edate.after(callTime))){
 									
-									//¨ú®ø¹ô§OÂà´«¡Aª½±µ¥H­ì¹ô­p»ù
+									//å–æ¶ˆå¹£åˆ¥è½‰æ›ï¼Œç›´æ¥ä»¥åŸå¹£è¨ˆåƒ¹
 									/*if("HKD".equalsIgnoreCase(currency))
 										ec=exchangeRate;*/
 										
@@ -1745,11 +1745,11 @@ public class DVRSmain extends TimerTask{
 							}							
 						}else{
 							
-							//¨S¦³PRICEPLANID(¤ë¯²¤è®×)¡AMCCMNC¡AµLªk§PÂ_°Ï°ì·~ªÌ¡A§@ªk¡G²Î­p¬y¶q¡A
-							//¨S¦³¹ïÀ³ªºPRICEPLANID(¤ë¯²¤è®×)¡AMCCMNC¡AµLªk§PÂ_°Ï°ì·~ªÌ
-							//¥H¹w³]¶O²v­p¶O
+							//æ²’æœ‰PRICEPLANID(æœˆç§Ÿæ–¹æ¡ˆ)ï¼ŒMCCMNCï¼Œç„¡æ³•åˆ¤æ–·å€åŸŸæ¥­è€…ï¼Œä½œæ³•ï¼šçµ±è¨ˆæµé‡ï¼Œ
+							//æ²’æœ‰å°æ‡‰çš„PRICEPLANID(æœˆç§Ÿæ–¹æ¡ˆ)ï¼ŒMCCMNCï¼Œç„¡æ³•åˆ¤æ–·å€åŸŸæ¥­è€…
+							//ä»¥é è¨­è²»ç‡è¨ˆè²»
 							
-							//20141210 °²³]¹ô­È¬°´ä¹ô¡A±N¥­§¡¥x¹ô´«ºâ¦¨¥­§¡´ä¹ô
+							//20141210 å‡è¨­å¹£å€¼ç‚ºæ¸¯å¹£ï¼Œå°‡å¹³å‡å°å¹£æ›ç®—æˆå¹³å‡æ¸¯å¹£
 							double ec=1;					
 							if("HKD".equalsIgnoreCase(currency))
 								ec=exchangeRate;
@@ -1758,15 +1758,15 @@ public class DVRSmain extends TimerTask{
 					}
 
 					
-					//®æ¦¡¤Æ¦Ü¤p¼ÆÂI«á¥|¦ì
+					//æ ¼å¼åŒ–è‡³å°æ•¸é»å¾Œå››ä½
 					charge=FormatDouble(charge, "0.0000");
 
-					//±N¦¹µ§CDRµ²ªG°O¿ı¡Aµy«á¦^¼g¨ìUSAGE TABLE
+					//å°‡æ­¤ç­†CDRçµæœè¨˜éŒ„ï¼Œç¨å¾Œå›å¯«åˆ°USAGE TABLE
 					cdrChargeMap.put(usageId, charge);
 					logMsg+="UsageId "+usageId+" ,IMSI "+imsi+" ,MCCMNC "+mccmnc+" charge result is "+cdrChargeMap.get(usageId)+". ";
 
 					
-					//¹î¬İ¬O§_¦³¥H¦s¦bªº¸ê®Æ¡A¦³ªº¸Ü¨ú¥X°µ²Ö¥[
+					//å¯Ÿçœ‹æ˜¯å¦æœ‰ä»¥å­˜åœ¨çš„è³‡æ–™ï¼Œæœ‰çš„è©±å–å‡ºåšç´¯åŠ 
 					//20150324 modify mccmnc to mcc + network
 					
 					
@@ -1811,11 +1811,11 @@ public class DVRSmain extends TimerTask{
 						}
 					}
 
-					//¦pªG¦³­p¶O¤W½u¡A­­¨î³Ì¤j­È  20141125 ¨ú®ø¹w³]Daycap¡A¦pªG­È¬°­t¡Aªí¥Ü¨S¦³
+					//å¦‚æœæœ‰è¨ˆè²»ä¸Šç·šï¼Œé™åˆ¶æœ€å¤§å€¼  20141125 å–æ¶ˆé è¨­Daycapï¼Œå¦‚æœå€¼ç‚ºè² ï¼Œè¡¨ç¤ºæ²’æœ‰
 					//if(dayCap==null || dayCap==0) dayCap= DEFAULT_DAYCAP;
 					if(dayCap!=null && dayCap>=0 && charge>dayCap) charge=dayCap;
 					
-					//±Nµ²ªG°O¿ı¨ìcurrentDayMap
+					//å°‡çµæœè¨˜éŒ„åˆ°currentDayMap
 					map3.put("CHARGE", charge);
 					logMsg+="The final Daily charge is "+map3.get("CHARGE")+". ";
 					map3.put("LAST_FILEID",fileID);
@@ -1841,7 +1841,7 @@ public class DVRSmain extends TimerTask{
 					updateMapD.put(cDay, map6);
 					
 
-					//§ó·scurrentMap¡A¦pªG¦¹µ§CDR°O¿ı®É¶¡ªº¤ë¬ö¿ı¦s¦b
+					//æ›´æ–°currentMapï¼Œå¦‚æœæ­¤ç­†CDRè¨˜éŒ„æ™‚é–“çš„æœˆç´€éŒ„å­˜åœ¨
 					Double preCharge=0D;
 					Integer smsTimes=0;
 					String suspend="0";
@@ -1922,7 +1922,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/***
-	 * ¦^¼gCDRªºCHARGE
+	 * å›å¯«CDRçš„CHARGE
 	 */
 	private boolean updateCdr(){
 		logger.info("updateCdr...");
@@ -1970,7 +1970,7 @@ public class DVRSmain extends TimerTask{
 	}
 
 	/**
-	 * ­pºâ§¹²¦«á¼g¦^¸ê®Æ®w-§ó·s
+	 * è¨ˆç®—å®Œç•¢å¾Œå¯«å›è³‡æ–™åº«-æ›´æ–°
 	 * @throws SQLException 
 	 */
 	private boolean updateCurrentMap(){
@@ -2003,7 +2003,7 @@ public class DVRSmain extends TimerTask{
 					pst.setDouble(7,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
 					pst.setDouble(8,Double.parseDouble((String)  currentMap.get(mon).get(serviceid).get("LAST_ALERN_VOLUME"));
 					pst.setString(9, mon);
-					pst.setString(10, serviceid);//¨ã¦³mccmnc
+					pst.setString(10, serviceid);//å…·æœ‰mccmnc
 					pst.addBatch();
 					count++;
 					if(count==dataThreshold){
@@ -2025,7 +2025,7 @@ public class DVRSmain extends TimerTask{
 					pst.setDouble(7,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_THRESHOLD"));
 					pst.setDouble(8,(Double) currentMap.get(mon).get(serviceid).get("LAST_ALERN_VOLUME"));
 					pst.setString(9, mon);
-					pst.setString(10, serviceid);//¨ã¦³mccmnc
+					pst.setString(10, serviceid);//å…·æœ‰mccmnc
 					pst.addBatch();
 					count++;
 					if(count==dataThreshold){
@@ -2113,7 +2113,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ­pºâ§¹²¦«á¼g¦^¸ê®Æ®w-·s¼W
+	 * è¨ˆç®—å®Œç•¢å¾Œå¯«å›è³‡æ–™åº«-æ–°å¢
 	 * @throws SQLException 
 	 */
 	
@@ -2256,11 +2256,11 @@ public class DVRSmain extends TimerTask{
 	List<String> suspend=new ArrayList<String>();
 	
 	public Boolean getSMSsetting(){
-		//¸ü¤JÂ²°T³]©w
-		//times ³]©w½s¸¹¡AµL§@¥Î
-		//bracket Äµ¥ÜÃB«×¡A¥H0~1ªº¤ñ²v
-		//msg ­nµo°eªºid¡A¦pªG¦h­Óid¥H","¸¹¤À¶}
-		//suspend 1ªí¥Ü»İ­n¤¤Â_¡A0ªí¥Ü¨S¦³
+		//è¼‰å…¥ç°¡è¨Šè¨­å®š
+		//times è¨­å®šç·¨è™Ÿï¼Œç„¡ä½œç”¨
+		//bracket è­¦ç¤ºé¡åº¦ï¼Œä»¥0~1çš„æ¯”ç‡
+		//msg è¦ç™¼é€çš„idï¼Œå¦‚æœå¤šå€‹idä»¥","è™Ÿåˆ†é–‹
+		//suspend 1è¡¨ç¤ºéœ€è¦ä¸­æ–·ï¼Œ0è¡¨ç¤ºæ²’æœ‰
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -2299,8 +2299,8 @@ public class DVRSmain extends TimerTask{
 		
 	}*/
 	/**
-	 * ³]©wÂ²°T³]©w
-	 * Map Key priceplanID¡AValue: ID,BRACKET,MEGID,SUSPEND,PRICEPLANID< List>
+	 * è¨­å®šç°¡è¨Šè¨­å®š
+	 * Map Key priceplanIDï¼ŒValue: ID,BRACKET,MEGID,SUSPEND,PRICEPLANID< List>
 	 */
 	Map<String,Map<String,List<Object>>> smsSettingMap = new HashMap<String,Map<String,List<Object>>>();
 	
@@ -2379,7 +2379,7 @@ public class DVRSmain extends TimerTask{
 
 	Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
 	public Boolean getSMSContents(){
-		//¸ü¤JÂ²°T¤º®e
+		//è¼‰å…¥ç°¡è¨Šå…§å®¹
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -2421,17 +2421,17 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	public void ckeckMonthAlert(){
-		//¶}©lÀË¬d¬O§_µo°eÄµ¥ÜÂ²°T
-		//¤ëª÷ÃBÄµ¥Ü*************************************
-		//¨S¦³·í¤ë¸ê®Æ¡A¤£ÀË¬d
+		//é–‹å§‹æª¢æŸ¥æ˜¯å¦ç™¼é€è­¦ç¤ºç°¡è¨Š
+		//æœˆé‡‘é¡è­¦ç¤º*************************************
+		//æ²’æœ‰ç•¶æœˆè³‡æ–™ï¼Œä¸æª¢æŸ¥
 		if(currentMap.containsKey(sYearmonth)){
 			
 			String phone = null;
 			int smsCount=0;
 	
-			//ÀË¬d³o­Ó¤ëªº¸ê®Æ§@Äµ¥Ü³qª¾
+			//æª¢æŸ¥é€™å€‹æœˆçš„è³‡æ–™ä½œè­¦ç¤ºé€šçŸ¥
 			for(String serviceid: currentMap.get(sYearmonth).keySet()){
-				//¦pªG¨S¦³ªù¸¹¸ê®Æ¡A¦]¬°µLªkµo°eÂ²°T¡A±H°eÄµ§imail«á¸õ¹L
+				//å¦‚æœæ²’æœ‰é–€è™Ÿè³‡æ–™ï¼Œå› ç‚ºç„¡æ³•ç™¼é€ç°¡è¨Šï¼Œå¯„é€è­¦å‘Šmailå¾Œè·³é
 				if(msisdnMap.containsKey(serviceid))
 					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 				if(phone==null ||"".equals(phone)){
@@ -2439,7 +2439,7 @@ public class DVRSmain extends TimerTask{
 					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
 					continue;
 				}
-				//¨ú±oPriceplanid
+				//å–å¾—Priceplanid
 				String priceplanid = "0";
 				//TODO new version
 				/*String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
@@ -2461,12 +2461,12 @@ public class DVRSmain extends TimerTask{
 				List<Object> msgids = smsSettingMap.get(priceplanid).get("MEGID");
 				List<Object> suspends = smsSettingMap.get(priceplanid).get("SUSPEND");
 	
-				//¨ú±o¦¹¦¸§å»ù«e¶O¥Î
+				//å–å¾—æ­¤æ¬¡æ‰¹åƒ¹å‰è²»ç”¨
 				Double oldCharge=(Double) oldChargeMap.get(serviceid);
 				if(oldCharge==null)	oldCharge=0D;
-				//¥Ø«e²Ö­p¶O¥Î
+				//ç›®å‰ç´¯è¨ˆè²»ç”¨
 				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
-				//¨âªÌªº¶O¥Î®t¡A¹B¥Î¦b¹w¦ô±À´ú
+				//å…©è€…çš„è²»ç”¨å·®ï¼Œé‹ç”¨åœ¨é ä¼°æ¨æ¸¬
 				Double differenceCharge=charge-oldCharge;
 				
 				int smsTimes=(Integer) currentMap.get(sYearmonth).get(serviceid).get("SMS_TIMES");
@@ -2479,13 +2479,13 @@ public class DVRSmain extends TimerTask{
 				/*
 				Double DEFAULT_THRESHOLD = null;
 				String[] contentid=null;
-				//§ì¨ú¤£¦P¹ô§O¤ë¤W­­
+				//æŠ“å–ä¸åŒå¹£åˆ¥æœˆä¸Šé™
 				if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
 					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
 				if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
 					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
 				
-				//¨ú¤£¨ì¥ô¦ó¤W­­­È ¸õ¹L
+				//å–ä¸åˆ°ä»»ä½•ä¸Šé™å€¼ è·³é
 				if(DEFAULT_THRESHOLD = null){
 					sql="";
 					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
@@ -2493,12 +2493,12 @@ public class DVRSmain extends TimerTask{
 				}
 					*/
 				
-				//20141118 ­×§ï ¬ù©w«È¤á­q¬°¨C5000´£¿ô¤@¦¸¤£Â_ºô
+				//20141118 ä¿®æ”¹ ç´„å®šå®¢æˆ¶è¨‚ç‚ºæ¯5000æé†’ä¸€æ¬¡ä¸æ–·ç¶²
 				Double threshold=thresholdMap.get(serviceid);
 
-				//§PÂ_«È¤á¬O¤£¬OVIP
+				//åˆ¤æ–·å®¢æˆ¶æ˜¯ä¸æ˜¯VIP
 				boolean isCustomized=false;
-				//¥Ø«e¤£³]­p¦Û­q¤W­­¡A¨ú¦³ªí¥Ü«È¤á¬°VIP¡A¨úµL«h¬O«DVIP
+				//ç›®å‰ä¸è¨­è¨ˆè‡ªè¨‚ä¸Šé™ï¼Œå–æœ‰è¡¨ç¤ºå®¢æˆ¶ç‚ºVIPï¼Œå–ç„¡å‰‡æ˜¯éVIP
 				if(threshold==null){
 					threshold=DEFAULT_THRESHOLD;
 				}else{
@@ -2515,9 +2515,9 @@ public class DVRSmain extends TimerTask{
 				
 				int msgSettingID=0;
 				
-				//20141118 ­×§ï ¬ù©w«È¤á­q¬°¨C5000´£¿ô¤@¦¸¤£Â_ºô¡A³W«h«È¨î­q¬°0¶i¦æ5000«ùÄò²Ö¿n
+				//20141118 ä¿®æ”¹ ç´„å®šå®¢æˆ¶è¨‚ç‚ºæ¯5000æé†’ä¸€æ¬¡ä¸æ–·ç¶²ï¼Œè¦å‰‡å®¢åˆ¶è¨‚ç‚º0é€²è¡Œ5000æŒçºŒç´¯ç©
 				if(threshold!=0D){
-					//ÀË¬d¤ë¥Î¶q
+					//æª¢æŸ¥æœˆç”¨é‡
 					for(;msgSettingID<ids.size();msgSettingID++){
 						Double bracket = (Double) brackets.get(msgSettingID);
 						if(((charge>=bracket*threshold))&&lastAlernThreshold<bracket*threshold){
@@ -2532,7 +2532,7 @@ public class DVRSmain extends TimerTask{
 						}
 					}	
 					
-					//ÀË¬d¹w´ú¥Î¶q¡A¦pªG¤§«e§PÂ_¤£¥ÎµoÂ²°T¡A©Î¤£¬Oµo³Ì¤W­­Â²°T
+					//æª¢æŸ¥é æ¸¬ç”¨é‡ï¼Œå¦‚æœä¹‹å‰åˆ¤æ–·ä¸ç”¨ç™¼ç°¡è¨Šï¼Œæˆ–ä¸æ˜¯ç™¼æœ€ä¸Šé™ç°¡è¨Š
 					if(!sendSMS||(sendSMS && msgSettingID!=0)){
 						Double bracket = (Double) brackets.get(0);
 						if(charge+differenceCharge>=bracket*threshold&&lastAlernThreshold<bracket*threshold){
@@ -2553,7 +2553,7 @@ public class DVRSmain extends TimerTask{
 					if(temp>lastAlernThreshold){
 						alertBracket=(double) temp;
 						sendSMS=true;
-						//¦pªG¬°VIP«È¤á¹w³]µo3¸¹Â²°T
+						//å¦‚æœç‚ºVIPå®¢æˆ¶é è¨­ç™¼3è™Ÿç°¡è¨Š
 						contentid=new String[]{"3"};
 					}
 				}				
@@ -2602,9 +2602,9 @@ public class DVRSmain extends TimerTask{
 	}*/
 	
 	public void doSuspend(String serviceid,String phone){
-		//¤¤Â_GPRSªA°È
-		//20141113 ·s¼W«È¨î©w¤W­­¤£°õ¦æÂ_ºô
-		//20150529 ±N¤¤Â_ªº³¡¤À±qµo°eÂ²°T¤¤¿W¥ß¥X¨Ó
+		//ä¸­æ–·GPRSæœå‹™
+		//20141113 æ–°å¢å®¢åˆ¶å®šä¸Šé™ä¸åŸ·è¡Œæ–·ç¶²
+		//20150529 å°‡ä¸­æ–·çš„éƒ¨åˆ†å¾ç™¼é€ç°¡è¨Šä¸­ç¨ç«‹å‡ºä¾†
 
 		
 		String imsi = msisdnMap.get(serviceid).get("IMSI");
@@ -2628,7 +2628,7 @@ public class DVRSmain extends TimerTask{
 
 		try {
 			st = conn.createStatement();
-			//¬d¸ß©Ò¦b°ê®aªº«ÈªA¹q¸Ü
+			//æŸ¥è©¢æ‰€åœ¨åœ‹å®¶çš„å®¢æœé›»è©±
 			String cPhone = null;
 			String nMccmnc=searchMccmncBySERVICEID(serviceid);
 			Map<String,String> map=null;
@@ -2640,7 +2640,7 @@ public class DVRSmain extends TimerTask{
 			
 			for(String s:contentid){
 				if(s!=null){
-					//±H°eÂ²°T
+					//å¯„é€ç°¡è¨Š
 					
 					if(content.get(s)==null){
 						throw new Exception("Can't find sms content id:"+s);
@@ -2651,10 +2651,10 @@ public class DVRSmain extends TimerTask{
 					
 					cont =processMag(cont,alertBracket,cPhone,currency);
 					
-					//WSDL¤è¦¡©I¥s WebServer
+					//WSDLæ–¹å¼å‘¼å« WebServer
 					//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
 					
-					//¦pªG§PÂ_«È¤á¦b¦L¥§¡A«h¤À¬qÂ²°T¶i¦æµo°e
+					//å¦‚æœåˆ¤æ–·å®¢æˆ¶åœ¨å°å°¼ï¼Œå‰‡åˆ†æ®µç°¡è¨Šé€²è¡Œç™¼é€
 					if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
 						/*int number = 68;
 						
@@ -2693,7 +2693,7 @@ public class DVRSmain extends TimerTask{
 					sql="INSERT INTO HUR_SMS_LOG"
 							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
 							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+phone+"','"+new String(cont.getBytes("big5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'"+(res.contains("Message Submitted")?"Success":"failed")+"',SYSDATE)";
-					//¼g¤J¸ê®Æ®w
+					//å¯«å…¥è³‡æ–™åº«
 					logger.debug("execute SQL : "+sql);
 					st.addBatch(sql);
 				}
@@ -2739,7 +2739,7 @@ public class DVRSmain extends TimerTask{
 
 	
 	public void checkDailyAlert(){
-		//¹ê°µ¤éÄµ¥Ü³¡¤À¡A¦³¤µ¤é¸ê®Æ¤~Äµ¥Ü*************************************
+		//å¯¦åšæ—¥è­¦ç¤ºéƒ¨åˆ†ï¼Œæœ‰ä»Šæ—¥è³‡æ–™æ‰è­¦ç¤º*************************************
 		if(currentDayMap.containsKey(sYearmonthday)){
 			int smsCount=0;
 			String phone = null;
@@ -2747,7 +2747,7 @@ public class DVRSmain extends TimerTask{
 				
 				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
 				
-				//20141216 add Â_ºô¹L«á¡A¤£µo°e¨C¤éÂ²°T¡AÁ×§K¹w¦ôÂ_ºô«á¡A¨C¤é±a¥X¹ê»Ú²Ö­p¤Şµoª§Ä³
+				//20141216 add æ–·ç¶²éå¾Œï¼Œä¸ç™¼é€æ¯æ—¥ç°¡è¨Šï¼Œé¿å…é ä¼°æ–·ç¶²å¾Œï¼Œæ¯æ—¥å¸¶å‡ºå¯¦éš›ç´¯è¨ˆå¼•ç™¼çˆ­è­°
 				if(currentMap.containsKey(sYearmonth) && currentMap.get(sYearmonth).containsKey(serviceid)){
 					String everSuspend =(String) currentMap.get(sYearmonth).get(serviceid).get("EVER_SUSPEND");
 					if("1".equals(everSuspend)){
@@ -2755,7 +2755,7 @@ public class DVRSmain extends TimerTask{
 					}
 				}
 				
-				//ÀË¬dªù¸¹¬O§_¦s¦b¡A¦pªG¨S¦³ªù¸¹¸ê®Æ¡A¦]¬°µLªkµo°eÂ²°T¡A±H°eÄµ§imail«á¸õ¹L
+				//æª¢æŸ¥é–€è™Ÿæ˜¯å¦å­˜åœ¨ï¼Œå¦‚æœæ²’æœ‰é–€è™Ÿè³‡æ–™ï¼Œå› ç‚ºç„¡æ³•ç™¼é€ç°¡è¨Šï¼Œå¯„é€è­¦å‘Šmailå¾Œè·³é
 				if(msisdnMap.containsKey(serviceid))
 					phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 				if(phone==null ||"".equals(phone)){
@@ -2778,7 +2778,7 @@ public class DVRSmain extends TimerTask{
 				//TODO new version
 				/*Double DEFAULT_DAY_THRESHOLD = null;
 				String[] contentid=null;
-				//§ì¨ú¤£¦P¹ô§O¤é¤W­­
+				//æŠ“å–ä¸åŒå¹£åˆ¥æ—¥ä¸Šé™
 				if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
 					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
 					String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
@@ -2792,13 +2792,13 @@ public class DVRSmain extends TimerTask{
 						contentid = contentids.split(",");
 				}
 				
-				//¨ú¤£¨ì¨C¤é¤W­­ ¸õ¹L
+				//å–ä¸åˆ°æ¯æ—¥ä¸Šé™ è·³é
 				if(DEFAULT_DAY_THRESHOLD== null){
 					sql="";
 					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
 					continue;
 				}
-				//¨ú¤£¨ì¨C¤é¤W­­ Â²°T¤º®e¸õ¹L
+				//å–ä¸åˆ°æ¯æ—¥ä¸Šé™ ç°¡è¨Šå…§å®¹è·³é
 				if(contentid == null){
 					sql="";
 					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
@@ -2806,7 +2806,7 @@ public class DVRSmain extends TimerTask{
 				}
 				*/
 				
-				//²Ö­p
+				//ç´¯è¨ˆ
 				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 					daycharge=daycharge+(Double) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("CHARGE");
 					String a=(String) currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).get("ALERT");
@@ -2815,7 +2815,7 @@ public class DVRSmain extends TimerTask{
 
 				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
 					smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
-					//¦^¼gµù°O¡A¦]¬°¦³°Ï¤ÀMccmnc¡A¥ş³¡¬ö¿ıÁ×§K¤§«á¨ú¤£¨ì
+					//å›å¯«è¨»è¨˜ï¼Œå› ç‚ºæœ‰å€åˆ†Mccmncï¼Œå…¨éƒ¨ç´€éŒ„é¿å…ä¹‹å¾Œå–ä¸åˆ°
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
 						
@@ -2843,9 +2843,9 @@ public class DVRSmain extends TimerTask{
 	//canceled
 	/*public void checkNTTVolumeAlert(){
 		//NTT
-		//¼È¦s¼Æ¾Ú¥Î¶q¸ê®Æ Key:SERVICEID,Value:Volume
+		//æš«å­˜æ•¸æ“šç”¨é‡è³‡æ–™ Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
-		//¬O§_»İ­n­pºâªºpricePlanid
+		//æ˜¯å¦éœ€è¦è¨ˆç®—çš„pricePlanid
 		Set<String> checkedPriceplanid =new HashSet<String>();
 		checkedPriceplanid.add("155");
 		checkedPriceplanid.add("156");
@@ -2859,16 +2859,16 @@ public class DVRSmain extends TimerTask{
 		checkedMCCNET.add("460CMCC");//46007.46002,460000,46000
 		checkedMCCNET.add("454CMHK");//45412
 		
-		//¬O§_¬°Data Only «È¤á NTT
+		//æ˜¯å¦ç‚ºData Only å®¢æˆ¶ NTT
 		Set<String> checkedPriceplanid2 =new HashSet<String>();
 		checkedPriceplanid2.add("158");
 		checkedPriceplanid2.add("159");
 		checkedPriceplanid2.add("160");
 		for(String day : currentDayMap.keySet()){
-			//³o­Ó¤ëªº¤ë¸ê®Æ
+			//é€™å€‹æœˆçš„æœˆè³‡æ–™
 			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
 				for(String serviceid:currentDayMap.get(day).keySet()){
-					//½T»{priceplanid »P subsidiaryid
+					//ç¢ºèªpriceplanid èˆ‡ subsidiaryid
 					
 					String priceplanid = null;
 					String subsidiaryid = null;
@@ -2876,12 +2876,12 @@ public class DVRSmain extends TimerTask{
 						priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
 						subsidiaryid = msisdnMap.get(serviceid).get("SUBSIDIARYID");
 					}
-					//¬O§_¬°NTT»İ­n­pºâ
+					//æ˜¯å¦ç‚ºNTTéœ€è¦è¨ˆç®—
 					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
 						for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
-							//½T»{Mccmnc
+							//ç¢ºèªMccmnc
 							if(checkedMCCNET.contains(mccNet)){
-								//¶i¦æ²Ö­p
+								//é€²è¡Œç´¯è¨ˆ
 								Double oldVolume=0D;
 								Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccNet).get("VOLUME");
 								if(tempMap.containsKey(serviceid)){
@@ -2912,10 +2912,10 @@ public class DVRSmain extends TimerTask{
 			for(String serviceid:tempMap.keySet()){
 				Double volume=tempMap.get(serviceid);
 				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
-				//¶W¹LµoÂ²°T¡A¥t¥~½T»{¬O§_¤w³qª¾¹L
+				//è¶…éç™¼ç°¡è¨Šï¼Œå¦å¤–ç¢ºèªæ˜¯å¦å·²é€šçŸ¥é
 				boolean sendmsg=false;
 				String[] msgContent=null;
-				//NTT ¬y¶qÄµ¥Ü¤º®e¬°100¡ã103
+				//NTT æµé‡è­¦ç¤ºå…§å®¹ç‚º100ï½103
 				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 					//2.0 GB 
 					String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MAIL_ID");
@@ -2944,7 +2944,7 @@ public class DVRSmain extends TimerTask{
 				
 				if(sendmsg){
 
-					//¬d¸ß©Ò¦b°ê®aªº«ÈªA¹q¸Ü
+					//æŸ¥è©¢æ‰€åœ¨åœ‹å®¶çš„å®¢æœé›»è©±
 					String cPhone = null;
 					String nMccmnc=searchMccmncBySERVICEID(serviceid);
 					Map<String,String> map=null;
@@ -2959,7 +2959,7 @@ public class DVRSmain extends TimerTask{
 					String mail_sender="HKNet@sim2travel.com";
 					String mail_receiver=HKNetReceiver;
 					
-					//µo°eMail
+					//ç™¼é€Mail
 					
 					String contentID = msgContent[0];
 
@@ -2983,12 +2983,12 @@ public class DVRSmain extends TimerTask{
 					sql="INSERT INTO HUR_SMS_LOG"
 							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
 							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+mail_content+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
-					//¼g¤J¸ê®Æ®w
+					//å¯«å…¥è³‡æ–™åº«
 					//st.addBatch(sql);
 					st.executeUpdate(sql);
 					logger.debug("execute SQL : "+sql); 
 					
-					//§ó·sCurrentMap
+					//æ›´æ–°CurrentMap
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
 					
 					//20150629 add
@@ -3024,11 +3024,11 @@ public class DVRSmain extends TimerTask{
 
 	
 	public void addonVolumeAlert(){
-		//20150623 ·s¼WµØ¤H¤Wºô¥]
-		//¼È¦s¼Æ¾Ú¥Î¶q¸ê®Æ Key:SERVICEID,Value:Volume
+		//20150623 æ–°å¢è¯äººä¸Šç¶²åŒ…
+		//æš«å­˜æ•¸æ“šç”¨é‡è³‡æ–™ Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
 		for(String day : currentDayMap.keySet()){
-			//³o­Ó¤ëªº¤ë¸ê®Æ
+			//é€™å€‹æœˆçš„æœˆè³‡æ–™
 			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
 				Date dayTime = null;
 				try {
@@ -3040,7 +3040,7 @@ public class DVRSmain extends TimerTask{
 					for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
 						int check=checkQosAddon(serviceid, mccNet, dayTime);
 						if(check==1){
-							//¶i¦æ²Ö­p
+							//é€²è¡Œç´¯è¨ˆ
 							Double oldVolume=0D;
 							Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccNet).get("VOLUME");
 							if(tempMap.containsKey(serviceid)){
@@ -3074,7 +3074,7 @@ public class DVRSmain extends TimerTask{
 			Double volume=tempMap.get(serviceid);
 			Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
 			
-			//¦pªG¨S¦³ªù¸¹¸ê®Æ¡A¦]¬°µLªkµo°eÂ²°T¡A±H°eÄµ§imail«á¸õ¹L
+			//å¦‚æœæ²’æœ‰é–€è™Ÿè³‡æ–™ï¼Œå› ç‚ºç„¡æ³•ç™¼é€ç°¡è¨Šï¼Œå¯„é€è­¦å‘Šmailå¾Œè·³é
 			if(msisdnMap.containsKey(serviceid))
 				phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 			if(phone==null ||"".equals(phone)){
@@ -3083,10 +3083,10 @@ public class DVRSmain extends TimerTask{
 				continue;
 			}
 			
-			//¶W¹LµoÂ²°T¡A¥t¥~½T»{¬O§_¤w³qª¾¹L
+			//è¶…éç™¼ç°¡è¨Šï¼Œå¦å¤–ç¢ºèªæ˜¯å¦å·²é€šçŸ¥é
 			boolean sendmsg=false;
 			String [] contentid = null;
-			//µØ¤H¤Wºô¥]Â²°T¤º®e
+			//è¯äººä¸Šç¶²åŒ…ç°¡è¨Šå…§å®¹
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
 				String msgids = "107";
@@ -3120,7 +3120,7 @@ public class DVRSmain extends TimerTask{
 			if(sendmsg){
 				smsCount+=sendSMS(serviceid,contentid,null,phone,null);
 				
-				//§ó·sCurrentMap
+				//æ›´æ–°CurrentMap
 				currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
 				
 				//20150629 add
@@ -3133,13 +3133,13 @@ public class DVRSmain extends TimerTask{
 				updateMap.put(sYearmonth, set2);
 			}	
 		}
-		logger.debug("Total send µØ¤H¤Wºô¥] volume alert SMS "+smsCount+" ...");
+		logger.debug("Total send è¯äººä¸Šç¶²åŒ… volume alert SMS "+smsCount+" ...");
 		
 	}
 	
 	/**
-	 * ¨Ì·ÓÃB«×»İ¨Dµo°eÄµ¥ÜÂ²°T
-	 * ²Ä¤@¦¸¡AÃB«×¤@¡A°T®§¤@
+	 * ä¾ç…§é¡åº¦éœ€æ±‚ç™¼é€è­¦ç¤ºç°¡è¨Š
+	 * ç¬¬ä¸€æ¬¡ï¼Œé¡åº¦ä¸€ï¼Œè¨Šæ¯ä¸€
 	 * 
 	 * 
 	 */
@@ -3151,7 +3151,7 @@ public class DVRSmain extends TimerTask{
 			try {
 				ckeckMonthAlert();
 				checkDailyAlert();
-				//­°³t´£¿ôÂ²°T§PÂ_*************************************
+				//é™é€Ÿæé†’ç°¡è¨Šåˆ¤æ–·*************************************
 				//20150702 cancel
 				//checkNTTVolumeAlert();
 				addonVolumeAlert();
@@ -3167,8 +3167,8 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ³B²z´À¥N¦r¦ê
-	 * {{bracket}} ÃB«×
+	 * è™•ç†æ›¿ä»£å­—ä¸²
+	 * {{bracket}} é¡åº¦
 	 * @param msg
 	 * @param bracket
 	 * @return
@@ -3180,7 +3180,7 @@ public class DVRSmain extends TimerTask{
 	
 	private String processMag(String msg,Double bracket,String cPhone,String ICCID,String currency){
 		
-		//ª÷ÃB
+		//é‡‘é¡
 		if(bracket==null){
 			msg=msg.replace("{{bracket}}", "");
 		}else{
@@ -3188,7 +3188,7 @@ public class DVRSmain extends TimerTask{
 			msg=msg.replace("{{bracket}}",FormatNumString(bracket,currency+"#,##0.00"));
 		}
 		
-		//«ÈªA¹q¸Ü
+		//å®¢æœé›»è©±
 		if(cPhone==null)
 			cPhone="";
 		msg=msg.replace("{{customerService}}",cPhone);
@@ -3202,8 +3202,8 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * µo°eÂ²°T¥\¯à
-	 * ³B²zpost¨ì WebServerªºxml¦r¦ê
+	 * ç™¼é€ç°¡è¨ŠåŠŸèƒ½
+	 * è™•ç†poståˆ° WebServerçš„xmlå­—ä¸²
 	 * @param msg
 	 * @param phone
 	 * @return
@@ -3216,7 +3216,7 @@ public class DVRSmain extends TimerTask{
 				+ "<SMSREQUEST>"
 				+ "	<USERNAME>smppadmin</USERNAME>"
 				+ "	<PASSWORD>QYrTciMQR</PASSWORD>"
-				+ "	<ORGCODE>¥Nµo²ÕÂ´¤ÀÃş</ORGCODE>"
+				+ "	<ORGCODE>ä»£ç™¼çµ„ç¹”åˆ†é¡</ORGCODE>"
 				+ "	<DATA>"
 				+ "		<ITEM>"
 				+ "			<SCHEDULE>0</SCHEDULE>"
@@ -3232,8 +3232,8 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * µo°eÂ²°T¥\¯à
-	 * ³B²zpost¨ì httpºô­¶ªºUrl¨Ã¶Ç°e
+	 * ç™¼é€ç°¡è¨ŠåŠŸèƒ½
+	 * è™•ç†poståˆ° httpç¶²é çš„Urlä¸¦å‚³é€
 	 * @param msg
 	 * @param phone
 	 * @return
@@ -3275,7 +3275,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¤¤Â_GPRS
+	 * ä¸­æ–·GPRS
 	 * @param imsi
 	 * @param msisdn
 	 */
@@ -3286,7 +3286,7 @@ public class DVRSmain extends TimerTask{
 			
 			suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
 			
-			//20141118 add ¶Ç¦^suspend±Æµ{ªº service order nbr
+			//20141118 add å‚³å›suspendæ’ç¨‹çš„ service order nbr
 			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
 			serviceOrderNBR.add(orderNBR);
 			
@@ -3321,7 +3321,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * µo°eError mail
+	 * ç™¼é€Error mail
 	 * 
 	 * @param content
 	 */
@@ -3353,7 +3353,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	*//**
-	 * µo°email
+	 * ç™¼é€mail
 	 * 
 	 * @param content
 	 * @throws Exception 
@@ -3408,7 +3408,7 @@ public class DVRSmain extends TimerTask{
 	}
 
 	/**
-	 * ¤¤Â_¼Æ¾Ú«áÄò°lÂÜ
+	 * ä¸­æ–·æ•¸æ“šå¾ŒçºŒè¿½è¹¤
 	 */
 	private void processSuspendNBR() {
 		for (Map<String,String> NBR : serviceOrderNBR) {
@@ -3448,7 +3448,7 @@ public class DVRSmain extends TimerTask{
 					cMesg = "501";
 				}
 				
-				//¦pªGª¬ºA§ó·s¥¢±Ñ¡A¨S¦³°Ê§@µo°e¿ù»~Email
+				//å¦‚æœç‹€æ…‹æ›´æ–°å¤±æ•—ï¼Œæ²’æœ‰å‹•ä½œç™¼é€éŒ¯èª¤Email
 				//20150317 change ,if result_flag is not equal to "000" then send alert mail.
 				if(!"000".equalsIgnoreCase(cMesg)){
 					ErrorHandle("Suspend does not work for"+"<br>"
@@ -3469,10 +3469,10 @@ public class DVRSmain extends TimerTask{
 				//conn.createStatement().executeUpdate(sql);
 				
 				
-				//§ó·s¦^Table
+				//æ›´æ–°å›Table
 				SimpleDateFormat dFormat4=new SimpleDateFormat("yyyyMMddHHmmss");
 				String dString=dFormat4.format(new Date());
-				//PROVLOG ¤£»İ­n
+				//PROVLOG ä¸éœ€è¦
 				/*sql = "update PROVLOG set replytime=sysdate where LOGID="
 						+ sCMHKLOGID;
 
@@ -3522,7 +3522,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * ¬d¸ß¤¤Â_³B²zª¬ºA
+	 * æŸ¥è©¢ä¸­æ–·è™•ç†ç‹€æ…‹
 	 * @param cServiceOrderNBR
 	 * @return
 	 * @throws SQLException
@@ -3546,13 +3546,13 @@ public class DVRSmain extends TimerTask{
     }
 	
 	
-	//*******************************Debug ¤u¨ã*************************************//
+	//*******************************Debug å·¥å…·*************************************//
 
 	
 
 	/*************************************************************************
 	 *************************************************************************
-	 *                                ¥Dµ{¦¡
+	 *                                ä¸»ç¨‹å¼
 	 *************************************************************************
 	 *************************************************************************/
 	
@@ -3587,12 +3587,12 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	public void run(){
-		//¦pªG¤w¦³µ¥«İªºthread¡Aµ²§ô¦Û¤v
+		//å¦‚æœå·²æœ‰ç­‰å¾…çš„threadï¼ŒçµæŸè‡ªå·±
 		if(hasWaiting) {
 			logger.debug("****************************      Found had wating thread doesn't execute!");
 			return;
 		}
-		//¦pªG¤w¸g¦b¶i¦æ¤¤¡A¼È°±
+		//å¦‚æœå·²ç¶“åœ¨é€²è¡Œä¸­ï¼Œæš«åœ
 		if(executing) {
 			logger.debug("****************************      New Thread Wating... ");
 			hasWaiting=true;
@@ -3604,13 +3604,13 @@ public class DVRSmain extends TimerTask{
 					ErrorHandle("At waiting thread occur error", e);
 				}
 			}
-			//Â÷¶}µ¥«İª¬ºA
+			//é›¢é–‹ç­‰å¾…ç‹€æ…‹
 			hasWaiting=false;
 			logger.debug("****************************      Thread Leave Wating... ");
 		}
 
 		
-		//¶}©l°õ¦æµ{¦¡
+		//é–‹å§‹åŸ·è¡Œç¨‹å¼
 		executing=true;
 		try {
 			process();
@@ -3618,18 +3618,18 @@ public class DVRSmain extends TimerTask{
 			sql="";
 			ErrorHandle("process error!");
 		}finally{
-			//±N°Ê§@¥æµ¹¤U­Óthread
+			//å°‡å‹•ä½œäº¤çµ¦ä¸‹å€‹thread
 			executing=false;
 		}
 	}
 	
 	private void process() {
-		// µ{¦¡¶}©l®É¶¡
+		// ç¨‹å¼é–‹å§‹æ™‚é–“
 		long startTime;
 	
 		logger.info("RFP Program Start! "+new Date());
 		
-		// ¶i¦æDB³s½u
+		// é€²è¡ŒDBé€£ç·š
 			connectDB();
 			connectDB2();
 		
@@ -3639,46 +3639,46 @@ public class DVRSmain extends TimerTask{
 			
 			startTime = System.currentTimeMillis();
 			
-			//¨ú®ø¦Û°ÊCommit
+			//å–æ¶ˆè‡ªå‹•Commit
 			cancelAutoCommit();
 			
 			if(
-					setDayDate() && //³]©w¤é´Á
-					setIMSItoServiceIDMap()&&//³]©wIMSI¦ÜServiecIdªº¹ïÀ³
-					//setServiceIDtoImsiMap()&&//³]©wServiecId¦ÜIMSIªº¹ïÀ³
-					//setLastFileID()&&//¨ú±o³Ì«á§ó·sªºFileID
-					setThreshold()&&//¨ú¥XHUR_THRESHOLD
-					setDataRate()&&//¨ú¥XHUR_DATARATE
-					setMsisdnMap()&&//¨ú¥Xmsisdn¸ê°T
-					setIPtoMccmncList()&&//20141211 add IP ¹ïÀ³¨ì MCCMNC
-					setSERVICEIDtoVLN()&&//IMSI ¹ïÀ³¨ì vln
-					setVLNtoTADIG()&&//vln ¹ïÀ³¨ì TADIG
-					setTADIGtoMCCMNC()&&//TADIG ¹ïÀ³¨ì MCCMNC
-					setCostomerNumber()&&//°ê½X¹ïÀ³ªí(«ÈªA,°ê¦W)
-					setAddonData()&&//µØ¤H¤Wºô¥]¥Ó½Ğ¸ê®Æ
-					setQosData()&&//³]©wSX001,SX002¸ê®Æ
-					setCurrencyMap()&&//³]©wPricePlanID¹ïÀ³¹ô§O
+					setDayDate() && //è¨­å®šæ—¥æœŸ
+					setIMSItoServiceIDMap()&&//è¨­å®šIMSIè‡³ServiecIdçš„å°æ‡‰
+					//setServiceIDtoImsiMap()&&//è¨­å®šServiecIdè‡³IMSIçš„å°æ‡‰
+					//setLastFileID()&&//å–å¾—æœ€å¾Œæ›´æ–°çš„FileID
+					setThreshold()&&//å–å‡ºHUR_THRESHOLD
+					setDataRate()&&//å–å‡ºHUR_DATARATE
+					setMsisdnMap()&&//å–å‡ºmsisdnè³‡è¨Š
+					setIPtoMccmncList()&&//20141211 add IP å°æ‡‰åˆ° MCCMNC
+					setSERVICEIDtoVLN()&&//IMSI å°æ‡‰åˆ° vln
+					setVLNtoTADIG()&&//vln å°æ‡‰åˆ° TADIG
+					setTADIGtoMCCMNC()&&//TADIG å°æ‡‰åˆ° MCCMNC
+					setCostomerNumber()&&//åœ‹ç¢¼å°æ‡‰è¡¨(å®¢æœ,åœ‹å)
+					setAddonData()&&//è¯äººä¸Šç¶²åŒ…ç”³è«‹è³‡æ–™
+					setQosData()&&//è¨­å®šSX001,SX002è³‡æ–™
+					setCurrencyMap()&&//è¨­å®šPricePlanIDå°æ‡‰å¹£åˆ¥
 					//TODO new Version
-					//setSystemConfig()&&//¨t²ÎComfig³]©w
-					(currentMap.size()!=0||setCurrentMap())&&//¨ú¥XHUR_CURRENT
-					setoldChargeMap()&&//³]©wold 20151027 modified update old Map every times
-					(currentDayMap.size()!=0||setCurrentMapDay())){//¨ú¥XHUR_CURRENT
+					//setSystemConfig()&&//ç³»çµ±Comfigè¨­å®š
+					(currentMap.size()!=0||setCurrentMap())&&//å–å‡ºHUR_CURRENT
+					setoldChargeMap()&&//è¨­å®šold 20151027 modified update old Map every times
+					(currentDayMap.size()!=0||setCurrentMapDay())){//å–å‡ºHUR_CURRENT
 				
 				
-				//¶}©l§å»ù 
+				//é–‹å§‹æ‰¹åƒ¹ 
 				charge();
 
-				//µo°eÄµ¥ÜÂ²°T
+				//ç™¼é€è­¦ç¤ºç°¡è¨Š
 				sendAlertSMS();
 				
-				//¦^¼g§å»ùµ²ªG
+				//å›å¯«æ‰¹åƒ¹çµæœ
 				if(
 						updateCdr()&&
 						insertCurrentMap()&&
 						insertCurrentMapDay()&&
 						updateCurrentMap()&&
 						updateCurrentMapDay()){
-					//Á×§K¸ê®Æ²§±`¡A§¹¥ş³B²z§¹¤§«á¦bcommit
+					//é¿å…è³‡æ–™ç•°å¸¸ï¼Œå®Œå…¨è™•ç†å®Œä¹‹å¾Œåœ¨commit
 					try {
 						conn.commit();
 					} catch (SQLException e) {
@@ -3689,12 +3689,12 @@ public class DVRSmain extends TimerTask{
 						ErrorHandle("At commit occur SQLException error!",e);
 					}
 
-					//suspendªº«áÄò°lÂÜ³B²z
+					//suspendçš„å¾ŒçºŒè¿½è¹¤è™•ç†
 					processSuspendNBR();
 				}
 			}
 
-			// µ{¦¡°õ¦æ§¹¦¨
+			// ç¨‹å¼åŸ·è¡Œå®Œæˆ
 			logger.info("Program execute time :" + (System.currentTimeMillis() - startTime));
 			closeConnect();
 
