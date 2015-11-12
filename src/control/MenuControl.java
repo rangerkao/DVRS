@@ -17,33 +17,33 @@ public class MenuControl extends BaseControl {
 	public List<Link> queryAuthentication(String role){
 		List<Link> result =new ArrayList<Link>();
 
-		//¼h¯Å¤@ (³Ì°ª)
+		//å±¤ç´šä¸€ (æœ€é«˜)
 		List<Link> l1=new ArrayList<Link>();
-		l1.add(new Link("adminList","adminLink","¨Ï¥ÎªÌºŞ²z"));
-		l1.add(new Link("adminList","programLink","µ{¦¡ºŞ²z"));
-		//l1.add(new Link("elseList","billLink","±b³æ¶×¥X"));
-		l1.add(new Link("adminList","cdrLink","CDR¬d¸ß"));
-		l1.add(new Link("adminList","actionQueryLink","¨Ï¥ÎªÌ¾Ş§@¬ö¿ı¬d¸ß"));
-		//l1.add(new Link("adminList","dataRateLink","¸ê¶O¬d¸ß"));
+		l1.add(new Link("adminList","adminLink","ä½¿ç”¨è€…ç®¡ç†"));
+		l1.add(new Link("adminList","programLink","ç¨‹å¼ç®¡ç†"));
+		//l1.add(new Link("elseList","billLink","å¸³å–®åŒ¯å‡º"));
+		l1.add(new Link("adminList","cdrLink","CDRæŸ¥è©¢"));
+		l1.add(new Link("adminList","actionQueryLink","ä½¿ç”¨è€…æ“ä½œç´€éŒ„æŸ¥è©¢"));
+		//l1.add(new Link("adminList","dataRateLink","è³‡è²»æŸ¥è©¢"));
 		
-		//¼h¯Å¤G
+		//å±¤ç´šäºŒ
 		List<Link> l2=new ArrayList<Link>();
-		//l2.add(new Link("settingList","smsSettingLink","Â²°T³]©w"));
-		l2.add(new Link("settingList","smsContentSettingLink","Â²°T¤º®e³]©w"));
-		l2.add(new Link("settingList","smsThresholdSettingLink","Â²°TÄµ¥Ü³]©w"));
-		l2.add(new Link("settingList","limitSettingLink","Äµ¥Ü¤W­­³]©w"));
+		//l2.add(new Link("settingList","smsSettingLink","ç°¡è¨Šè¨­å®š"));
+		l2.add(new Link("settingList","smsContentSettingLink","ç°¡è¨Šå…§å®¹è¨­å®š"));
+		l2.add(new Link("settingList","smsThresholdSettingLink","ç°¡è¨Šè­¦ç¤ºè¨­å®š"));
+		l2.add(new Link("settingList","limitSettingLink","è­¦ç¤ºä¸Šé™è¨­å®š"));
 
-		//¼h¯Å¤T
+		//å±¤ç´šä¸‰
 		List<Link> l3=new ArrayList<Link>();
-		l3.add(new Link("searchList","smsQueryLink","¶W¶qÂ²°Tµo°e¬d¸ß­¶­±"));
-		l3.add(new Link("searchList","dataRateLink","¶O²v¬d¸ß"));
-		l3.add(new Link("searchList","currentMonthLink","¨C¤ë²Ö­p­¶­±"));
-		l3.add(new Link("searchList","currentDayLink","³æ¤é²Ö­p¬d¸ß"));
-		l3.add(new Link("searchList","cardChangeHistoryLink","´«¥d°O¿ı¬d¸ß­¶­±"));
-		l3.add(new Link("searchList","numberChangeHistoryLink","´«¸¹°O¿ı¬d¸ß¬d¸ß"));
+		l3.add(new Link("searchList","smsQueryLink","è¶…é‡ç°¡è¨Šç™¼é€æŸ¥è©¢é é¢"));
+		l3.add(new Link("searchList","dataRateLink","è²»ç‡æŸ¥è©¢"));
+		l3.add(new Link("searchList","currentMonthLink","æ¯æœˆç´¯è¨ˆé é¢"));
+		l3.add(new Link("searchList","currentDayLink","å–®æ—¥ç´¯è¨ˆæŸ¥è©¢"));
+		l3.add(new Link("searchList","cardChangeHistoryLink","æ›å¡è¨˜éŒ„æŸ¥è©¢é é¢"));
+		l3.add(new Link("searchList","numberChangeHistoryLink","æ›è™Ÿè¨˜éŒ„æŸ¥è©¢æŸ¥è©¢"));
 		
-		l3.add(new Link("elseList","queryQosLink","Qos¨Ñ¸Ë¬d¸ß­¶­±"));
-		//l3.add(new Link("elseList","logoutLink","µn¥X"));
+		l3.add(new Link("elseList","queryQosLink","Qosä¾›è£æŸ¥è©¢é é¢"));
+		//l3.add(new Link("elseList","logoutLink","ç™»å‡º"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();
 		roleAuth.put("cs", 2);
@@ -51,7 +51,7 @@ public class MenuControl extends BaseControl {
 		roleAuth.put("ranger", 1);
 		roleAuth.put("admin", 1);
 		
-		//ÅŞ¿è¶}©l
+		//é‚è¼¯é–‹å§‹
 		
 		Integer auth=roleAuth.get(role);
 		

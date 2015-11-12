@@ -14,7 +14,7 @@ public class QosDao extends BaseDao {
 		super();
 	}
 
-	//¨d∏ﬂ¶C™Ì
+	//ÔøΩdÔøΩﬂ¶CÔøΩÔøΩ
 	public List<QosBean> queryQosList() throws SQLException{
 		sql=
 				"SELECT A.PROVISIONID,A.IMSI,A.MSISDN,A.PLAN,A.ACTION,A.RESPONSE_CODE,A.RESULT_CODE,to_char(A.CERATE_TIME,'yyyyMMdd hh24:mi:ss') ctime "
@@ -30,7 +30,7 @@ public class QosDao extends BaseDao {
 				String rc = rs.getString("RESULT_CODE");
 				if(rc!=null ){
 					if(rc.contains("RETURN_CODE=0")){
-						rc="¶®•\";
+						rc="ÊàêÂäü";
 					}
 				}else{
 					rc="";
@@ -39,7 +39,7 @@ public class QosDao extends BaseDao {
 				String rc2 = rs.getString("RESPONSE_CODE");
 				if(rc2!=null ){
 					if(rc2.contains("200")){
-						rc2="•ø±`";
+						rc2="Ê≠£Â∏∏";
 					}
 				}else{
 					rc2="";
@@ -61,7 +61,7 @@ public class QosDao extends BaseDao {
 		
 	}
 	
-	//¨d∏ﬂ¶C™Ì
+	//ÔøΩdÔøΩﬂ¶CÔøΩÔøΩ
 		public List<QosBean> queryQosList(String imsi,String msisdn) throws SQLException{
 			sql=
 					"SELECT A.PROVISIONID,A.IMSI,A.MSISDN,A.PLAN,A.ACTION,A.RESPONSE_CODE,A.RESULT_CODE,to_char(A.CERATE_TIME,'yyyyMMdd hh24:mi:ss') ctime "
@@ -81,7 +81,7 @@ public class QosDao extends BaseDao {
 				String rc = rs.getString("RESULT_CODE");
 				if(rc!=null ){
 					if(rc.contains("RETURN_CODE=0")){
-						rc="¶®•\";
+						rc="ÊàêÂäü";
 					}
 				}else{
 					rc="";
@@ -90,7 +90,7 @@ public class QosDao extends BaseDao {
 				String rc2 = rs.getString("RESPONSE_CODE");
 				if(rc2!=null ){
 					if(rc2.contains("200")){
-						rc2="•ø±`";
+						rc2="Ê≠£Â∏∏";
 					}
 				}else{
 					rc2="";

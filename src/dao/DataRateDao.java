@@ -15,7 +15,7 @@ public class DataRateDao extends BaseDao {
 		// TODO Auto-generated constructor stub
 	}
 
-		//¨d∏ﬂ¶C™Ì
+		//Êü•Ë©¢ÂàóË°®
 		public List<DataRate> queryDataRateList() throws SQLException{
 			sql=
 					"SELECT A.PRICEPLANID, C.NAME PRICEPLANNAME,A.MCCMNC,B.COUNTRY, B.NETWORK, "
@@ -35,7 +35,7 @@ public class DataRateDao extends BaseDao {
 				while(rs.next()){
 					DataRate datarate =new DataRate();
 					datarate.setPricePlanId(rs.getLong("PRICEPLANID"));
-					datarate.setPricePlanName(rs.getString("PRICEPLANNAME")+("(¿Ù≤y•d)"));
+					datarate.setPricePlanName(rs.getString("PRICEPLANNAME")+("(Áí∞ÁêÉÂç°)"));
 					datarate.setMccmnc(rs.getString("MCCMNC"));
 					datarate.setCountry(rs.getString("COUNTRY"));
 					datarate.setNetWork(rs.getString("NETWORK"));
