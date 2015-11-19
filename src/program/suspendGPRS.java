@@ -30,7 +30,7 @@ public class suspendGPRS {
 		logger=log;
 	}
 	
-	// TWN_IMSI¡BTWN_MSISDN¥ı¥NªÅ­È¡AsMNOSubCode¤£­«­n¡AsCount©¿²¤
+	// TWN_IMSIã€TWN_MSISDNå…ˆä»£ç©ºå€¼ï¼ŒsMNOSubCodeä¸é‡è¦ï¼ŒsCountå¿½ç•¥
 	private String cRCode,Process_Code,sCMHKLOGID,cMSISDNOLD,cM205OT,cMVLN,cGPRS,csta,bb;
 	private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
 	//private String cTWNLDIMSI,cTWNLDMSISDN;
@@ -63,10 +63,10 @@ public class suspendGPRS {
 		//20141103 set as TWNLD
 		sMNOSubCode="950";
 		
-		//20141117 add ¥²¶·«ü©w±NGPRSÅÜ§óªºª¬ºA 0-Disabled,1 ¡V Enabled
+		//20141117 add å¿…é ˆæŒ‡å®šå°‡GPRSè®Šæ›´çš„ç‹€æ…‹ 0-Disabled,1 â€“ Enabled
 		cGPRSStatus="0";
 		
-		//³]©wsCount 
+		//è¨­å®šsCount 
 		Temprs = null;
 		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
 		//Temprs = conn.createStatement().executeQuery(sSql);
@@ -87,7 +87,7 @@ public class suspendGPRS {
 		 * logger.debug("ReqStatus_17_Act");
 		 */
 		
-		//20141117 ·s¼W ¥²¶·ªºÀË¬d»P½á¤©­È
+		//20141117 æ–°å¢ å¿…é ˆçš„æª¢æŸ¥èˆ‡è³¦äºˆå€¼
 		Check_Type_Code_87_MAP_VALUE(cS2TMSISDN); 
 		sWSFStatus = "V";
 		sWSFDStatus = "V";
@@ -106,9 +106,9 @@ public class suspendGPRS {
 		logger.debug("update SERVICE_ORDER:" + sSql);
 		/* Query_PreProcessResult(out17, "000"); */
 		Query_GPRSStatus();
-		// «İ¹ê°µLog¬ö¿ı°±¤îGPRS ¦^¶Çµ²ªG desc
+		// å¾…å¯¦åšLogç´€éŒ„åœæ­¢GPRS å›å‚³çµæœ desc
 		
-		//20141118 add ½T»{ª¬ºA¡A¹ê°µ¦bMain«á­±«ùÄòºÊ´ú
+		//20141118 add ç¢ºèªç‹€æ…‹ï¼Œå¯¦åšåœ¨Mainå¾Œé¢æŒçºŒç›£æ¸¬
 		//System.out.println("rcode : "+Query_ServiceOrderStatus());
 		/*sSql="update S2T_TB_TYPB_WO_SYNC_FILE_DTL set s2t_operationdate="+
 	              "to_date('"+dFormat4.format(new Date())+
@@ -254,7 +254,7 @@ public class suspendGPRS {
 		
 		String sMNOSubCode="950";
 		
-		// ®æ¦¡¬°YYYYMMDDXXX
+		// æ ¼å¼ç‚ºYYYYMMDDXXX
 		sDATE = dFormat1.format(new Date());
 		c910SEQ = sDATE + sCount;
 		cFileName = "S2TDI" + c910SEQ + "."+sMNOSubCode;
@@ -268,7 +268,7 @@ public class suspendGPRS {
 			cFileID = Temprs.getString("ab");
 		}
 		st.close();
-		//dReqDate ­n¨D®É¶¡¡A­q¬°§Y®É
+		//dReqDate è¦æ±‚æ™‚é–“ï¼Œè¨‚ç‚ºå³æ™‚
 		dReqDate = dFormat1.format(new Date());
 		sSql = "INSERT INTO S2T_TB_TYPEB_WO_SYNC_FILE "
 				+ "(FILE_ID,FILE_NAME,FILE_SEND_DATE,FILE_SEQ,CMCC_BRANCH_ID,FILE_CREATE_DATE,STATUS) "
@@ -385,11 +385,11 @@ public class suspendGPRS {
 			sSql = "select count(serviceid) as ab from serviceparameter where "
 					+ "parameterid=3792 and serviceid='" + Ssvrid + "'";
 			
-			 logger.info("Check_Follow_Me_To_Home(¦³1ªí¥Ü¦³¥Ó½Ğ, 0ªí¥Ü¥¼¥Ó½Ğ):"+sSql);
+			 logger.info("Check_Follow_Me_To_Home(æœ‰1è¡¨ç¤ºæœ‰ç”³è«‹, 0è¡¨ç¤ºæœªç”³è«‹):"+sSql);
 			//Temprs = conn.createStatement().executeQuery(sSql);
 			Statement st2 =  conn.createStatement();
 			Temprs = st2.executeQuery(sSql);
-			 while (Temprs.next()) { // (¦³1ªí¥Ü¦³¥Ó½Ğ, 0ªí¥Ü¥¼¥Ó½Ğ)
+			 while (Temprs.next()) { // (æœ‰1è¡¨ç¤ºæœ‰ç”³è«‹, 0è¡¨ç¤ºæœªç”³è«‹)
 				sFMTH = Temprs.getString("ab");
 			}
 			 st2.close();
@@ -401,14 +401,14 @@ public class suspendGPRS {
 						+ "'";
 				
 				 logger.info(
-				 "Check_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, ­Y¥¼¥Ó½Ğ, «h2):"
+				 "Check_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, è‹¥æœªç”³è«‹, å‰‡2):"
 				 +sSql);
 				 //Temprs = conn.createStatement().executeQuery(sSql);
 				Statement st3=conn.createStatement();
 				Temprs = st3.executeQuery(sSql);
 				 
 				 while (Temprs.next()) { // (Value=1: active, Value=0: inactive,
-										// ­Y¥¼¥Ó½Ğ, «hNULL)
+										// è‹¥æœªç”³è«‹, å‰‡NULL)
 					sFMTHa = Temprs.getString("ab");
 				}
 				 st3.close();
@@ -417,11 +417,11 @@ public class suspendGPRS {
 			sSql = "select count(serviceid) as ab from serviceparameter where "
 					+ "parameterid=3748 and serviceid='" + Ssvrid + "'";
 			
-			 logger.info("Check_SMS_Follow_Me_To_Home(¦³1ªí¥Ü¦³¥Ó½Ğ, 0ªí¥Ü¥¼¥Ó½Ğ):"+sSql);
+			 logger.info("Check_SMS_Follow_Me_To_Home(æœ‰1è¡¨ç¤ºæœ‰ç”³è«‹, 0è¡¨ç¤ºæœªç”³è«‹):"+sSql);
 			 //Temprs = conn.createStatement().executeQuery(sSql);
 			Statement st4 = conn.createStatement();
 			Temprs = st4.executeQuery(sSql);
-			 while (Temprs.next()) { // (¦³1ªí¥Ü¦³¥Ó½Ğ, 0ªí¥Ü¥¼¥Ó½Ğ)
+			 while (Temprs.next()) { // (æœ‰1è¡¨ç¤ºæœ‰ç”³è«‹, 0è¡¨ç¤ºæœªç”³è«‹)
 				sSFMTH = Temprs.getString("ab");
 			}
 			 st4.close();
@@ -433,13 +433,13 @@ public class suspendGPRS {
 						+ "'";
 				
 				 logger.info(
-				 "Check_SMS_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, ­Y¥¼¥Ó½Ğ, «h2):"
+				 "Check_SMS_Follow_Me_To_Home_Status(Value=1: active, Value=0: inactive, è‹¥æœªç”³è«‹, å‰‡2):"
 				 +sSql);
 				 //Temprs = conn.createStatement().executeQuery(sSql);
 				Statement st5 = conn.createStatement();
 				Temprs = st5.executeQuery(sSql);
 				 while (Temprs.next()) { // (Value=1: active, Value=0: inactive,
-										// ­Y¥¼¥Ó½Ğ, «hNULL)
+										// è‹¥æœªç”³è«‹, å‰‡NULL)
 					sSFMTHa = Temprs.getString("ab");
 				}
 				 st5.close();
@@ -501,7 +501,7 @@ public class suspendGPRS {
 		}
 		 st8.close();
 
-		// ¤£»İ­n§ó·sprovLog
+		// ä¸éœ€è¦æ›´æ–°provLog
 		/*
 		 * sSql="update PROVLOG " + "set STEP='"+sStepNo+"' "+
 		 * " where LOGID="+sCMHKLOGID;

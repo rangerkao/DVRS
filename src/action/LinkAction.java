@@ -69,7 +69,7 @@ public class LinkAction extends BaseAction{
 		Map session = ac.getSession();
 		
 		logoutControl.execute(session);
-		setTag("§A¤w¸gµn¥X¡I");
+		setTag("æ‚¨å·²ç™»å‡º");
 		return LOGIN;         
 	}
 //*****************************************

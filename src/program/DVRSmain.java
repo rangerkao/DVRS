@@ -3561,8 +3561,8 @@ public class DVRSmain extends TimerTask{
 
 		IniProgram();
 
-		/*DVRSmain rf =new DVRSmain();
-		rf.process();*/
+		//DVRSmain rf =new DVRSmain();
+		//rf.process();
 
 		regilarHandle();
 	}
