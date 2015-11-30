@@ -43,6 +43,7 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","numberChangeHistoryLink","換號記錄查詢查詢"));
 		
 		l3.add(new Link("elseList","queryQosLink","Qos供裝查詢頁面"));
+		l3.add(new Link("elseList","sendSMSLink","GPRS簡訊發送頁面"));
 		//l3.add(new Link("elseList","logoutLink","登出"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();

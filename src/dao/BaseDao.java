@@ -20,7 +20,7 @@ public class BaseDao {
 		conn2=cache.CacheAction.getConnect2();
 		System.out.print("Create connect!");
 	}
-	protected void closeConnection() throws SQLException{
+	public void closeConnection() throws SQLException{
 		conn.close();
 		conn2.close();
 		System.out.print("Close connect!");

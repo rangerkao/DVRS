@@ -39,22 +39,32 @@ public class SMSDao extends BaseDao{
 				+ (msisdn!=null && !"".equals(msisdn)?"AND A.SEND_NUMBER='"+msisdn+"' ":"")
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
-		Statement st = conn.createStatement();
-		ResultSet rs=st.executeQuery(sql);
-		while(rs.next()){
-			SMSLog log = new SMSLog();
-			log.setId(rs.getString("ID"));
-			//log.setMsg(rs.getString("MSG"));
-			log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
-			log.setResult(rs.getString("RESULT"));
-			log.setSendNumber(rs.getString("SEND_NUMBER"));
-			log.setSendDate(rs.getString("SEND_DATE"));
-			log.setCreateDate(rs.getString("CREATE_DATE"));
-			list.add(log);
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				SMSLog log = new SMSLog();
+				log.setId(rs.getString("ID"));
+				//log.setMsg(rs.getString("MSG"));
+				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
+				log.setResult(rs.getString("RESULT"));
+				log.setSendNumber(rs.getString("SEND_NUMBER"));
+				log.setSendDate(rs.getString("SEND_DATE"));
+				log.setCreateDate(rs.getString("CREATE_DATE"));
+				list.add(log);
+			}
+		} finally{
+			try {
+				if(rs!=null)
+					rs.close();
+				if(st!=null)
+					st.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		rs.close();
-		st.close();
-		closeConnection();
 		return list;
 
 	}
@@ -67,22 +77,32 @@ public class SMSDao extends BaseDao{
 				+ "WHERE 1=1 "
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
-		Statement st = conn.createStatement();
-		ResultSet rs=st.executeQuery(sql);
-		while(rs.next()){
-			SMSLog log = new SMSLog();
-			log.setId(rs.getString("ID"));
-			//log.setMsg(rs.getString("MSG"));
-			log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
-			log.setResult(rs.getString("RESULT"));
-			log.setSendNumber(rs.getString("SEND_NUMBER"));
-			log.setSendDate(rs.getString("SEND_DATE"));
-			log.setCreateDate(rs.getString("CREATE_DATE"));
-			list.add(log);
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				SMSLog log = new SMSLog();
+				log.setId(rs.getString("ID"));
+				//log.setMsg(rs.getString("MSG"));
+				log.setMsg((rs.getString("MSG")==null?"":new String(rs.getString("MSG").getBytes("ISO8859-1"),"BIG5")));
+				log.setResult(rs.getString("RESULT"));
+				log.setSendNumber(rs.getString("SEND_NUMBER"));
+				log.setSendDate(rs.getString("SEND_DATE"));
+				log.setCreateDate(rs.getString("CREATE_DATE"));
+				list.add(log);
+			}
+		}finally{
+			try {
+				if(rs!=null)
+					rs.close();
+				if(st!=null)
+					st.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		rs.close();
-		st.close();
-		closeConnection();
 		return list;
 	}
 	
@@ -96,59 +116,79 @@ public class SMSDao extends BaseDao{
 				+ "FROM HUR_SMS_SETTING A "
 				+ "ORDER BY A.ID ";*/
 		
-		Statement st = conn.createStatement();
-		ResultSet rs=st.executeQuery(sql);
-		while(rs.next()){
-			SMSSetting log = new SMSSetting();
-			log.setId(rs.getString("ID"));
-			log.setBracket(rs.getDouble("BRACKET"));
-			log.setMsg(rs.getString("MEGID"));
-			//log.setPricePlanId(rs.getString("PRICEPLANID"));
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				SMSSetting log = new SMSSetting();
+				log.setId(rs.getString("ID"));
+				log.setBracket(rs.getDouble("BRACKET"));
+				log.setMsg(rs.getString("MEGID"));
+				//log.setPricePlanId(rs.getString("PRICEPLANID"));
 
-			String s=rs.getString("SUSPEND");
-			if("0".equals(s))
-				log.setSuspend(false);
-			else if("1".equals(s))
-				log.setSuspend(true);
-				
-			list.add(log);
+				String s=rs.getString("SUSPEND");
+				if("0".equals(s))
+					log.setSuspend(false);
+				else if("1".equals(s))
+					log.setSuspend(true);
+					
+				list.add(log);
+			}
+		} finally{
+			try {
+				if(rs!=null)
+					rs.close();
+				if(st!=null)
+					st.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		rs.close();
-		st.close();
-		closeConnection();
 		return list;
 	}
 	
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
-		//²¾°£©Ò¦³¸ê®Æ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ò¦ï¿½ï¿½ï¿½ï¿½
 		sql=
 				"TRUNCATE  TABLE  HUR_SMS_SETTING";
 		
-		Statement st = conn.createStatement();
-		st.execute(sql);
-		st.close();
-		//­«·s¶×¤J¸ê®Æ
-		sql=
-				"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
-				+ "VALUES(?,?,?,?)";
-				/*"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND,PRICEPLANID) "
-				+ "VALUES(?,?,?,?,?)";*/
-		PreparedStatement pst = conn.prepareStatement(sql);
-		for(SMSSetting s : list){
-			pst.setString(1, s.getId());
-			pst.setDouble(2, s.getBracket()/100);
-			pst.setString(3, s.getMsg());
-			if(s.getSuspend())
-				pst.setString(4, "1");
-			else
-				pst.setString(4, "0");
-			
-			//pst.setString(5, s.getPricePlanId());
-			pst.addBatch();
+		/*"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND,PRICEPLANID) "
+						+ "VALUES(?,?,?,?,?)";*/
+		PreparedStatement pst = null;
+		Statement st = null;
+		try {
+			st = conn.createStatement();
+			st.execute(sql);
+			sql=
+					"INSERT INTO HUR_SMS_SETTING(ID,BRACKET,MEGID,SUSPEND) "
+					+ "VALUES(?,?,?,?)";
+					pst = conn.prepareStatement(sql);
+			for(SMSSetting s : list){
+				pst.setString(1, s.getId());
+				pst.setDouble(2, s.getBracket()/100);
+				pst.setString(3, s.getMsg());
+				if(s.getSuspend())
+					pst.setString(4, "1");
+				else
+					pst.setString(4, "0");
+				
+				//pst.setString(5, s.getPricePlanId());
+				pst.addBatch();
+			}
+			pst.executeBatch();
+		}finally{
+			try {
+
+				if(st!=null)
+					st.close();
+				if(pst!=null)
+					pst.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		pst.executeBatch();
-		pst.close();			
-		closeConnection();
 		return list;
 	}
 	
@@ -173,24 +213,33 @@ public class SMSDao extends BaseDao{
 				+ "FROM HUR_GPRS_THRESHOLD A,IMSI B,SERVICE C "
 				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND B.SERVICEID = C.SERVICEID (+)";
 		
-		Statement st = conn.createStatement();
-		ResultSet rs = st.executeQuery(sql);
-		while(rs.next()){
-			String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
-			if(imsi==null || "".equals(imsi))
-				imsi=rs.getString("SERVICEID");
-			GPRSThreshold g = new GPRSThreshold();
-			g.setImsi(imsi);
-			g.setMsisdn(rs.getString("SERVICECODE"));
-			g.setThreshold(rs.getDouble("THRESHOLD"));
-			g.setCreateDate(rs.getString("CREATE_DATE"));
-			g.setStatus(rs.getString("STATUS"));
-			list.add(g);
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+				if(imsi==null || "".equals(imsi))
+					imsi=rs.getString("SERVICEID");
+				GPRSThreshold g = new GPRSThreshold();
+				g.setImsi(imsi);
+				g.setMsisdn(rs.getString("SERVICECODE"));
+				g.setThreshold(rs.getDouble("THRESHOLD"));
+				g.setCreateDate(rs.getString("CREATE_DATE"));
+				g.setStatus(rs.getString("STATUS"));
+				list.add(g);
+			}
+		} finally{
+			try {
+				if(rs!=null)
+					rs.close();
+				if(st!=null)
+					st.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		
-		st.close();
-		rs.close();
-		closeConnection();
 		return list;
 	}
 	
@@ -208,13 +257,22 @@ public class SMSDao extends BaseDao{
 				"INSERT INTO HUR_GPRS_THRESHOLD (SERVICEID,THRESHOLD,CREATE_DATE) "
 				+ "VALUES(?,?,sysdate)";
 		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		
-		pst.setString(1, serviceid);
-		pst.setDouble(2, limit);
-		int result=pst.executeUpdate();
-		pst.close();
-		closeConnection();
+		PreparedStatement pst = null;
+		int result;
+		try {
+			pst = conn.prepareStatement(sql);
+			
+			pst.setString(1, serviceid);
+			pst.setDouble(2, limit);
+			result = pst.executeUpdate();
+		} finally{
+			try {
+				if(pst!=null)
+					pst.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
+		}
 		return result;
 	}
 	
@@ -232,12 +290,21 @@ public class SMSDao extends BaseDao{
 				+ "SET A.THRESHOLD = ? "
 				+ "WHERE A.SERVICEID=? ";
 		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		pst.setDouble(1, limit);
-		pst.setString(2, serviceid);
-		int result=pst.executeUpdate();
-		pst.close();
-		closeConnection();
+		PreparedStatement pst = null;
+		int result;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setDouble(1, limit);
+			pst.setString(2, serviceid);
+			result = pst.executeUpdate();
+		} finally{
+			try {
+				if(pst!=null)
+					pst.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
+		}
 		return result;
 	}
 	
@@ -254,12 +321,21 @@ public class SMSDao extends BaseDao{
 				"DELETE HUR_GPRS_THRESHOLD A "
 				+ "WHERE A.SERVICEID=? ";
 		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		
-		pst.setString(1, serviceid);
-		int result=pst.executeUpdate();
-		pst.close();
-		closeConnection();
+		PreparedStatement pst = null;
+		int result;
+		try {
+			pst = conn.prepareStatement(sql);
+			
+			pst.setString(1, serviceid);
+			result = pst.executeUpdate();
+		} finally{
+			try {
+				if(pst!=null)
+					pst.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
+		}
 		return result;
 	}
 	
@@ -272,21 +348,26 @@ public class SMSDao extends BaseDao{
 				+ "FROM IMSI B,SERVICE C "
 				+ "WHERE B.SERVICEID = C.SERVICEID "
 				+ "AND C.SERVICECODE = ?";
-		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		
-		pst.setString(1, msisdn);
-		ResultSet rs = pst.executeQuery();
-		while(rs.next()){
-			imsi=rs.getString("IMSI");
-			pricaplainid=rs.getString("PRICEPLANID");
+		PreparedStatement pst = null;
+		try {
+			 pst = conn.prepareStatement(sql);
+			
+			pst.setString(1, msisdn);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()){
+				imsi=rs.getString("IMSI");
+				pricaplainid=rs.getString("PRICEPLANID");
+			}
+			map.put("imsi", imsi);
+			map.put("pricaplainid", pricaplainid);
+		} finally{
+			try {
+				if(pst!=null)
+					pst.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
 		}
-		rs.close();
-		pst.close();
-		closeConnection();
-		map.put("imsi", imsi);
-		map.put("pricaplainid", pricaplainid);
-		
 		return map;
 	}
 	
@@ -294,7 +375,7 @@ public class SMSDao extends BaseDao{
 		Map<String,String> map =new HashMap<String,String>();
 		String TWNmsisdn = null;
 		
-		//¤èªk1
+		//ï¿½ï¿½k1
 		sql=
 				"SELECT A.SERVICEID, B.SERVICECODE, A.FOLLOWMENUMBER, B.DATEACTIVATED, B.STATUS "
 				+ "FROM FOLLOWMEDATA A, SERVICE B "
@@ -312,7 +393,7 @@ public class SMSDao extends BaseDao{
 		if(rs!=null)rs.close();
 		if(pst!=null)pst.close();
 
-		//¤èªk2
+		//ï¿½ï¿½k2
 		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
 			sql=
 					"SELECT A.SERVICEID, B.SERVICECODE, A.VALUE, B.DATEACTIVATED, B.STATUS "
@@ -332,7 +413,7 @@ public class SMSDao extends BaseDao{
 			if(rs2!=null) rs2.close();
 		}
 		
-		//¤èªk3
+		//ï¿½ï¿½k3
 		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
 			sql=
 					"SELECT A.ORDERID, A.OLDVALUE, A.NEWVALUE, A.COMPLETEDATE, C.SERVICEID, C.SERVICECODE, C.STATUS "
@@ -405,22 +486,26 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
-
+		closeConnection();
 		return result;
 	}
 	
-	public void logSendSMS(String phone,String msgid,String res) throws SQLException{
+	public void logSendSMS(String phone,String msgid,String res,String type) throws SQLException{
 		sql="INSERT INTO HUR_SMS_LOG"
-				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,to_date(?,'yyyyMMddhh24miss'),?,SYSDATE)";
+				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE,TYPE) "
+				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,to_date(?,'yyyyMMddhh24miss'),?,SYSDATE,'"+type+"')";
 		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		pst.setString(1, phone);
-		pst.setString(2, msgid);
-		pst.setString(3,new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-		pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
-		pst.executeUpdate();
-		pst.close();		
+		PreparedStatement pst = null;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, phone);
+			pst.setString(2, msgid);
+			pst.setString(3,new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+			pst.setString(4, (res.contains("Message Submitted")?"Success":"failed"));
+			pst.executeUpdate();
+		}finally{
+			pst.close();
+		}			
 	}
 	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
 		
@@ -599,4 +684,31 @@ public class SMSDao extends BaseDao{
 		return result;
 	}
 	
+	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
+		Map<String,String> m = new HashMap<String,String>();
+		sql=
+				"SELECT case A.id when 201 then 'A' when 202 then 'B' when 203 then 'CA' when 204 then 'CI' END ID,A.CONTENT "
+				+ "FROM HUR_SMS_CONTENT A "
+				+ "where A.ID in ('201','202','203','204')";
+		
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				m.put(rs.getString("ID"),new String(rs.getString("CONTENT").getBytes("ISO8859-1"),"BIG5"));
+			}
+		} finally{
+			try {
+				if(rs!=null)
+					rs.close();
+				if(st!=null)
+					st.close();
+				closeConnection();
+			} catch (Exception e) {
+			}
+		}
+		return m;
+	}	
 }

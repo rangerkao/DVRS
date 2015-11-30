@@ -41,6 +41,8 @@ public class LinkAction extends BaseAction{
 	private String queryQos="queryQos";
 	private String smsContentSetting="smsContentSetting";
 	private String smsThresholdSetting="smsThresholdSetting";
+	private String sendSMS="sendSMS";
+	
 	Map<String, Object> session;
 	
 	LogoutControl logoutControl=new LogoutControl();
@@ -62,6 +64,7 @@ public class LinkAction extends BaseAction{
 	public String currentDay(){return currentDay;} 
 	public String cardChangeHistory(){return cardChangeHistory;}
 	public String numberChangeHistory(){return numberChangeHistory;}
+	public String sendSMS(){return sendSMS;}
 	public String queryQos(){return queryQos;}
 	public String logout()  
 	{  

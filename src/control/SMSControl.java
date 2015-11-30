@@ -65,7 +65,7 @@ public class SMSControl extends BaseControl{
 					
 					String res=setSMSPostParam(content,msisdn,cphone);
 					
-					smsDao.logSendSMS(msisdn, content, res);
+					smsDao.logSendSMS(msisdn, content, res,"VIP");
 				}
 					
 			}
@@ -114,8 +114,8 @@ public class SMSControl extends BaseControl{
 	
 	
 	/**
-	 * µo°eÂ²°T¥\¯à
-	 * ³B²zpost¨ì httpºô­¶ªºUrl¨Ã¶Ç°e
+	 * ï¿½oï¿½eÂ²ï¿½Tï¿½\ï¿½ï¿½
+	 * ï¿½Bï¿½zpostï¿½ï¿½ httpï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Urlï¿½Ã¶Ç°e
 	 * @param msg
 	 * @param phone
 	 * @return
@@ -238,5 +238,39 @@ public class SMSControl extends BaseControl{
 	}
 	public int deleteSMSContent(SMSContent sc) throws Exception{
 		return smsDao.deleteSMSContent(sc);
+	}
+	
+	public String sendSMS(String msisdn,Map<String,String> content) throws IOException, SQLException{
+		
+
+		String res;
+		try {
+			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			System.out.println("send A result = "+res);
+			smsDao.logSendSMS(msisdn, content.get("A"), res,"GPRS_ON");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			System.out.println("send B result = "+res);
+			smsDao.logSendSMS(msisdn, content.get("B"), res,"GPRS_ON");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			System.out.println("send C result = "+res);
+			smsDao.logSendSMS(msisdn, content.get("C"), res,"GPRS_ON");
+		} finally{
+			smsDao.closeConnection();
+		}
+
+		//smsDao.logSendSMS(msisdn, content, res);
+		return "success";
+	}
+	
+	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
+		return smsDao.queryGPRSContent();
 	}
 }

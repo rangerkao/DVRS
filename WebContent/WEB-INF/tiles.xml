@@ -83,6 +83,10 @@
 	<definition name="numberChangeHistory" extends="web_base">
 		<put-attribute name="main" value="/web/numberChangeHistory.jsp" />
 	</definition>
+	
+	<definition name="sendSMS" extends="web_base">
+		<put-attribute name="main" value="/web/sendSMS.jsp" />
+	</definition>
 
 	<definition name="cache" extends="web_base">
 		<put-attribute name="main" value="/web/Cache.jsp" />

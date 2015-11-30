@@ -53,10 +53,11 @@ public class BaseAction extends ActionSupport implements SessionAware {
 	protected User getUser(){
 		return (User) session.get("s2tUser");
 	}
-	protected String makeResult(List data,String error){
+	protected String makeResult(Object data,String error){
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("data", data);
-		map.put("error", error);
+		if(error!=null)
+			map.put("error", error);
 		
 		return beanToJSONObject(map);
 	}

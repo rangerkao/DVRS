@@ -42,6 +42,7 @@
 			<result name="queryQos" type="tiles">queryQos</result>
 			<result name="cardChangeHistory" type="tiles">cardChangeHistory</result>
 			<result name="numberChangeHistory" type="tiles">numberChangeHistory</result>
+			<result name="sendSMS" type="tiles">sendSMS</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -96,6 +97,13 @@
 		</interceptors>
 		
 		<default-interceptor-ref name="default"></default-interceptor-ref>
+	
+	
+		<global-results>
+			<result type="json">
+	        	<param name="root">result</param>
+	        </result>
+		</global-results>
 	<!-- authentication  -->
 		<action name="queryAdmin" method="queryAdmin" class="action.AdminAction">
 	        <!-- 将返回类型设置为json -->
@@ -104,139 +112,37 @@
 	        </result>
         </action>
 	<!-- Aamin -->
-		<action name="queryAuth" method="queryAuthentication" class="action.MenuAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="updateAdmin" method="updateAdmin" class="action.AdminAction">
-	        <result type="json" >
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+		<action name="queryAuth" method="queryAuthentication" class="action.MenuAction"/>
+        <action name="updateAdmin" method="updateAdmin" class="action.AdminAction"/>
     <!-- DataRate -->
-    	<action name="queryDataRate" method="queryDataRate" class="action.DataRateAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+    	<action name="queryDataRate" method="queryDataRate" class="action.DataRateAction"/>
     <!-- SMSQuery -->
-    	<action name="querySMSLog" method="querySMSLog" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="querySMSSetting" method="querySMSSetting" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="updateSMSSetting" method="updateSMSSetting" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="querySMSContent" method="querySMSContent" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="updateSMSContent" method="updateSMSContent" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+    	<action name="querySMSLog" method="querySMSLog" class="action.SMSAction"/>
+        <action name="querySMSSetting" method="querySMSSetting" class="action.SMSAction"/>
+        <action name="updateSMSSetting" method="updateSMSSetting" class="action.SMSAction"/>
+        <action name="querySMSContent" method="querySMSContent" class="action.SMSAction"/>
+        <action name="updateSMSContent" method="updateSMSContent" class="action.SMSAction"/>
+        <action name="queryGPRSContent" method="queryGPRSContent" class="action.SMSAction"/>
     <!-- GPRSLIMIT -->
-        <action name="queryAlertLimit" method="queryAlertLimit" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="updateAlertLimit" method="updateAlertLimit" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="queryIMSI" method="queryIMSI" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="queryMSISDN" method="queryMSISDN" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="queryTWNMSISDN" method="queryTWNMSISDN" class="action.SMSAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+        <action name="queryAlertLimit" method="queryAlertLimit" class="action.SMSAction"/>
+        <action name="updateAlertLimit" method="updateAlertLimit" class="action.SMSAction"/>
+        <action name="queryIMSI" method="queryIMSI" class="action.SMSAction"/>
+        <action name="queryMSISDN" method="queryMSISDN" class="action.SMSAction"/>
+        <action name="queryTWNMSISDN" method="queryTWNMSISDN" class="action.SMSAction"/>
+         <action name="sendSMS" method="sendSMS" class="action.SMSAction"/>
     <!-- ActionLogQuery -->
-        <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+        <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction"/>
     <!-- Program -->
-        <action name="executeProgram" method="execute" class="action.ProgrmaAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+        <action name="executeProgram" method="execute" class="action.ProgrmaAction"/>
     <!-- CDR -->
-        <action name="queryCDR" method="queryCDR" class="action.CDRAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+        <action name="queryCDR" method="queryCDR" class="action.CDRAction"/>
     <!-- Current -->
-    	<action name="queryCurrentMonth" method="queryCurrentMonth" class="action.CurrentAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="queryCurrentDay" method="queryCurrentDay" class="action.CurrentAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+    	<action name="queryCurrentMonth" method="queryCurrentMonth" class="action.CurrentAction"/>
+        <action name="queryCurrentDay" method="queryCurrentDay" class="action.CurrentAction"/>
     <!-- Qos -->
-    	<action name="queryQos" method="queryQos" class="action.QosAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
+    	<action name="queryQos" method="queryQos" class="action.QosAction"/>
     <!-- History -->
-    	<action name="queryCardChangeHistory" method="queryCardChangeHistory" class="action.HistoryAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>
-        <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction">
-	        <!-- 将返回类型设置为json -->
-	        <result type="json">
-	        	<param name="root">result</param>
-	        </result>
-        </action>    
+    	<action name="queryCardChangeHistory" method="queryCardChangeHistory" class="action.HistoryAction"/>
+        <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction"/>    
     </package>
 </struts>

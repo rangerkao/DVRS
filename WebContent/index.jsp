@@ -16,8 +16,8 @@
 </head>
 <body>
 <div align="center">
-		<s:if test="%{tag==null||tag==''}">
-		<s:label>Please login to continue</s:label>
+	<s:if test="%{tag==null||tag==''}">
+		<s:label>Please login to continue</s:label>	
 		<br />
 	</s:if>
 	<s:else>

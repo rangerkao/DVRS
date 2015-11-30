@@ -116,7 +116,7 @@ public class SMSAction extends BaseAction {
 				
 				if("add".equalsIgnoreCase(mod)){
 					boolean inserted=false;
-					//´M§ä´¡¤JÂI
+					//ï¿½Mï¿½ä´¡ï¿½Jï¿½I
 					for(int i=0;i<smsSettinglist.size();i++){
 						SMSSetting s= smsSettinglist.get(i);
 						if(s.getBracket()>smsSetting.getBracket()/*&&s.getPricePlanId()!=null && s.getPricePlanId().equals(smsSetting.getPricePlanId())*/){
@@ -149,7 +149,7 @@ public class SMSAction extends BaseAction {
 					smsSettinglist.remove(Integer.parseInt(smsSetting.getId())-1);
 				}		
 				
-				//­«·s½s¸¹ID
+				//ï¿½ï¿½ï¿½sï¿½sï¿½ï¿½ID
 				for(int i=0;i<smsSettinglist.size();i++){
 					smsSettinglist.get(i).setId(Integer.toString(i+1));
 				}
@@ -375,6 +375,58 @@ public class SMSAction extends BaseAction {
 			}
 	
 		
+		return SUCCESS;
+	}
+	
+	
+	public String sendSMS(){
+		System.out.println("sendSMS...");	
+		JSONObject ob = new JSONObject(COMTENT);
+		Map<String,String> m = new HashMap<String,String>();
+		for(Object k : ob.keySet()){
+			String key = (String) k;
+			m.put(key, ob.getString(key));
+		}
+		try {
+			smsControl.sendSMS(msisdn, m);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "send GPRS SMS", "send",COMTENT, SUCCESS);
+		} catch (IOException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
+			
+		return SUCCESS;
+	}
+	
+	public String queryGPRSContent(){
+		System.out.println("queryGPRSContent...");	
+		Map<String, String> m;
+		try {
+			m = smsControl.queryGPRSContent();
+			result=makeResult(m,null);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
 		return SUCCESS;
 	}
 
