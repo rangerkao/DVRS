@@ -1674,7 +1674,7 @@ public class DVRSmain extends TimerTask{
 					if(dataRate.containsKey(pricplanID)){
 						//20141210 add
 						currency=pricePlanIdtoCurrency.get(pricplanID);
-						
+						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+"find currency="+currency);
 						if(mccmnc==null || "".equals(mccmnc)){
 							mccmnc=searchMccmncBySERVICEID(serviceid);
 						}
@@ -2532,18 +2532,26 @@ public class DVRSmain extends TimerTask{
 						}
 					}	
 					
+					
 					//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
+					//20151201 為了重新開通數據用戶，不檢查是否發過，只要滿足最大上限就發
 					if(!sendSMS||(sendSMS && msgSettingID!=0)){
 						Double bracket = (Double) brackets.get(0);
-						if(charge+differenceCharge>=bracket*threshold&&lastAlernThreshold<bracket*threshold){
-							logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
-							sendSMS=true;
-							msgSettingID=0;
+						if(charge+differenceCharge>=bracket*threshold){
+							//20151201 add
+							String gprsStatus = Query_GPRSStatus(phone);
+							if(gprsStatus!=null && !"".equals(gprsStatus) && !"0".equals(gprsStatus)){
+							//if(charge+differenceCharge>=bracket*threshold&&lastAlernThreshold<bracket*threshold){
+								logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
+								sendSMS=true;
+								msgSettingID=0;
+								
+								alertBracket=bracket*threshold;
 							
-							alertBracket=bracket*threshold;
-							contentid=((String)msgids.get(0)).split(",");
-							if("1".equals((String)suspends.get(0))){
-								needSuspend=true;
+								contentid=((String)msgids.get(0)).split(",");
+								if("1".equals((String)suspends.get(0))){
+									needSuspend=true;
+								}
 							}
 						}
 					}
@@ -2558,7 +2566,11 @@ public class DVRSmain extends TimerTask{
 					}
 				}				
 				if(sendSMS){
-					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,pricePlanIdtoCurrency.get(priceplanid));
+					String currency = "";
+					//TODO new version
+					//currency = pricePlanIdtoCurrency.get(priceplanid);
+					
+					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
 					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", (smsTimes+1));
 					
@@ -2612,12 +2624,14 @@ public class DVRSmain extends TimerTask{
 			imsi = ServiceIdtoIMSIMap.get(serviceid);
 		
 		if(imsi==null || "".equals(imsi)){
-			logger.debug("Suspend GPRS fail because without mimsi for serviceid is "+serviceid);
+			logger.debug("Suspend GPRS fail because without imsi for serviceid is "+serviceid);
 			return;
 		}
+		
 		logger.debug("Suspend GPRS ... ");		
 		suspend(imsi,phone);
 		currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
+		
 		
 	}
 	
@@ -3284,6 +3298,8 @@ public class DVRSmain extends TimerTask{
 		
 		try {
 			
+			sql = "";
+			
 			suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
 			
 			//20141118 add 傳回suspend排程的 service order nbr
@@ -3318,6 +3334,42 @@ public class DVRSmain extends TimerTask{
 			sql="";
 			ErrorHandle("At suspend occur Exception error!", e);
 		}
+	}
+	//20151201 add
+	 public String Query_GPRSStatus(String s2tmsisdn){
+		 logger.info("check_GPRSStatus...");
+		 String sG="";
+	     String cGPRS="";
+	     
+	     sql="SELECT nvl(PDPSUBSID,0) as ab FROM basicprofile WHERE msisdn = '"+s2tmsisdn+"'";
+	     logger.debug("Query_GPRSStatus:"+sql);
+	          
+	     Statement st = null;
+	     ResultSet rs = null;
+	     try {
+	    	 st = conn.createStatement();
+			 rs = st.executeQuery(sql);
+			 while(rs.next()){
+				 sG=rs.getString("ab");
+			 }
+			 logger.debug("GPRS_Values:"+sG);
+			 if ((sG.equals("0"))||(sG.equals(""))){
+				 cGPRS="0";
+			 }else {
+				 cGPRS="1";
+			 }
+		} catch (SQLException e) {
+			ErrorHandle("At Query_GPRSStatus occur SQLException error!", e);
+		}finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+			}
+		}
+	     return cGPRS;
 	}
 	
 	/**
