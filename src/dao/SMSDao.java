@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -192,7 +193,7 @@ public class SMSDao extends BaseDao{
 		return list;
 	}
 	
-	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
 		imsitoServiceID = CacheAction.getImsitoServiceID();
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		if(imsitoServiceID.size()==0){
@@ -202,32 +203,47 @@ public class SMSDao extends BaseDao{
 		}
 		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
 		sql=
-				"SELECT A.SERVICEID,A.THRESHOLD,"
+				"SELECT A.SERVICEID,A.THRESHOLD,TO_CHAR(C.DATECREATED,'yyyy/MM/dd HH24:mi:ss') DATECREATED, "
 				+ "CASE "
-				+ "     WHEN C.SERVICECODE IS NULL THEN ' ' ELSE C.SERVICECODE END SERVICECODE,"
+				+ "	     WHEN C.SERVICECODE IS NULL THEN ' ' ELSE C.SERVICECODE END SERVICECODE, "
 				+ "CASE "
-				+ "     WHEN A.CREATE_DATE IS NOT NULL THEN  TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') ELSE ' ' END   CREATE_DATE , "
+				+ "	     WHEN A.CANCEL_DATE IS NOT NULL THEN  TO_CHAR(A.CANCEL_DATE,'yyyy/MM/dd HH24:mi:ss') ELSE ' ' END  CANCEL_DATE , "
 				+ "CASE "
-				+ "     WHEN C.STATUS IS NULL THEN ' ' "
-				+ "     WHEN C.STATUS=1 THEN 'Normal' ELSE 'Inactive' END STATUS "
+				+ "	     WHEN A.CREATE_DATE IS NOT NULL THEN  TO_CHAR(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') ELSE ' ' END  CREATE_DATE , "
+				+ "CASE "
+				+ "	     WHEN C.STATUS IS NULL THEN ' ' "
+				+ "      WHEN C.STATUS=1 THEN 'Normal' ELSE 'Inactive' END STATUS "
 				+ "FROM HUR_GPRS_THRESHOLD A,IMSI B,SERVICE C "
-				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND B.SERVICEID = C.SERVICEID (+)";
+				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND A.SERVICEID = C.SERVICEID (+) "
+				+ "ORDER BY A.CREATE_DATE DESC ";
 		
 		Statement st = null;
 		ResultSet rs = null;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
 			while(rs.next()){
-				String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+				String imsi = "--";
+
+				String dateActive = rs.getString("DATECREATED");
+				String createDate = rs.getString("CREATE_DATE");
+				if(dateActive != null && !" ".equals(dateActive) && createDate!= null && !" ".equals(createDate) && (sdf.parse(dateActive).before(sdf.parse(createDate))))
+					imsi=serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+				
+				
 				if(imsi==null || "".equals(imsi))
 					imsi=rs.getString("SERVICEID");
 				GPRSThreshold g = new GPRSThreshold();
+				
+				
+				
 				g.setImsi(imsi);
 				g.setMsisdn(rs.getString("SERVICECODE"));
 				g.setThreshold(rs.getDouble("THRESHOLD"));
 				g.setCreateDate(rs.getString("CREATE_DATE"));
 				g.setStatus(rs.getString("STATUS"));
+				g.setCancelDate(rs.getString("CANCEL_DATE"));
 				list.add(g);
 			}
 		} finally{
@@ -308,34 +324,63 @@ public class SMSDao extends BaseDao{
 		return result;
 	}
 	
-	public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
-		imsitoServiceID = CacheAction.getImsitoServiceID();
-		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
-		String serviceid = imsitoServiceID.get(imsi);		
+	//public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
+	public int deleteAlertLimit(String msisdn) throws SQLException{
 		sql=
-				"DELETE HUR_GPRS_THRESHOLD A "
-				+ "WHERE A.SERVICEID=? ";
+				/*"DELETE HUR_GPRS_THRESHOLD A "
+				+ "WHERE A.SERVICEID=? ";*/
+				"UPDATE HUR_GPRS_THRESHOLD A SET A.CANCEL_DATE = SYSDATE "
+				+ "WHERE A.CANCEL_DATE is null "
+				+ "AND A.SERVICEID=(	select serviceid "
+				+ "						from (SELECT * FROM SERVICE B "
+				+ "						WHERE B.SERVICECODE='"+msisdn+"'  order by B.datecreated desc  ) C  where rownum = 1)";
 		
-		PreparedStatement pst = null;
+		Statement st = null;
 		int result;
 		try {
-			pst = conn.prepareStatement(sql);
-			
-			pst.setString(1, serviceid);
-			result = pst.executeUpdate();
+
+			st=conn.createStatement();
+			System.out.print("Execute Delete:"+sql);
+			result = st.executeUpdate(sql);
 		} finally{
 			try {
-				if(pst!=null)
-					pst.close();
+				if(st!=null)
+					st.close();
 				closeConnection();
 			} catch (Exception e) {
 			}
 		}
+		return result;
+	}
+	
+	public String checkAlertExisted(String msisdn) throws SQLException{
+		String result = null;
+		
+		sql = "SELECT count(1) AB "
+				+ "FROM HUR_GPRS_THRESHOLD A,SERVICE B "
+				+ "WHERE A.serviceid = b.serviceid  AND A.CANCEL_DATE IS NULL and B.servicecode(+) = '"+msisdn+"' ";
+		Statement st = null;
+		ResultSet rs = null;
+		
+		try{
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			
+			while(rs.next()){
+				result = rs.getString("AB");
+			}
+			
+		} finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (Exception e) {
+			}
+			closeConnection();
+		}
+
 		return result;
 	}
 	
@@ -486,7 +531,6 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
-		closeConnection();
 		return result;
 	}
 	

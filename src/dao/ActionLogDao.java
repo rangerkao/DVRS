@@ -1,5 +1,6 @@
 package dao;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ public class ActionLogDao extends BaseDao{
 		super();
 	}
 
-	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException{
+	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException{
 		
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate)))
 			return queryActionLog();
@@ -40,7 +41,7 @@ public class ActionLogDao extends BaseDao{
 				log.setAccount(rs.getString("USERID"));
 				log.setPage(rs.getString("PAGE"));
 				log.setAction(rs.getString("ACTION"));
-				log.setParameter(rs.getString("PARAMETER"));
+				log.setParameter((rs.getString("PARAMETER")!=null? new String(rs.getString("PARAMETER").getBytes("ISO8859-1"),"BIG5"):""));
 				log.setCreateDate(rs.getString("CREATEDATE"));
 				log.setResult(rs.getString("RESULT"));
 				
@@ -61,7 +62,7 @@ public class ActionLogDao extends BaseDao{
 		return new java.sql.Date(date.getTime());
 	}
 	
-	public List<ActionLog> queryActionLog() throws SQLException{
+	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException{
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
 				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
@@ -77,7 +78,7 @@ public class ActionLogDao extends BaseDao{
 				log.setAccount(rs.getString("USERID"));
 				log.setPage(rs.getString("PAGE"));
 				log.setAction(rs.getString("ACTION"));
-				log.setParameter(rs.getString("PARAMETER"));
+				log.setParameter((rs.getString("PARAMETER")!=null? new String(rs.getString("PARAMETER").getBytes("ISO8859-1"),"BIG5"):""));
 				log.setCreateDate(rs.getString("CREATEDATE"));
 				log.setResult(rs.getString("RESULT"));
 				
@@ -105,7 +106,7 @@ public class ActionLogDao extends BaseDao{
 			pst.setString(1, userid);
 			pst.setString(2, page);
 			pst.setString(3, action);
-			pst.setString(4, parameter);
+			pst.setString(4, (parameter!=null? new String(parameter.getBytes("BIG5"),"ISO8859-1"):""));
 			pst.setString(5, result);
 			aResult= pst.executeUpdate();
 			

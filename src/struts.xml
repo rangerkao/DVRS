@@ -126,6 +126,7 @@
     <!-- GPRSLIMIT -->
         <action name="queryAlertLimit" method="queryAlertLimit" class="action.SMSAction"/>
         <action name="updateAlertLimit" method="updateAlertLimit" class="action.SMSAction"/>
+        <action name="checkAlertExisted" method="checkAlertExisted" class="action.SMSAction"/>
         <action name="queryIMSI" method="queryIMSI" class="action.SMSAction"/>
         <action name="queryMSISDN" method="queryMSISDN" class="action.SMSAction"/>
         <action name="queryTWNMSISDN" method="queryTWNMSISDN" class="action.SMSAction"/>

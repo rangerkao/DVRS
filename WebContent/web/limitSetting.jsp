@@ -18,8 +18,9 @@ var dataList;
 var tHead=[{name:"IMSI",col:"imsi",_width:"20%"},
            {name:"門號",col:"msisdn",_width:"20%"},
            {name:"建立時間",col:"createDate",_width:"20%"},
-           {name:"狀態",col:"status",_width:"20%"},
-           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"20%"}];
+           {name:"狀態",col:"status",_width:"10%"},
+           {name:"取消時間",col:"cancelDate",_width:"20%"},
+           {name:"button",col:"<td align='center' ><button onclick='chooseRow(this)' class='btn btn-primary btn-sm'>選擇</button></td>",_width:"10%"}];
 var reportName="VIP客戶設定";
 function query(){
 	$.ajax({
@@ -93,13 +94,16 @@ function updateLimit(mod,txt){
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  var list=$.parseJSON(json);
+	    	  console.log(list);
 	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	 query();
-	    	 
-	    	 var error = list['error'];
-	    	  $('#Error').html(error);
+	    	 if(list=='0')
+	    		 alert('操作失敗')
+	    	 if(list['error'])
+	    		alert(list['error']) ;
     	  },
 	      error: function(json) { $("#Qmsg").html('something bad happened'); 
 	      },
@@ -113,7 +117,7 @@ function updateLimit(mod,txt){
 	    		disableButton();
           },
           complete:function(){
-        	  enableButton();
+        	  //enableButton();
           }
 	    });
 }
@@ -138,8 +142,55 @@ function queryIMSI(mod,txt){
 		return false;
 	}
 
+	if(mod=='del'){
+		//alert("del clicked!");
+		checkByMsisdn(mod,txt);
+	}else{
+		$.ajax({
+		      url: '<s:url action="queryIMSI"/>',
+		      data: {
+		    	  "msisdn":$("#Msisdn").val(),
+		      },//parameters go here in object literal form
+		      type: 'POST',
+		      datatype: 'json',
+		      success: function(json) {  
+		    	  
+		    	  //jQuery.parseJSON,JSON.parse(json)
+		    	  //alert(json);
+		    	  
+		    	  var v=JSON.parse(json);
+		    	  if(json=="" || v.imsi==null || v.imsi==""){
+		    		  alert("此門號無對應IMSI，操作失敗");
+		    		  enableButton();
+		    	  }else{
+		    		  $("#IMSI").val(v.imsi);
+		    		  checkByMsisdn(mod,txt);
+		    	  }
+		    	  
+		    	  if(v['error'])
+			    		alert(v['error']) ;
+	    	  },
+		      error: function(json) {
+		    	  $("#Qmsg").html('something bad happened'); 
+		      },
+	    	  beforeSend:function(){
+	    		  $("#Qmsg").html("正在查尋，請稍待...");
+		    		$('#Error').html("");
+		    		dataList=[];
+		    		disableButton();
+	    			$("#IMSI").val("");
+	          },
+	          complete:function(){
+	        	 
+	          }
+		    });
+	}
+	
+}
+
+function checkByMsisdn(mod,txt){
 	$.ajax({
-	      url: '<s:url action="queryIMSI"/>',
+	      url: '<s:url action="checkAlertExisted"/>',
 	      data: {
 	    	  "msisdn":$("#Msisdn").val(),
 	      },//parameters go here in object literal form
@@ -150,15 +201,30 @@ function queryIMSI(mod,txt){
 	    	  //jQuery.parseJSON,JSON.parse(json)
 	    	  //alert(json);
 	    	  var v=JSON.parse(json);
-	    	  if(json=="" || v.imsi==null || v.imsi==""){
-	    		  $("#Qmsg").html("此門號無對應IMSI，操作失敗");
+	    	  if(v['error']){
+	    		  $("#Qmsg").html(v['error']);
 	    	  }else{
-	    		  $("#IMSI").val(v.imsi);
-	    		  updateLimit(mod,txt);
+	    		  console.log(v['data']);
+	    		  var cou = v['data']
+	    		   if(mod=='add'){
+	    			  if(cou != '0'){
+	    				  alert("此門號已設定過，無法新增！");
+	    				  enableButton();
+		  	  			}else{
+		  	  				updateLimit(mod,txt); 
+		  	  			}
+		  	  		}else if(mod=='mod' || mod=='del'){
+		  	  			if(cou =='0'){
+		  	  				alert("此門號未曾設定過，無法刪除,修改！");
+		  	  			 	enableButton();
+		  	  			}else{
+		  	  				updateLimit(mod,txt); 
+		  	  			}
+		  	  		}else{
+		  	  			alert("驗證失敗！");
+		  	  		 enableButton();
+		  	  		}
 	    	  }
-	    	  
-	    	  var error = list['error'];
-	    	  $('#Error').html(error);
     	  },
 	      error: function(json) {
 	    	  $("#Qmsg").html('something bad happened'); 
@@ -168,10 +234,8 @@ function queryIMSI(mod,txt){
 	    		$('#Error').html("");
 	    		dataList=[];
 	    		disableButton();
-    			$("#IMSI").val("");
           },
           complete:function(){
-        	  enableButton();
           }
 	    });
 }
@@ -198,7 +262,7 @@ function validat(mod,txt){
 		validate = false;
 	}
 	
-	 $.each(limitList,function(i,limit){
+	/*  $.each(limitList,function(i,limit){
 		 if(limit.msisdn==$("#Msisdn").val()){
 			 exist=true;
 		 }
@@ -216,9 +280,10 @@ function validat(mod,txt){
 				 validate = false;
 			}
 		}else{
+			alert("驗證失敗！");
 			validate = false;
 		}
-	}
+	} */
 	return validate;
 }
 function clearText(txt){

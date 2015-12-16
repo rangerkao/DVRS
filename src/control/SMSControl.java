@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import bean.SMSContent;
 import bean.SMSLog;
 import bean.SMSSetting;
 import dao.SMSDao;
-import program.DVRSmain;
+
 
 public class SMSControl extends BaseControl{
 
@@ -47,7 +48,7 @@ public class SMSControl extends BaseControl{
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
 		return smsDao.updateSMSSetting(list);
 	}
-	public List<GPRSThreshold> queryAlertLimit() throws SQLException{
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
 		return smsDao.queryAlertLimit();
 	}
 	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
@@ -98,7 +99,10 @@ public class SMSControl extends BaseControl{
 					
 			}
 		}*/
-		return smsDao.deleteAlertLimit(imsi, limit);
+		return smsDao.deleteAlertLimit(msisdn);
+	}
+	public String checkAlertExisted(String msisdn) throws SQLException{
+		return smsDao.checkAlertExisted(msisdn);
 	}
 	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
 		return smsDao.queryIMSI(msisdn);
@@ -247,21 +251,21 @@ public class SMSControl extends BaseControl{
 		try {
 			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
 			System.out.println("send A result = "+res);
-			smsDao.logSendSMS(msisdn, content.get("A"), res,"GPRS_ON");
+			smsDao.logSendSMS(msisdn, new String(content.get("A").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 			}
 			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
 			System.out.println("send B result = "+res);
-			smsDao.logSendSMS(msisdn, content.get("B"), res,"GPRS_ON");
+			smsDao.logSendSMS(msisdn, new String(content.get("B").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 			}
 			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
 			System.out.println("send C result = "+res);
-			smsDao.logSendSMS(msisdn, content.get("C"), res,"GPRS_ON");
+			smsDao.logSendSMS(msisdn, new String(content.get("C").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 		} finally{
 			smsDao.closeConnection();
 		}

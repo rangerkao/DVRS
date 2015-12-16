@@ -138,7 +138,7 @@ $(document).ready(function(){
 <body>
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: middle;">
-		<h4>簡訊發送頁面</h4>
+		<h4>數據開通簡訊發送頁面</h4>
 		<div class="col-xs-12" align="center">
 			<span> <input type="radio" name="phoneType" value="iphone">IPhone </span>
 			<span> <input type="radio" name="phoneType" value="android" checked="checked">Android </span>

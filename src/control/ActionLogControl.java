@@ -1,5 +1,6 @@
 package control;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -20,11 +21,11 @@ public class ActionLogControl extends BaseControl {
 	
 	
 	
-	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException{
+	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException{
 		return actionLogDao.queryActionLog(fromDate, toDate);
 	}
 	
-	public List<ActionLog> queryActionLog() throws SQLException{
+	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException{
 		return actionLogDao.queryActionLog();
 	}
 	

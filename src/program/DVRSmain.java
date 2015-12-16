@@ -199,6 +199,7 @@ public class DVRSmain extends TimerTask{
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
 		//系統時間提前一小時
+		//因為警示發送只計當日，當00：30執行時，所處理的資料為前一天的23：00
 		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY)-1);
 		sYearmonth=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		sYearmonthday=DateFormat(calendar.getTime(),DAY_FORMATE);
@@ -375,7 +376,9 @@ public class DVRSmain extends TimerTask{
 		//設定HUR_CURRENT計費，抓出這個月與下個月
 		try {
 			sql=
-					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
+					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,A.SMS_TIMES,"
+					+ "to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,"
+					+ "A.VOLUME,A.MONTH,A.EVER_SUSPEND,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME "
 					+ "FROM HUR_CURRENT A "
 					+ "WHERE A.MONTH IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
 			
@@ -669,7 +672,8 @@ public class DVRSmain extends TimerTask{
 		boolean result =false;
 		sql=
 				"SELECT A.SERVICEID,A.THRESHOLD "
-				+"FROM HUR_GPRS_THRESHOLD A ";
+				+ "FROM HUR_GPRS_THRESHOLD A "
+				+ "WHERE A.CANCEL_DATE IS NULL ";
 		
 		try {
 			logger.debug("Execute SQL : "+sql);
@@ -914,7 +918,7 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * 取得預設計費比率（總費率平均），對MCCNOC有卻無法對應資料計費
+	 * 取得預設計費比率（0.011），對MCCNOC有卻無法對應資料計費
 	 * @return
 	 */
 	private double defaultRate(){
@@ -1550,8 +1554,10 @@ public class DVRSmain extends TimerTask{
 				}
 				
 				if(serviceID.equals(m.get("SERVICEID"))&&
+						//是否在所申請的服務地區
 						(("SX001".equals(m.get("SERVICECODE"))&& sSX001.contains(mccmnc))||
 						("SX002".equals(m.get("SERVICECODE"))&& sSX002.contains(mccmnc)))&&
+						//是否符合申請的時間區段
 						(callTime.after(startTime.getTime())||callTime.equals(startTime.getTime()))&&
 						(endTime==null ||callTime.before(endTime.getTime())||callTime.equals(endTime.getTime()))){
 					cd=1;
@@ -1674,7 +1680,9 @@ public class DVRSmain extends TimerTask{
 					if(dataRate.containsKey(pricplanID)){
 						//20141210 add
 						currency=pricePlanIdtoCurrency.get(pricplanID);
-						logger.debug("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+"find currency="+currency);
+						if(currency== null)
+							ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+"find currency="+currency);
+
 						if(mccmnc==null || "".equals(mccmnc)){
 							mccmnc=searchMccmncBySERVICEID(serviceid);
 						}
@@ -1709,6 +1717,7 @@ public class DVRSmain extends TimerTask{
 						ErrorHandle("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
 					}
 					
+					//如果為華人上網包的客戶，不批價設定為0
 					int cd=checkQosAddon(serviceid, mccmnc, callTime);
 					if(cd==0){
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
@@ -1770,6 +1779,7 @@ public class DVRSmain extends TimerTask{
 					//20150324 modify mccmnc to mcc + network
 					
 					
+					//以國碼+業者代碼作為累計的key值，不同業者不一起累計
 					String nccNet;
 					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
@@ -2419,7 +2429,24 @@ public class DVRSmain extends TimerTask{
 			return true;
 		}
 	}
-	
+	public static void ErrorHandle(String cont){
+		ErrorHandle(cont,null);
+	}
+	public static void ErrorHandle(String cont,Exception e){
+		if(e!=null){
+			logger.error(cont, e);
+			
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			//send mail
+			errorMsg=s.toString();
+		}else{
+			logger.error(cont);
+			errorMsg="";
+		}
+		
+		sendErrorMail(cont);
+	}
 	public void ckeckMonthAlert(){
 		//開始檢查是否發送警示簡訊
 		//月金額警示*************************************
@@ -2498,7 +2525,7 @@ public class DVRSmain extends TimerTask{
 
 				//判斷客戶是不是VIP
 				boolean isCustomized=false;
-				//目前不設計自訂上限，取有表示客戶為VIP，取無則是非VIP
+				//目前不設計自訂上限，皆為0，取有表示客戶為VIP，取無則是非VIP
 				if(threshold==null){
 					threshold=DEFAULT_THRESHOLD;
 				}else{
@@ -2517,9 +2544,10 @@ public class DVRSmain extends TimerTask{
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
 				if(threshold!=0D){
-					//檢查月用量
+					//檢查月用量，從最大值上限開始向下檢查
 					for(;msgSettingID<ids.size();msgSettingID++){
 						Double bracket = (Double) brackets.get(msgSettingID);
+						//費用>=最大警示*警示門檻   and 最後警示量<最大警示*警示門檻
 						if(((charge>=bracket*threshold))&&lastAlernThreshold<bracket*threshold){
 							sendSMS=true;
 							alertBracket=bracket*threshold;
@@ -2537,9 +2565,11 @@ public class DVRSmain extends TimerTask{
 					//20151201 為了重新開通數據用戶，不檢查是否發過，只要滿足最大上限就發
 					if(!sendSMS||(sendSMS && msgSettingID!=0)){
 						Double bracket = (Double) brackets.get(0);
+						//判斷包含預估是否超過最大限度
 						if(charge+differenceCharge>=bracket*threshold){
 							//20151201 add
 							String gprsStatus = Query_GPRSStatus(phone);
+							//已超過最大限度則繼續檢查GPRS狀態，如為開啟狀態則再次進行關閉
 							if(gprsStatus!=null && !"".equals(gprsStatus) && !"0".equals(gprsStatus)){
 							//if(charge+differenceCharge>=bracket*threshold&&lastAlernThreshold<bracket*threshold){
 								logger.info("For "+serviceid+" add charge "+differenceCharge+" in this hour ,System forecast the next hour will over charge limit");
@@ -2549,6 +2579,7 @@ public class DVRSmain extends TimerTask{
 								alertBracket=bracket*threshold;
 							
 								contentid=((String)msgids.get(0)).split(",");
+								
 								if("1".equals((String)suspends.get(0))){
 									needSuspend=true;
 								}
@@ -2556,6 +2587,7 @@ public class DVRSmain extends TimerTask{
 						}
 					}
 				}else{
+					//以5000的整數進行警示
 					int temp=(int) ((int)(charge/DEFAULT_THRESHOLD)*DEFAULT_THRESHOLD);
 					
 					if(temp>lastAlernThreshold){
@@ -2565,6 +2597,7 @@ public class DVRSmain extends TimerTask{
 						contentid=new String[]{"3"};
 					}
 				}				
+				
 				if(sendSMS){
 					String currency = "";
 					//TODO new version
@@ -2731,24 +2764,7 @@ public class DVRSmain extends TimerTask{
 		return smsCount;
 	}
 	
-	public static void ErrorHandle(String cont){
-		ErrorHandle(cont,null);
-	}
-	public static void ErrorHandle(String cont,Exception e){
-		if(e!=null){
-			logger.error(cont, e);
-			
-			StringWriter s = new StringWriter();
-			e.printStackTrace(new PrintWriter(s));
-			//send mail
-			errorMsg=s.toString();
-		}else{
-			logger.error(cont);
-			errorMsg="";
-		}
-		
-		sendErrorMail(cont);
-	}
+	
 	
 
 	
@@ -3571,6 +3587,7 @@ public class DVRSmain extends TimerTask{
 				ErrorHandle("At processSuspendNBR occur IOException error!", e);
 			}
 		}
+		serviceOrderNBR.clear();
 	}
 	
 	/**
@@ -3582,19 +3599,20 @@ public class DVRSmain extends TimerTask{
 	 * @throws IOException
 	 */
 	public String Query_SyncFileDtlStatus(String cServiceOrderNBR) throws SQLException, InterruptedException, IOException{
-		String cSt="";
-		for (int i=0;i<5;i++){
+		String cSt = "";
+		for (int i = 0; i < 5; i++) {
 			Thread.sleep(1000);
-			sql="select result_flag from S2T_TB_TYPB_WO_SYNC_FILE_DTL Where " +
-                "SERVICE_ORDER_NBR ='"+cServiceOrderNBR+"'";
-			 logger.info(sql);
-        ResultSet rs=conn.createStatement().executeQuery(sql);
-        while (rs.next()){
-                cSt=rs.getString("result_flag");
-        }
-        logger.info("Query_SyncFileDtlStatus:"+Integer.toString(i)+" Times "+cSt);
-            }
-     return cSt;
+			sql = "select result_flag from S2T_TB_TYPB_WO_SYNC_FILE_DTL Where "
+					+ "SERVICE_ORDER_NBR ='" + cServiceOrderNBR + "'";
+			logger.info(sql);
+			ResultSet rs = conn.createStatement().executeQuery(sql);
+			while (rs.next()) {
+				cSt = rs.getString("result_flag");
+			}
+			logger.info("Query_SyncFileDtlStatus:" + Integer.toString(i)
+					+ " Times " + cSt);
+		}
+		return cSt;
     }
 	
 	
@@ -3612,9 +3630,19 @@ public class DVRSmain extends TimerTask{
 		
 
 		IniProgram();
-
-		//DVRSmain rf =new DVRSmain();
-		//rf.process();
+		/*DVRSmain rf =new DVRSmain();
+		while(true){
+			
+			rf.process();
+			
+			try {
+				Thread.sleep(10*60*1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}*/
+		
 
 		regilarHandle();
 	}

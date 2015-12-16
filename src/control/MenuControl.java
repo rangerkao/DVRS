@@ -35,15 +35,15 @@ public class MenuControl extends BaseControl {
 
 		//層級三
 		List<Link> l3=new ArrayList<Link>();
-		l3.add(new Link("searchList","smsQueryLink","超量簡訊發送查詢頁面"));
+		l3.add(new Link("searchList","smsQueryLink","超量簡訊發送查詢"));
 		l3.add(new Link("searchList","dataRateLink","費率查詢"));
-		l3.add(new Link("searchList","currentMonthLink","每月累計頁面"));
+		l3.add(new Link("searchList","currentMonthLink","每月累計查詢"));
 		l3.add(new Link("searchList","currentDayLink","單日累計查詢"));
-		l3.add(new Link("searchList","cardChangeHistoryLink","換卡記錄查詢頁面"));
+		l3.add(new Link("searchList","cardChangeHistoryLink","換卡記錄查詢"));
 		l3.add(new Link("searchList","numberChangeHistoryLink","換號記錄查詢查詢"));
 		
 		l3.add(new Link("elseList","queryQosLink","Qos供裝查詢頁面"));
-		l3.add(new Link("elseList","sendSMSLink","GPRS簡訊發送頁面"));
+		l3.add(new Link("elseList","sendSMSLink","數據開通簡訊發送"));
 		//l3.add(new Link("elseList","logoutLink","登出"));
 		
 		Map<String,Integer> roleAuth=new HashMap<String,Integer>();

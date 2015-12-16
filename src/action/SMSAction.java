@@ -187,7 +187,7 @@ public class SMSAction extends BaseAction {
 		try {
 			list = smsControl.queryAlertLimit();
 			result=makeResult(list,null);
-			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "query","", SUCCESS);
+			//actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "query","", SUCCESS);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			StringWriter s = new StringWriter();
@@ -224,7 +224,7 @@ public class SMSAction extends BaseAction {
 			}else if("del".equals(mod)){
 				i=smsControl.deleteAlertLimit(imsi, Double.valueOf(gprslimit),sendSMS,msisdn);
 			}
-			
+			result = String.valueOf(i);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update","imsi:"+imsi+" ; msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS, SUCCESS);
 				
 		} catch (SQLException e) {
@@ -246,13 +246,32 @@ public class SMSAction extends BaseAction {
 		return SUCCESS;
 	}
 	
+	public String checkAlertExisted(){
+		try {
+			String r=smsControl.checkAlertExisted(msisdn);
+				result = makeResult(r,null);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
+		return SUCCESS;
+	}
+	
 	public String queryIMSI(){
 		
 		try {
 			Map<String,String> map =new HashMap<String,String>();
 			map=smsControl.queryIMSI(msisdn);
 			result=beanToJSONObject(map);
-			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "QueryIMSI","", SUCCESS);
+			//actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "QueryIMSI","", SUCCESS);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			StringWriter s = new StringWriter();
@@ -275,7 +294,8 @@ public class SMSAction extends BaseAction {
 			Map<String,String> map =new HashMap<String,String>();
 			map=smsControl.queryMSISDN(imsi);
 			result=beanToJSONObject(map);
-			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "QueryIMSI","", SUCCESS);
+			//20151208 del
+			//actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "queryMSISDN","", SUCCESS);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			StringWriter s = new StringWriter();
