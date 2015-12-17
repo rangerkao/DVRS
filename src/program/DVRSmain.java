@@ -179,8 +179,11 @@ public class DVRSmain extends TimerTask{
 	Set<String> sSX001 = new HashSet<String>();
 	Set<String> sSX002 = new HashSet<String>();
 	//TODO new version
-	//Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
-		
+	Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
+	//new version end
+	
+	boolean newVersion = true;
+	
 	/*************************************************************************
 	 *************************************************************************
 	 *                                程式參數設定
@@ -257,7 +260,8 @@ public class DVRSmain extends TimerTask{
 	 * VOLUME_LIMIT1
 	 * VOLUME_LIMIT2
 	 */
-	/*public boolean setSystemConfig(){
+	public boolean setSystemConfig(){
+		boolean result = false;
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -280,7 +284,9 @@ public class DVRSmain extends TimerTask{
 					systemConfig.put(id, m);
 				}
 			}
-
+			result= true;
+			
+			
 			//必須資料Check
 			Set<String> checkList = new HashSet<String>();
 			checkList.add("NTD_MONTH_LIMIT");
@@ -291,17 +297,16 @@ public class DVRSmain extends TimerTask{
 			checkList.add("VOLUME_LIMIT2");//2.0GB
 			
 			for(String s: checkList){
-				if(systemConfig.get(s)==null){
+				if(systemConfig.get("0").get(s)==null){
 					sql="";
 					ErrorHandle("Can' found set parameter "+s);
-					return false;
+					result = false;
+					break;
 				}
 			}
-			
-			return true;
+
 		} catch (SQLException e) {
 			ErrorHandle("At set SystemConfig Got a SQLException", e);
-			return false;
 		}finally{
 			try {
 				if(st!=null)
@@ -311,7 +316,10 @@ public class DVRSmain extends TimerTask{
 			} catch (SQLException e) {
 			}
 		}
-	}*/
+		
+		return result;
+	}
+	//new version end
 
 	/**
 	 * 尋找最後一次更改的fileID，以及目標處理的最終ID
@@ -1254,7 +1262,7 @@ public class DVRSmain extends TimerTask{
 			
 			dataThreshold=(props.getProperty("progrma.dataThreshold")!=null?Integer.parseInt(props.getProperty("progrma.dataThreshold")):500);//CDR資料一批次取出數量
 			//lastfileID=(props.getProperty("progrma.lastfileID")!=null?Integer.parseInt(props.getProperty("progrma.lastfileID")):0);//最後批價檔案號
-			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):4); //港幣對台幣匯率，暫訂為4
+			exchangeRate=(props.getProperty("progrma.exchangeRate")!=null?Double.parseDouble(props.getProperty("progrma.exchangeRate")):0.25); //港幣對台幣匯率，暫訂為4
 			kByte=(props.getProperty("progrma.kByte")!=null?Double.parseDouble(props.getProperty("progrma.kByte")):1/1024D);//RATE單位KB，USAGE單位B
 			
 			logger.info(
@@ -2466,22 +2474,25 @@ public class DVRSmain extends TimerTask{
 					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find msisdn to send !");
 					continue;
 				}
-				//取得Priceplanid
+				//取得Priceplanid舊版本使用0
 				String priceplanid = "0";
 				//TODO new version
-				/*String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
-				if(priceplanid==null ||"".equals(priceplanid)){
-					sql="";
-					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
-					continue;
+				if(newVersion){
+					priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
+					if(priceplanid==null ||"".equals(priceplanid)){
+						sql="";
+						ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
+						continue;
+					}
+					
+					//
+					if(smsSettingMap.get(priceplanid)==null){
+						sql="";
+						ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
+						continue;
+					}
 				}
-				
-				//
-				if(smsSettingMap.get(priceplanid)==null){
-					sql="";
-					ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
-					continue;
-				}*/
+				//new version end
 				
 				List<Object> ids = smsSettingMap.get(priceplanid).get("ID");
 				List<Object> brackets = smsSettingMap.get(priceplanid).get("BRACKET");
@@ -2503,22 +2514,23 @@ public class DVRSmain extends TimerTask{
 				String[] contentid=null;
 				
 				//TODO new version
-				/*
-				Double DEFAULT_THRESHOLD = null;
-				String[] contentid=null;
-				//抓取不同幣別月上限
-				if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
-				if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
-				
-				//取不到任何上限值 跳過
-				if(DEFAULT_THRESHOLD = null){
-					sql="";
-					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
-					continue;
+				if(newVersion){
+					DEFAULT_THRESHOLD = null;
+					contentid=null;
+					//抓取不同幣別月上限
+					if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+						DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
+					if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+						DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
+					
+					//取不到任何上限值 跳過
+					if(DEFAULT_THRESHOLD == null){
+						sql="";
+						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
+						continue;
+					}
 				}
-					*/
+				//new version end
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 				Double threshold=thresholdMap.get(serviceid);
@@ -2601,7 +2613,14 @@ public class DVRSmain extends TimerTask{
 				if(sendSMS){
 					String currency = "";
 					//TODO new version
-					//currency = pricePlanIdtoCurrency.get(priceplanid);
+					if(newVersion){
+						currency = pricePlanIdtoCurrency.get(priceplanid);
+						if(currency== null){
+							ErrorHandle("The PRICEPLANID:"+priceplanid+"find currency="+currency);
+							continue;
+						}
+					}
+					//new version end
 					
 					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
@@ -2628,13 +2647,14 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	//TODO new version
-	/*public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
+	public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
 		String result = getSystemConfigParam(pricePlanid,paramName);
 		return (result!=null? Double.parseDouble(result):null);
-	}*/
+	}
+	//new version end
 	
 	//TODO new Version
-	/*public String getSystemConfigParam(String pricePlanid,String paramName){
+	public String getSystemConfigParam(String pricePlanid,String paramName){
 		String result = null;
 		
 		if(systemConfig.get(pricePlanid)!=null)
@@ -2644,7 +2664,8 @@ public class DVRSmain extends TimerTask{
 			result = (String) systemConfig.get("0").get(paramName);
 		
 		return result;
-	}*/
+	}
+	//new version end
 	
 	public void doSuspend(String serviceid,String phone){
 		//中斷GPRS服務
@@ -2806,35 +2827,37 @@ public class DVRSmain extends TimerTask{
 				Double DEFAULT_DAY_THRESHOLD =  500D;
 				String[]  contentid = {"99"};
 				//TODO new version
-				/*Double DEFAULT_DAY_THRESHOLD = null;
-				String[] contentid=null;
-				//抓取不同幣別日上限
-				if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
-					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
-					String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
-					if(contentids != null )
-						contentid = contentids.split(",");
+				if(newVersion){
+					DEFAULT_DAY_THRESHOLD = null;
+					contentid=null;
+					//抓取不同幣別日上限
+					if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+						DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
+						String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
+						if(contentids != null )
+							contentid = contentids.split(",");
+					}
+					if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+						DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
+						String contentids = getSystemConfigParam(pricePlanID,"HKD_DAY_LIMIT_MSG_ID");
+						if(contentids != null )
+							contentid = contentids.split(",");
+					}
+					
+					//取不到每日上限 跳過
+					if(DEFAULT_DAY_THRESHOLD== null){
+						sql="";
+						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
+						continue;
+					}
+					//取不到每日上限 簡訊內容跳過
+					if(contentid == null){
+						sql="";
+						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
+						continue;
+					}
 				}
-				if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
-					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
-					String contentids = getSystemConfigParam(pricePlanID,"HKD_DAY_LIMIT_MSG_ID");
-					if(contentids != null )
-						contentid = contentids.split(",");
-				}
-				
-				//取不到每日上限 跳過
-				if(DEFAULT_DAY_THRESHOLD== null){
-					sql="";
-					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
-					continue;
-				}
-				//取不到每日上限 簡訊內容跳過
-				if(contentid == null){
-					sql="";
-					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
-					continue;
-				}
-				*/
+				//new version end
 				
 				//累計
 				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
@@ -3085,12 +3108,18 @@ public class DVRSmain extends TimerTask{
 		//1.5 GB
 		Double DEFAULT_VOLUME_THRESHOLD = 1.5*1024*1024*1024D;
 		//TODO new version
-		//Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+		if(newVersion){
+			DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+		}
+		//new version end
 		
 		//2.0 GB
 		Double DEFAULT_VOLUME_THRESHOLD2 = 2.0*1024*1024*1024D;
 		//TODO new version
-		//Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
+		if(newVersion){
+			DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
+		}
+		//new version end
 		
 		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
 			sql="";
@@ -3121,13 +3150,15 @@ public class DVRSmain extends TimerTask{
 				//2.0 GB 
 				String msgids = "107";
 				//TODO new version
-				/*String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
-				if(msgids == null){
-					sql="";
-					ErrorHandle("Cannot get VOLUME_LIMIT2_MSG_ID! ");
-					continue;
+				if(newVersion){
+					msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
+					if(msgids == null){
+						sql="";
+						ErrorHandle("Cannot get VOLUME_LIMIT2_MSG_ID! ");
+						continue;
+					}
 				}
-				*/
+				//new version end
 				contentid = msgids.split(",");
 				sendmsg=true;
 	
@@ -3136,13 +3167,15 @@ public class DVRSmain extends TimerTask{
 				//1.5 GB 
 				String msgids = "106";
 				//TODO new version
-				/*String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
-				 if(msgids == null){
-					sql="";
-					ErrorHandle("Cannot get VOLUME_LIMIT1_MSG_ID! ");
-					continue;
+				if(newVersion){
+					msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
+					 if(msgids == null){
+						sql="";
+						ErrorHandle("Cannot get VOLUME_LIMIT1_MSG_ID! ");
+						continue;
+					}
 				}
-				*/
+				//new version end
 				contentid = msgids.split(",");
 				sendmsg=true;
 			}
@@ -3630,7 +3663,8 @@ public class DVRSmain extends TimerTask{
 		
 
 		IniProgram();
-		/*DVRSmain rf =new DVRSmain();
+		
+		DVRSmain rf =new DVRSmain();
 		while(true){
 			
 			rf.process();
@@ -3641,10 +3675,10 @@ public class DVRSmain extends TimerTask{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}*/
+		}
 		
 
-		regilarHandle();
+		//regilarHandle();
 	}
 	
 	public static void regilarHandle(){
@@ -3739,7 +3773,8 @@ public class DVRSmain extends TimerTask{
 					setQosData()&&//設定SX001,SX002資料
 					setCurrencyMap()&&//設定PricePlanID對應幣別
 					//TODO new Version
-					//setSystemConfig()&&//系統Comfig設定
+					(newVersion&&setSystemConfig())&&//系統Comfig設定
+					//new version end
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
