@@ -261,6 +261,7 @@ public class DVRSmain extends TimerTask{
 	 * VOLUME_LIMIT2
 	 */
 	public boolean setSystemConfig(){
+		//System.out.println("New Version check Point 11.");
 		boolean result = false;
 		Statement st = null;
 		ResultSet rs = null;
@@ -2478,6 +2479,7 @@ public class DVRSmain extends TimerTask{
 				String priceplanid = "0";
 				//TODO new version
 				if(newVersion){
+					//System.out.println("New Version check Point 1.");
 					priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
 					if(priceplanid==null ||"".equals(priceplanid)){
 						sql="";
@@ -2515,6 +2517,7 @@ public class DVRSmain extends TimerTask{
 				
 				//TODO new version
 				if(newVersion){
+					//System.out.println("New Version check Point 2.");
 					DEFAULT_THRESHOLD = null;
 					contentid=null;
 					//抓取不同幣別月上限
@@ -2607,6 +2610,25 @@ public class DVRSmain extends TimerTask{
 						sendSMS=true;
 						//如果為VIP客戶預設發3號簡訊
 						contentid=new String[]{"3"};
+						
+						if(newVersion){
+							//System.out.println("New Version check Point 12.");
+							contentid = null;
+							String vipSMS = null;
+							//抓取不同幣別VIP簡訊
+							if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+								vipSMS = getSystemConfigParam(priceplanid,"NTD_VIP_MSG_ID");
+							if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+								vipSMS = getSystemConfigParam(priceplanid,"HKD_VIP_MSG_ID");
+							
+							//取不到任何上限值 跳過
+							if(vipSMS == null){
+								sql="";
+								ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VIP SMS number! ");
+								continue;
+							}
+							contentid = vipSMS.split(",");
+						}
 					}
 				}				
 				
@@ -2614,6 +2636,7 @@ public class DVRSmain extends TimerTask{
 					String currency = "";
 					//TODO new version
 					if(newVersion){
+						//System.out.println("New Version check Point 3.");
 						currency = pricePlanIdtoCurrency.get(priceplanid);
 						if(currency== null){
 							ErrorHandle("The PRICEPLANID:"+priceplanid+"find currency="+currency);
@@ -2647,7 +2670,9 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	//TODO new version
+	
 	public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
+		//System.out.println("New Version check Point 4.");
 		String result = getSystemConfigParam(pricePlanid,paramName);
 		return (result!=null? Double.parseDouble(result):null);
 	}
@@ -2655,6 +2680,7 @@ public class DVRSmain extends TimerTask{
 	
 	//TODO new Version
 	public String getSystemConfigParam(String pricePlanid,String paramName){
+		//System.out.println("New Version check Point 5.");
 		String result = null;
 		
 		if(systemConfig.get(pricePlanid)!=null)
@@ -2827,7 +2853,9 @@ public class DVRSmain extends TimerTask{
 				Double DEFAULT_DAY_THRESHOLD =  500D;
 				String[]  contentid = {"99"};
 				//TODO new version
+				
 				if(newVersion){
+					//System.out.println("New Version check Point 6.");
 					DEFAULT_DAY_THRESHOLD = null;
 					contentid=null;
 					//抓取不同幣別日上限
@@ -3109,7 +3137,8 @@ public class DVRSmain extends TimerTask{
 		Double DEFAULT_VOLUME_THRESHOLD = 1.5*1024*1024*1024D;
 		//TODO new version
 		if(newVersion){
-			DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT1"));
+			//System.out.println("New Version check Point 7.");
+			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0", "VOLUME_LIMIT1");
 		}
 		//new version end
 		
@@ -3117,7 +3146,8 @@ public class DVRSmain extends TimerTask{
 		Double DEFAULT_VOLUME_THRESHOLD2 = 2.0*1024*1024*1024D;
 		//TODO new version
 		if(newVersion){
-			DEFAULT_VOLUME_THRESHOLD = Double.valueOf(getSystemConfigParam("0","VOLUME_LIMIT2"));
+			//System.out.println("New Version check Point 8.");
+			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
 		}
 		//new version end
 		
@@ -3145,16 +3175,20 @@ public class DVRSmain extends TimerTask{
 			//超過發簡訊，另外確認是否已通知過
 			boolean sendmsg=false;
 			String [] contentid = null;
+			String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID"); 
 			//華人上網包簡訊內容
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
 				String msgids = "107";
 				//TODO new version
 				if(newVersion){
-					msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MSG_ID");
+					msgids = null;
+					//System.out.println("New Version check Point 9.");
+					
+					msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT2_MSG_ID");
 					if(msgids == null){
 						sql="";
-						ErrorHandle("Cannot get VOLUME_LIMIT2_MSG_ID! ");
+						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT2_MSG_ID! ");
 						continue;
 					}
 				}
@@ -3168,10 +3202,12 @@ public class DVRSmain extends TimerTask{
 				String msgids = "106";
 				//TODO new version
 				if(newVersion){
-					msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MSG_ID");
+					msgids = null;
+					//System.out.println("New Version check Point 10.");
+					msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT1_MSG_ID");
 					 if(msgids == null){
 						sql="";
-						ErrorHandle("Cannot get VOLUME_LIMIT1_MSG_ID! ");
+						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT1_MSG_ID! ");
 						continue;
 					}
 				}
