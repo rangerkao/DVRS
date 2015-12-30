@@ -228,19 +228,20 @@ public class SMSAction extends BaseAction {
 			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "update","imsi:"+imsi+" ; msisdn:"+msisdn+" ; Limit : "+gprslimit+"; mod:"+mod+"; sendSMS:"+sendSMS, SUCCESS);
 				
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			result=e.getMessage();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			result=e.getMessage();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("Exception:"+e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		
 		return SUCCESS;

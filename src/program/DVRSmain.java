@@ -930,7 +930,8 @@ public class DVRSmain extends TimerTask{
 	 * 取得預設計費比率（0.011），對MCCNOC有卻無法對應資料計費
 	 * @return
 	 */
-	private double defaultRate(){
+	//20151229 del
+	/*private double defaultRate(){
 		logger.info("defaultRate...");
 		long subStartTime = System.currentTimeMillis();
 		
@@ -938,7 +939,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("defaultRate : " +defaultRate+" TWD ");
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return defaultRate;
-	}
+	}*/
 	
 	/**
 	 * 建立華人上網包對應資料
@@ -1052,7 +1053,7 @@ public class DVRSmain extends TimerTask{
 				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,B.ICCID, "
 				+ "(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
 				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
-				+ "WHERE A.SERVICEID=B.SERVICEID AND A.SERVICECODE IS NOT NULL "
+				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND A.SERVICECODE IS NOT NULL "
 				+ "AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748";
 		
 		try {
@@ -1621,10 +1622,11 @@ public class DVRSmain extends TimerTask{
 		ResultSet rs = null;
 		
 		int count=0;
-		double defaultRate=0;
+		Double defaultRate=0.011;
 		try {
 			count=dataCount();
-			defaultRate=defaultRate();
+			//20151229 del
+			//defaultRate=defaultRate();
 			setQosData();
 
 			//批次Query 避免ram空間不足
@@ -1771,6 +1773,25 @@ public class DVRSmain extends TimerTask{
 							double ec=1;					
 							if("HKD".equalsIgnoreCase(currency))
 								ec=exchangeRate;
+							
+							//TODO new version
+							if(newVersion){
+								//System.out.println("New Version check Point defaultRate.");
+								//抓取不同幣別月上限
+								if("NTD".equals(pricePlanIdtoCurrency.get(pricplanID)))
+									defaultRate = getSystemConfigDoubleParam(pricplanID,"NTD_DEFAULT_RATE");
+								if("HKD".equals(pricePlanIdtoCurrency.get(pricplanID)))
+									defaultRate = getSystemConfigDoubleParam(pricplanID,"HKD_DEFAULT_RATE");
+								
+								//取不到任何上限值 跳過
+								if(defaultRate == null){
+									sql="";
+									ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricplanID+" cannot get defaultRate! ");
+									continue;
+								}
+								System.out.println("Default Rate:"+defaultRate);
+							}
+							//new version end
 							charge=Math.ceil(volume*kByte)*defaultRate/ec;
 						}
 					}
@@ -2480,6 +2501,12 @@ public class DVRSmain extends TimerTask{
 				//TODO new version
 				if(newVersion){
 					//System.out.println("New Version check Point 1.");
+					if(msisdnMap.get(serviceid)==null){
+						sql="";
+						ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" without in msisdnMap and can't find priceplanid!");
+						continue;
+					}
+						
 					priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
 					if(priceplanid==null ||"".equals(priceplanid)){
 						sql="";
@@ -2578,7 +2605,9 @@ public class DVRSmain extends TimerTask{
 					
 					//檢查預測用量，如果之前判斷不用發簡訊，或不是發最上限簡訊
 					//20151201 為了重新開通數據用戶，不檢查是否發過，只要滿足最大上限就發
-					if(!sendSMS||(sendSMS && msgSettingID!=0)){
+					//20151218避免有設定上限VIP 依照60、80、100上限通知但不會斷網，會在預估中重複警告
+					//所以預估排除VIP將可避免這個問題
+					if((!sendSMS||(sendSMS && msgSettingID!=0))&&!isCustomized){
 						Double bracket = (Double) brackets.get(0);
 						//判斷包含預估是否超過最大限度
 						if(charge+differenceCharge>=bracket*threshold){
@@ -3175,7 +3204,22 @@ public class DVRSmain extends TimerTask{
 			//超過發簡訊，另外確認是否已通知過
 			boolean sendmsg=false;
 			String [] contentid = null;
+			
+			if(msisdnMap.get(serviceid)==null){
+				sql="";
+				ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" without in msisdnMap and can't find priceplanid!");
+				continue;
+			}
+			
 			String priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID"); 
+			
+			if(priceplanid==null){
+				sql="";
+				ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
+				continue;
+			}
+			
+			
 			//華人上網包簡訊內容
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
@@ -3700,7 +3744,7 @@ public class DVRSmain extends TimerTask{
 
 		IniProgram();
 		
-		DVRSmain rf =new DVRSmain();
+		/*DVRSmain rf =new DVRSmain();
 		while(true){
 			
 			rf.process();
@@ -3711,10 +3755,10 @@ public class DVRSmain extends TimerTask{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		}*/
 		
 
-		//regilarHandle();
+		regilarHandle();
 	}
 	
 	public static void regilarHandle(){

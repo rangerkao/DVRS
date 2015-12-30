@@ -45,7 +45,7 @@ function query(){
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
     	  beforeSend:function(){
-    		  $("#Qmsg").html("正在查尋，請稍待...");
+    		  $("#Qmsg").html("正在查詢，請稍待...");
 	    		$('#Error').html("");
 	    		dataList=[];
 	    		disableButton();
@@ -94,6 +94,7 @@ function updateLimit(mod,txt){
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
+	    	  console.log(json);
 	    	  var list=$.parseJSON(json);
 	    	  console.log(list);
 	    	  $("#Qmsg").html("Success");
@@ -174,7 +175,7 @@ function queryIMSI(mod,txt){
 		    	  $("#Qmsg").html('something bad happened'); 
 		      },
 	    	  beforeSend:function(){
-	    		  $("#Qmsg").html("正在查尋，請稍待...");
+	    		  $("#Qmsg").html("正在查詢，請稍待...");
 		    		$('#Error').html("");
 		    		dataList=[];
 		    		disableButton();
@@ -230,7 +231,7 @@ function checkByMsisdn(mod,txt){
 	    	  $("#Qmsg").html('something bad happened'); 
 	      },
     	  beforeSend:function(){
-    		  $("#Qmsg").html("正在查尋，請稍待...");
+    		  $("#Qmsg").html("正在查詢，請稍待...");
 	    		$('#Error').html("");
 	    		dataList=[];
 	    		disableButton();

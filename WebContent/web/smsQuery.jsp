@@ -39,7 +39,7 @@ function query(){
 	}
 	
 	if(!validate()) return false;
-	$("#Qmsg").html("正在查尋，請稍待...");
+	$("#Qmsg").html("正在查詢，請稍待...");
 	$.ajax({
 	      url: '<s:url action="querySMSLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
@@ -64,7 +64,7 @@ function query(){
 	      error: function() { $("#Qmsg").html('something bad happened');  
 	      },
 	      beforeSend:function(){
-	    	  $("#Qmsg").html("正在查尋，請稍待...");
+	    	  $("#Qmsg").html("正在查詢，請稍待...");
 	    		$('#Error').html("");
 	    		dataList=[];
 	    		disableButton();
