@@ -163,6 +163,10 @@ public class DVRSmain extends TimerTask{
 	static Map <String,Set<String>> updateMap = new HashMap<String,Set<String>>();
 	static Map <String,Map <String,Set<String>>> updateMapD = new HashMap<String,Map <String,Set<String>>>();
 	
+	//20151230 add 對華人上網包客戶在所申請區域時，不進行斷網
+	//20151231 cancel
+	/*static Set <String> addonMark = new HashSet<String>();
+	static Set <String> notAddonMark = new HashSet<String>();*/
 	
 	Map<String,Map<String,List<Map<String,Object>>>> dataRate = new HashMap<String,Map<String,List<Map<String,Object>>>>();
 	Map<String,Map<String,String>> msisdnMap = new HashMap<String,Map<String,String>>();
@@ -1614,6 +1618,10 @@ public class DVRSmain extends TimerTask{
 		logger.info("charge...");
 		long subStartTime = System.currentTimeMillis();
 		
+		//20151230 add
+		//20151231 cancel
+		/*addonMark.clear();
+		notAddonMark.clear();*/
 		updateMap.clear();
 		updateMapD.clear();
 		cdrChargeMap.clear();
@@ -1731,6 +1739,11 @@ public class DVRSmain extends TimerTask{
 					//如果為華人上網包的客戶，不批價設定為0
 					int cd=checkQosAddon(serviceid, mccmnc, callTime);
 					if(cd==0){
+						
+						//20151230 add
+						//20151231 cancel
+						//notAddonMark.add(serviceid);
+						
 						//判斷是否可以找到對應的費率表，並計算此筆CDR的價格(charge)
 						if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
 								dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
@@ -1794,8 +1807,14 @@ public class DVRSmain extends TimerTask{
 							//new version end
 							charge=Math.ceil(volume*kByte)*defaultRate/ec;
 						}
+					}else{
+						//20151230 add
+						//20151231 cancel
+						//addonMark.add(serviceid);
 					}
-
+					//20151230 add
+					//20151231 cancel
+					//addonMark.removeAll(notAddonMark);
 					
 					//格式化至小數點後四位
 					charge=FormatDouble(charge, "0.0000");
@@ -2586,6 +2605,11 @@ public class DVRSmain extends TimerTask{
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
 				if(threshold!=0D){
+					//20151230 add 如果使用者此次只在華人上網包區域使用，不去判斷他的警示
+					//
+					/*if(addonMark.contains(serviceid))
+						continue;*/
+					
 					//檢查月用量，從最大值上限開始向下檢查
 					for(;msgSettingID<ids.size();msgSettingID++){
 						Double bracket = (Double) brackets.get(msgSettingID);
