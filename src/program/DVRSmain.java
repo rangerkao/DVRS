@@ -2582,7 +2582,16 @@ public class DVRSmain extends TimerTask{
 				//new version end
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
-				Double threshold=thresholdMap.get(serviceid);
+				Double threshold=null;
+				
+				//20160112針對非139客戶走VIP不斷網的方式
+				if("139".equals(priceplanid)){
+					threshold = thresholdMap.get(serviceid);
+				}else{
+					threshold = 0D;
+				}
+				
+				
 
 				//判斷客戶是不是VIP
 				boolean isCustomized=false;
