@@ -47,7 +47,7 @@ public class suspendGPRS {
 	public ResultSet Temprs;
 	private String sSql;	
 	
-	public Map<String,String> ReqStatus_17_Act(String imsi,String msisdn) throws SQLException,
+	public Map<String,String> ReqStatus_17_Act(String imsi,String msisdn,String GPRSStatus) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
 		logger.debug("ReqStatus_17_Act");
 		
@@ -64,7 +64,9 @@ public class suspendGPRS {
 		sMNOSubCode="950";
 		
 		//20141117 add 必須指定將GPRS變更的狀態 0-Disabled,1 – Enabled
-		cGPRSStatus="0";
+		//20160115 add 以參數方式從外部帶入
+		//cGPRSStatus="0";
+		cGPRSStatus = GPRSStatus;
 		
 		//設定sCount 
 		Temprs = null;

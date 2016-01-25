@@ -130,12 +130,15 @@ public class DVRSmain extends TimerTask{
 	
 	//日期設定
 	private String MONTH_FORMATE="yyyyMM";
+	private String DAY_FORMATE="yyyyMMdd";	
+	private String TIME_FORMATE="ddHH";	
 	//系統時間，誤差一小時，系統資料處理時間為當時時間提前一小時
+	private String programeTime="";
 	private String sYearmonth="";
 	private String sYearmonthday="";
 	//上個月
 	private String sYearmonth2="";
-	private String DAY_FORMATE="yyyyMMdd";	
+	
 	
 	//預設值
 	private static int RUN_INTERVAL=3600;//單位秒
@@ -182,7 +185,7 @@ public class DVRSmain extends TimerTask{
 	List<Map<String,Object>> IPtoMccmncList = new ArrayList<Map<String,Object>>();
 	Set<String> sSX001 = new HashSet<String>();
 	Set<String> sSX002 = new HashSet<String>();
-	//TODO new version
+	//new Version
 	Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
 	//new version end
 	
@@ -205,15 +208,21 @@ public class DVRSmain extends TimerTask{
 		//目前時間
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
+		//TODO test
+		//calendar.set(2016,0, 1, 1, 30, 0);
+		System.out.println(calendar.getTime());
+		
+		
 		//系統時間提前一小時
 		//因為警示發送只計當日，當00：30執行時，所處理的資料為前一天的23：00
-		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY)-1);
+		calendar.setTimeInMillis(calendar.getTimeInMillis()-1000*60*60);
+		programeTime = DateFormat(calendar.getTime(),TIME_FORMATE);		
 		sYearmonth=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		sYearmonthday=DateFormat(calendar.getTime(),DAY_FORMATE);
 		//上個月時間，減掉Month會-30天，採取到1號向前，確定跨月
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH)-1);
+		calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR)-1);
 		sYearmonth2=DateFormat(calendar.getTime(), MONTH_FORMATE);
-		
 		calendar.clear();
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		
@@ -255,7 +264,7 @@ public class DVRSmain extends TimerTask{
 	 *                                表格資料設定
 	 *************************************************************************
 	 *************************************************************************/
-	//TODO new Version
+	//new Version
 	/**
 	 * NTD_MONTH_LIMIT
 	 * NTD_DAY_LIMIT
@@ -1787,7 +1796,7 @@ public class DVRSmain extends TimerTask{
 							if("HKD".equalsIgnoreCase(currency))
 								ec=exchangeRate;
 							
-							//TODO new version
+							//new Version
 							if(newVersion){
 								//System.out.println("New Version check Point defaultRate.");
 								//抓取不同幣別月上限
@@ -2517,7 +2526,7 @@ public class DVRSmain extends TimerTask{
 				}
 				//取得Priceplanid舊版本使用0
 				String priceplanid = "0";
-				//TODO new version
+				//new Version
 				if(newVersion){
 					//System.out.println("New Version check Point 1.");
 					if(msisdnMap.get(serviceid)==null){
@@ -2561,7 +2570,7 @@ public class DVRSmain extends TimerTask{
 				Double DEFAULT_THRESHOLD = 5000D;
 				String[] contentid=null;
 				
-				//TODO new version
+				//new Version
 				if(newVersion){
 					//System.out.println("New Version check Point 2.");
 					DEFAULT_THRESHOLD = null;
@@ -2696,7 +2705,7 @@ public class DVRSmain extends TimerTask{
 				
 				if(sendSMS){
 					String currency = "";
-					//TODO new version
+					//new Version
 					if(newVersion){
 						//System.out.println("New Version check Point 3.");
 						currency = pricePlanIdtoCurrency.get(priceplanid);
@@ -2731,7 +2740,7 @@ public class DVRSmain extends TimerTask{
 		}
 	}
 	
-	//TODO new version
+	//new Version
 	
 	public Double getSystemConfigDoubleParam(String pricePlanid,String paramName){
 		//System.out.println("New Version check Point 4.");
@@ -2740,7 +2749,7 @@ public class DVRSmain extends TimerTask{
 	}
 	//new version end
 	
-	//TODO new Version
+	//new Version
 	public String getSystemConfigParam(String pricePlanid,String paramName){
 		//System.out.println("New Version check Point 5.");
 		String result = null;
@@ -2771,9 +2780,134 @@ public class DVRSmain extends TimerTask{
 		}
 		
 		logger.debug("Suspend GPRS ... ");		
-		suspend(imsi,phone);
+		changeGPRSStatus(imsi,phone,"0");
 		currentMap.get(sYearmonth).get(serviceid).put("EVER_SUSPEND", "1");
+	}
+	
+	public void doResume(String serviceid,String phone){
+		//中斷GPRS服務
+		//20141113 新增客制定上限不執行斷網
+		//20150529 將中斷的部分從發送簡訊中獨立出來
+
 		
+		String imsi = msisdnMap.get(serviceid).get("IMSI");
+		if(imsi==null || "".equals(imsi))
+			imsi = ServiceIdtoIMSIMap.get(serviceid);
+		
+		if(imsi==null || "".equals(imsi)){
+			logger.debug("Resume GPRS fail because without imsi for serviceid is "+serviceid);
+			return;
+		}
+		
+		logger.debug("Resume GPRS ... ");		
+		changeGPRSStatus(imsi,phone,"1");
+	}
+	
+	
+	
+	public void checkResume(){
+		logger.info("checkResume...");
+		//TODO
+		String resumeReport="";
+		Set<String> beenSuspended = new HashSet<String>();
+		Set<String> CHTSuspended = new HashSet<String>();
+		
+		Statement st = null;
+		ResultSet rs = null;
+
+		try {
+			
+			//撈出上個月被斷網的客戶	
+			String sql = "SELECT A.SERVICEID "
+					+ "FROM HUR_CURRENT A "
+					+ "WHERE A.MONTH='"+sYearmonth2+"'  AND A.EVER_SUSPEND = 1 ";
+			
+			
+			st = conn.createStatement();
+			logger.info("Query Customers had been suspended last month:"+sql);
+			rs = st.executeQuery(sql);
+			
+			resumeReport += "Customers had been suspended last month:";
+			while(rs.next()){
+				beenSuspended.add(rs.getString("SERVICEID"));
+				resumeReport += rs.getString("SERVICEID") + ",";
+			}
+			
+			resumeReport = resumeReport.substring(0,resumeReport.length()-1)+"\n";
+			logger.info(resumeReport);
+			rs.close();
+			
+			//取得上個月中華最後一筆供裝17的資料，是0
+			sql = "SELECT B.IMSI "
+					+ "FROM( "
+					+ "		SELECT A.IMSI,MAX(A.REQTIME) REQTIME "
+					+ "		FROM(	SELECT SUBSTR(CONTENT,INSTR(CONTENT, 'S2T_IMSI=')+LENGTH('S2T_IMSI='),INSTR(CONTENT, 'Req_Status')-INSTR(CONTENT, 'S2T_IMSI')-LENGTH('S2T_IMSI=')-1) IMSI "
+					+ "						,REQTIME,LOGID "
+					+ "				FROM PROVLOG "
+					+ "				WHERE CONTENT LIKE '%Req_Status=17%' AND TO_CHAR(REQTIME,'yyyyMM') = '"+sYearmonth2+"'"
+					+ "			) A "
+					+ "		GROUP BY A.IMSI "
+					+ "		) B ,("
+					+ "		SELECT A.IMSI,A.REQTIME,CONTENT "
+					+ "		FROM(   SELECT SUBSTR(CONTENT,INSTR(CONTENT, 'S2T_IMSI=')+LENGTH('S2T_IMSI='),INSTR(CONTENT, 'Req_Status')-INSTR(CONTENT, 'S2T_IMSI')-LENGTH('S2T_IMSI=')-1) IMSI,CONTENT "
+					+ " 	               ,REQTIME,LOGID "
+					+ "				FROM PROVLOG "
+					+ "				WHERE CONTENT LIKE '%Req_Status=17%' AND TO_CHAR(REQTIME,'yyyyMM') = '"+sYearmonth2+"' AND  CONTENT LIKE '%GPRS_Status=0%' "
+					+ "			) A "
+					+ "		)C "
+					+ "where B.IMSI = C. IMSI AND B.REQTIME = C.REQTIME ";
+			
+			logger.info("Query TWNLD request is 17 and status is 0 in last month:"+sql);
+			rs = st.executeQuery(sql);
+			while(rs.next()){
+				CHTSuspended.add(rs.getString("IMSI"));
+			}
+		} catch (SQLException e) {
+			ErrorHandle("At checkResume got SQLException",e);
+		}finally{
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+			}
+		}
+		
+		for(String serviceid : beenSuspended){
+			String s2tmsisdn = msisdnMap.get(serviceid).get("MSISDN");
+			String imsi = ServiceIdtoIMSIMap.get(serviceid);
+			
+			if(imsi == null){
+				ErrorHandle("For service id = "+serviceid+" can't find imsi!");
+				continue;
+			}
+			//如果有中華供裝指定要關閉網路，則跳過
+			if(CHTSuspended.contains(imsi)){
+				logger.info(serviceid+" had required to suspend!");
+				resumeReport+= serviceid+" had required to suspend!\n";
+				continue;
+			}
+			
+			if(s2tmsisdn == null){
+				ErrorHandle("For service id = "+serviceid+" can't find msisdn!");
+				continue;
+			}
+			
+			String gprsSatatus = Query_GPRSStatus(s2tmsisdn);
+			//如果是已斷網狀態才進行復網
+			if("0".equals(gprsSatatus)){
+				logger.info("resume "+serviceid+" GPRS");
+				resumeReport+= "resume "+serviceid+" GPRS\n"; 
+				doResume(serviceid,s2tmsisdn);
+			}else{
+				logger.info(serviceid+" GPRS is active\n");
+				resumeReport+= serviceid+" GPRS is active\n";
+			}
+				
+		}
+		//mailReceiver=props.getProperty("mail.Receiver");
+		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
 		
 	}
 	
@@ -2914,7 +3048,7 @@ public class DVRSmain extends TimerTask{
 				String alerted ="0";
 				Double DEFAULT_DAY_THRESHOLD =  500D;
 				String[]  contentid = {"99"};
-				//TODO new version
+				//new Version
 				
 				if(newVersion){
 					//System.out.println("New Version check Point 6.");
@@ -3197,7 +3331,7 @@ public class DVRSmain extends TimerTask{
 		}
 		//1.5 GB
 		Double DEFAULT_VOLUME_THRESHOLD = 1.5*1024*1024*1024D;
-		//TODO new version
+		//new Version
 		if(newVersion){
 			//System.out.println("New Version check Point 7.");
 			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0", "VOLUME_LIMIT1");
@@ -3206,7 +3340,7 @@ public class DVRSmain extends TimerTask{
 		
 		//2.0 GB
 		Double DEFAULT_VOLUME_THRESHOLD2 = 2.0*1024*1024*1024D;
-		//TODO new version
+		//new Version
 		if(newVersion){
 			//System.out.println("New Version check Point 8.");
 			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
@@ -3257,7 +3391,7 @@ public class DVRSmain extends TimerTask{
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
 				String msgids = "107";
-				//TODO new version
+				//new Version
 				if(newVersion){
 					msgids = null;
 					//System.out.println("New Version check Point 9.");
@@ -3277,7 +3411,7 @@ public class DVRSmain extends TimerTask{
 			if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
 				//1.5 GB 
 				String msgids = "106";
-				//TODO new version
+				//new Version
 				if(newVersion){
 					msgids = null;
 					//System.out.println("New Version check Point 10.");
@@ -3451,52 +3585,55 @@ public class DVRSmain extends TimerTask{
 	}
 	
 	/**
-	 * 中斷GPRS
+	 * 變更GPRS //20160115 change
+	 * 
 	 * @param imsi
 	 * @param msisdn
 	 */
-	private void suspend(String imsi,String msisdn){
-		logger.info("suspend...");
+	private void changeGPRSStatus(String imsi,String msisdn,String GPRSStatus){
+		logger.info("changeGPRSStatus...");
 		
+		suspendGPRS sus = new suspendGPRS(conn,conn2,logger);
+		PreparedStatement pst = null;
 		try {
 			
 			sql = "";
-			
-			suspendGPRS sus=new suspendGPRS(conn,conn2,logger);
-			
 			//20141118 add 傳回suspend排程的 service order nbr
-			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn);
+			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn,GPRSStatus);
 			serviceOrderNBR.add(orderNBR);
-			
 			sql=
 					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
-					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN) "
-					+ "VALUES(?,?,SYSDATE,?)";
+					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN,GPRS_STATUS) "
+					+ "VALUES(?,?,SYSDATE,?,?)";
 			
-			PreparedStatement pst=conn.prepareStatement(sql);
+			pst=conn.prepareStatement(sql);
 			pst.setString(1,orderNBR.get("cServiceOrderNBR") );
 			pst.setString(2,imsi );
 			pst.setString(3,msisdn );
+			pst.setString(4,GPRSStatus );
 			logger.info("Execute SQL : "+sql);
 			
 			pst.executeUpdate();
-			
-			if(pst!=null) pst.close();
-			if(sus.Temprs!=null) sus.Temprs.close();
-			
 		} catch (SQLException e) {
-			ErrorHandle("At suspend occur SQLException error!", e);
+			ErrorHandle("At changeGPRSStatus occur SQLException error!", e);
 		} catch (IOException e) {
 			sql="";
-			ErrorHandle("At suspend occur IOException error!", e);
+			ErrorHandle("At changeGPRSStatus occur IOException error!", e);
 		} catch (ClassNotFoundException e) {
 			sql="";
-			ErrorHandle("At suspend occur ClassNotFoundException error!", e);
+			ErrorHandle("At changeGPRSStatus occur ClassNotFoundException error!", e);
 		} catch (Exception e) {
 			sql="";
-			ErrorHandle("At suspend occur Exception error!", e);
+			ErrorHandle("At changeGPRSStatus occur Exception error!", e);
+		}finally{
+			try {
+				if(pst!=null) pst.close();
+				if(sus.Temprs!=null) sus.Temprs.close();
+			} catch (SQLException e) {
+			}
 		}
 	}
+	
 	//20151201 add
 	 public String Query_GPRSStatus(String s2tmsisdn){
 		 logger.info("check_GPRSStatus...");
@@ -3777,21 +3914,18 @@ public class DVRSmain extends TimerTask{
 
 		IniProgram();
 		
-		/*DVRSmain rf =new DVRSmain();
-		while(true){
-			
-			rf.process();
-			
-			try {
-				Thread.sleep(10*60*1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(TEST_MODE){
+			DVRSmain rf =new DVRSmain();
+			while(true){
+				rf.process();
+				try {
+					Thread.sleep(10*60*1000);
+				} catch (InterruptedException e) {
+				}
 			}
-		}*/
-		
-
-		regilarHandle();
+		}else{
+			regilarHandle();
+		}
 	}
 	
 	public static void regilarHandle(){
@@ -3885,14 +4019,18 @@ public class DVRSmain extends TimerTask{
 					setAddonData()&&//華人上網包申請資料
 					setQosData()&&//設定SX001,SX002資料
 					setCurrencyMap()&&//設定PricePlanID對應幣別
-					//TODO new Version
+					//new Version
 					(newVersion&&setSystemConfig())&&//系統Comfig設定
 					//new version end
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
 				
-				
+				//當執行時間為1日0點時進行復網
+				if("0100".equals(programeTime)){
+					checkResume();
+				}
+
 				//開始批價 
 				charge();
 
