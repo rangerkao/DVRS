@@ -209,7 +209,7 @@ public class DVRSmain extends TimerTask{
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
 		//TODO test
-		//calendar.set(2016,0, 1, 1, 30, 0);
+		//calendar.set(2016,1, 1, 1, 30, 0);
 		System.out.println(calendar.getTime());
 		
 		
@@ -2809,7 +2809,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("checkResume...");
 		//TODO
 		String resumeReport="";
-		Set<String> beenSuspended = new HashSet<String>();
+		List<Map<String,String>> beenSuspended = new ArrayList<Map<String,String>>();
 		Set<String> CHTSuspended = new HashSet<String>();
 		
 		Statement st = null;
@@ -2818,9 +2818,18 @@ public class DVRSmain extends TimerTask{
 		try {
 			
 			//撈出上個月被斷網的客戶	
-			String sql = "SELECT A.SERVICEID "
+			String sql ="SELECT A.SERVICEID ,B.SERVICECODE,C.CREATE_DATE "
+					+ "FROM HUR_CURRENT A,SERVICE B ,"
+					+ "		(	select msisdn,max(create_date) create_date "
+					+ "			from HUR_SUSPEND_GPRS_LOG "
+					+ "			where  TO_CHAR(CREATE_DATE,'yyyyMM')= '"+sYearmonth2+"' group by msisdn )C "
+					+ "WHERE A.SERVICEID=B.SERVICEID AND B.SERVICECODE = C.MSISDN(+) "
+					+ "AND TO_CHAR(C.CREATE_DATE,'yyyyMM')= '"+sYearmonth2+"' "
+					+ "AND A.MONTH='"+sYearmonth2+"'  AND A.EVER_SUSPEND = 1 ";
+			
+			/*String sql = "SELECT A.SERVICEID "
 					+ "FROM HUR_CURRENT A "
-					+ "WHERE A.MONTH='"+sYearmonth2+"'  AND A.EVER_SUSPEND = 1 ";
+					+ "WHERE A.MONTH='"+sYearmonth2+"'  AND A.EVER_SUSPEND = 1 ";*/
 			
 			
 			st = conn.createStatement();
@@ -2829,7 +2838,11 @@ public class DVRSmain extends TimerTask{
 			
 			resumeReport += "Customers had been suspended last month:";
 			while(rs.next()){
-				beenSuspended.add(rs.getString("SERVICEID"));
+				Map<String,String> m = new HashMap<String,String>();
+				m.put("serviceid", rs.getString("SERVICEID"));
+				m.put("msisdn", rs.getString("SERVICECODE"));
+				m.put("date", rs.getString("CREATE_DATE"));
+				beenSuspended.add(m);
 				resumeReport += rs.getString("SERVICEID") + ",";
 			}
 			
@@ -2874,7 +2887,8 @@ public class DVRSmain extends TimerTask{
 			}
 		}
 		
-		for(String serviceid : beenSuspended){
+		for(Map<String,String> m: beenSuspended){
+			String serviceid = m.get("serviceid");
 			String s2tmsisdn = msisdnMap.get(serviceid).get("MSISDN");
 			String imsi = ServiceIdtoIMSIMap.get(serviceid);
 			
@@ -2897,16 +2911,17 @@ public class DVRSmain extends TimerTask{
 			String gprsSatatus = Query_GPRSStatus(s2tmsisdn);
 			//如果是已斷網狀態才進行復網
 			if("0".equals(gprsSatatus)){
-				logger.info("resume "+serviceid+" GPRS");
-				resumeReport+= "resume "+serviceid+" GPRS\n"; 
+				logger.info("resume "+s2tmsisdn+"(suspended at "+m.get("date")+") GPRS");
+				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is resumed\n";
 				doResume(serviceid,s2tmsisdn);
 			}else{
-				logger.info(serviceid+" GPRS is active\n");
-				resumeReport+= serviceid+" GPRS is active\n";
+				logger.info(s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active\n");
+				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active\n";
 			}
 				
 		}
 		//mailReceiver=props.getProperty("mail.Receiver");
+		logger.info("Send resumeReport result.");
 		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
 		
 	}
@@ -3737,9 +3752,13 @@ public class DVRSmain extends TimerTask{
 		try{
 			Process p = Runtime.getRuntime().exec (cmd);
 			p.waitFor();
-			System.out.println("send mail cmd:"+cmd);
+			if(logger!=null)
+				logger.info("send mail cmd:"+cmd[2]);
+			System.out.println("send mail cmd:"+cmd[2]);
 		}catch (Exception e){
-			System.out.println("send mail fail:"+msg);
+			if(logger!=null)
+				logger.info("send mail fail:"+cmd[2]);
+			System.out.println("send mail fail:"+cmd[2]);
 		}
 	}
 	
@@ -3752,9 +3771,13 @@ public class DVRSmain extends TimerTask{
 		try{
 			Process p = Runtime.getRuntime().exec (cmd);
 			p.waitFor();
-			System.out.println("send mail cmd:"+cmd);
+			if(logger!=null)
+				logger.info("send mail cmd:"+cmd[2]);
+			System.out.println("send mail cmd:"+cmd[2]);
 		}catch (Exception e){
-			System.out.println("send mail fail:"+mailContent);
+			if(logger!=null)
+				logger.info("send mail fail:"+cmd[2]);
+			System.out.println("send mail fail:"+cmd[2]);
 		}
 	}
 
