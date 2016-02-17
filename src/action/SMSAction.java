@@ -410,7 +410,7 @@ public class SMSAction extends BaseAction {
 		}
 		try {
 			smsControl.sendSMS(msisdn, m);
-			actionLogControl.loggerAction(super.getUser().getAccount(), "send GPRS SMS", "send",COMTENT, SUCCESS);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "send GPRS SMS", "send",msisdn+":"+COMTENT, SUCCESS);
 		} catch (IOException e) {
 			e.printStackTrace();
 			StringWriter s = new StringWriter();

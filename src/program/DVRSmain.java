@@ -2892,22 +2892,22 @@ public class DVRSmain extends TimerTask{
 			String s2tmsisdn = msisdnMap.get(serviceid).get("MSISDN");
 			String imsi = ServiceIdtoIMSIMap.get(serviceid);
 			
+			
+			
+			if(s2tmsisdn == null){
+				ErrorHandle("For service id = "+serviceid+" can't find msisdn!");
+				continue;
+			}
 			if(imsi == null){
 				ErrorHandle("For service id = "+serviceid+" can't find imsi!");
 				continue;
 			}
 			//如果有中華供裝指定要關閉網路，則跳過
 			if(CHTSuspended.contains(imsi)){
-				logger.info(serviceid+" had required to suspend!");
-				resumeReport+= serviceid+" had required to suspend!\n";
+				logger.info(s2tmsisdn+" had required to suspend!");
+				resumeReport+= s2tmsisdn+" had required to suspend!\n";
 				continue;
 			}
-			
-			if(s2tmsisdn == null){
-				ErrorHandle("For service id = "+serviceid+" can't find msisdn!");
-				continue;
-			}
-			
 			String gprsSatatus = Query_GPRSStatus(s2tmsisdn);
 			//如果是已斷網狀態才進行復網
 			if("0".equals(gprsSatatus)){

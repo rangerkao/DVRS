@@ -55,6 +55,7 @@ function startsend(){
 	
 };
 function querySMSContent(){
+	disableButton();
 	$.ajax({
 	      url: '<s:url action="queryGPRSContent"/>',
 	      data: {
@@ -82,15 +83,18 @@ function querySMSContent(){
 	    	  
         },
         complete:function(){
+        	enableButton();
         }
 	    });
 	
 };
 function disableButton(){
 	$(':button').attr('disabled', 'disabled');
+	$(':radio').attr('disabled', 'disabled');
 }
 function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
+	$(':radio').removeAttr('disabled'); //.attr('disabled', '');
 }
 $(document).ready(function(){
 	querySMSContent();
