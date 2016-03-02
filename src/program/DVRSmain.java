@@ -2905,18 +2905,18 @@ public class DVRSmain extends TimerTask{
 			//如果有中華供裝指定要關閉網路，則跳過
 			if(CHTSuspended.contains(imsi)){
 				logger.info(s2tmsisdn+" had required to suspend!");
-				resumeReport+= s2tmsisdn+" had required to suspend!\n";
+				resumeReport+= s2tmsisdn+" had been disable GPRS by CHT!\n<br>";
 				continue;
 			}
 			String gprsSatatus = Query_GPRSStatus(s2tmsisdn);
 			//如果是已斷網狀態才進行復網
 			if("0".equals(gprsSatatus)){
 				logger.info("resume "+s2tmsisdn+"(suspended at "+m.get("date")+") GPRS");
-				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is resumed\n";
+				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is resumed\n<br>";
 				doResume(serviceid,s2tmsisdn);
 			}else{
-				logger.info(s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active\n");
-				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active\n";
+				logger.info(s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active");
+				resumeReport+= s2tmsisdn+"(suspended at "+m.get("date")+") GPRS is active\n<br>";
 			}
 				
 		}

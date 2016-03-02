@@ -294,9 +294,10 @@ function updateContent(mod,txt){
 }
 
 var tHead=[{name:"簡訊ID",col:"id",_width:"10%"},
+           {name:"資廢方案",col:"pricePlanId",_width:"10%"},
            {name:"簡訊內容",col:"comtent",_width:"40%"},
            {name:"編碼",col:"charSet",_width:"10%"},
-           {name:"說明",col:"description",_width:"35%"},
+           {name:"說明",col:"description",_width:"25%"},
            {name:"button",col:"<td align='center' ><button class='btn btn-primary btn-sm' onclick='chooseRow2(this)'>選擇</button></td>",_width:"5%"}];
 
 function chooseRow2(bu){
@@ -436,7 +437,7 @@ function validat2(mod,txt){
 					<table class="table-bordered table-hover" align="center" style="width: 80%" id="table1">
 						<tr class="even_columm" >
 							<td class="columnLabel" align="center" width="20%">設定ID</td>
-							<!-- <td class="columnLabel" align="center" width="20%">資費ID</td> -->
+							<td class="columnLabel" align="center" width="20%">資費ID</td>
 							<td class="columnLabel" align="center" width="20%">額度比例(%)</td>
 							<td class="columnLabel" align="center" width="20%">簡訊ID</td>
 							<td class="columnLabel" align="center" width="20%">是否中斷數據連線</td>

@@ -11,7 +11,8 @@ var smsSettinglist;
 var dataList;
 
 
-var tHead=[{name:"設定ID",col:"id",_width:"20%"},
+var tHead=[{name:"設定ID",col:"id",_width:"10%"},
+           {name:"資費ID",col:"pricePlanId",_width:"10%"},
            {name:"額度比例(%)",col:"bracket",_width:"20%"},
            {name:"簡訊ID",col:"msg",_width:"20%"},
            {name:"checkbox",col:"suspend",_width:"20%"},
@@ -228,7 +229,7 @@ function clearText(txt){
 		   		<label id="LSuspend" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
 		    </div>
 		
-		    <div class="col-xs-12">
+		    <div class="col-xs-12" style="display: none;">
 		    	<div class="btn-group" class="col-xs-12">
 					<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="bClear">
 					<input type="button" class="btn btn-primary btn-sm" onclick="updateSetting('add','新增')" value="新增">

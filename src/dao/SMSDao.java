@@ -110,7 +110,7 @@ public class SMSDao extends BaseDao{
 	public List<SMSSetting> querySMSSetting() throws SQLException{
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
-				"SELECT A.ID,A.BRACKET*100 BRACKET,A.MEGID,A.SUSPEND "
+				"SELECT A.ID,A.BRACKET*100 BRACKET,A.MEGID,A.SUSPEND,PRICEPLANID "
 						+ "FROM HUR_SMS_SETTING A "
 						+ "ORDER BY A.ID ";
 				/*"SELECT A.ID,A.BRACKET,A.MEGID,A.SUSPEND,A.PRICEPLANID "
@@ -127,7 +127,7 @@ public class SMSDao extends BaseDao{
 				log.setId(rs.getString("ID"));
 				log.setBracket(rs.getDouble("BRACKET"));
 				log.setMsg(rs.getString("MEGID"));
-				//log.setPricePlanId(rs.getString("PRICEPLANID"));
+				log.setPricePlanId(rs.getString("PRICEPLANID"));
 
 				String s=rs.getString("SUSPEND");
 				if("0".equals(s))
