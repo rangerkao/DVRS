@@ -209,7 +209,7 @@ public class DVRSmain extends TimerTask{
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
 		//TODO test
-		//calendar.set(2016,1, 1, 1, 30, 0);
+		//calendar.set(2016,0, 1, 1, 30, 0);
 		System.out.println(calendar.getTime());
 		
 		
@@ -2810,7 +2810,7 @@ public class DVRSmain extends TimerTask{
 		//TODO
 		String resumeReport="";
 		List<Map<String,String>> beenSuspended = new ArrayList<Map<String,String>>();
-		Set<String> CHTSuspended = new HashSet<String>();
+		Map<String,String> CHTSuspended = new HashMap<String,String>();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -2851,7 +2851,7 @@ public class DVRSmain extends TimerTask{
 			rs.close();
 			
 			//取得上個月中華最後一筆供裝17的資料，是0
-			sql = "SELECT B.IMSI "
+			sql = "SELECT B.IMSI,B.REQTIME "
 					+ "FROM( "
 					+ "		SELECT A.IMSI,MAX(A.REQTIME) REQTIME "
 					+ "		FROM(	SELECT SUBSTR(CONTENT,INSTR(CONTENT, 'S2T_IMSI=')+LENGTH('S2T_IMSI='),INSTR(CONTENT, 'Req_Status')-INSTR(CONTENT, 'S2T_IMSI')-LENGTH('S2T_IMSI=')-1) IMSI "
@@ -2873,7 +2873,8 @@ public class DVRSmain extends TimerTask{
 			logger.info("Query TWNLD request is 17 and status is 0 in last month:"+sql);
 			rs = st.executeQuery(sql);
 			while(rs.next()){
-				CHTSuspended.add(rs.getString("IMSI"));
+				//CHTSuspended.add(rs.getString("IMSI"));
+				CHTSuspended.put(rs.getString("IMSI"), rs.getString("REQTIME"));
 			}
 		} catch (SQLException e) {
 			ErrorHandle("At checkResume got SQLException",e);
@@ -2903,9 +2904,9 @@ public class DVRSmain extends TimerTask{
 				continue;
 			}
 			//如果有中華供裝指定要關閉網路，則跳過
-			if(CHTSuspended.contains(imsi)){
-				logger.info(s2tmsisdn+" had required to suspend!");
-				resumeReport+= s2tmsisdn+" had been disable GPRS by CHT!\n<br>";
+			if(CHTSuspended.keySet().contains(imsi)){
+				logger.info(s2tmsisdn+" had required to suspend at "+CHTSuspended.get(imsi)+"!");
+				resumeReport+= s2tmsisdn+" had been disable GPRS by CHT at "+CHTSuspended.get(imsi)+"!\n<br>";
 				continue;
 			}
 			String gprsSatatus = Query_GPRSStatus(s2tmsisdn);
