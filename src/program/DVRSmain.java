@@ -110,6 +110,7 @@ public class DVRSmain extends TimerTask{
 	private static  Logger logger ;
 	static Properties props=new Properties();
 
+	static boolean resume = false;
 	
 	//mail conf
 	static String mailSender="";
@@ -225,6 +226,11 @@ public class DVRSmain extends TimerTask{
 		sYearmonth2=DateFormat(calendar.getTime(), MONTH_FORMATE);
 		calendar.clear();
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
+		
+		//當執行時間為1日0點時進行復網
+		if("0100".equals(programeTime)){
+			resume = true;
+		}
 		
 		return true;
 	}
@@ -1571,6 +1577,7 @@ public class DVRSmain extends TimerTask{
 				
 				if(m.get("ENDDATE")!=null){
 					endTime.setTime((Date) m.get("ENDDATE"));
+					endTime.set(Calendar.DAY_OF_YEAR, endTime.get(Calendar.DAY_OF_YEAR)+1);
 					endTime.set(Calendar.HOUR_OF_DAY, 0);
 					endTime.set(Calendar.MINUTE, 0);
 					endTime.set(Calendar.SECOND, 0);
@@ -1582,7 +1589,8 @@ public class DVRSmain extends TimerTask{
 						("SX002".equals(m.get("SERVICECODE"))&& sSX002.contains(mccmnc)))&&
 						//是否符合申請的時間區段
 						(callTime.after(startTime.getTime())||callTime.equals(startTime.getTime()))&&
-						(endTime==null ||callTime.before(endTime.getTime())||callTime.equals(endTime.getTime()))){
+						(endTime==null ||callTime.before(endTime.getTime()))
+						){
 					cd=1;
 					break;
 				}
@@ -1658,8 +1666,10 @@ public class DVRSmain extends TimerTask{
 						+ "SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
 						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
 						+ "FROM HUR_DATA_USAGE A WHERE ROWNUM <= "+((i-1)*dataThreshold)+" AND A.CHARGE is null "
-						//+ "AND A.FILEID>= "+lastfileID+" "
+						//+ "AND A.FILEID= "+lastfileID+" "
 						+ "ORDER BY A.USAGEID,A.FILEID) ";
+				
+				
 				
 				logger.debug("Execute SQL : "+sql);
 				
@@ -1681,7 +1691,7 @@ public class DVRSmain extends TimerTask{
 					Double dayCap=null;
 					//20141211 add
 					String ipaddr = rs.getString("SGSNADDRESS");
-					
+					//logger.debug("For CDR usageId="+usageId+" get IP Address "+ipaddr);
 					
 					//抓到對應的Serviceid
 					//20150115 add
@@ -1705,7 +1715,7 @@ public class DVRSmain extends TimerTask{
 					
 			
 					String currency = null;
-					if(dataRate.containsKey(pricplanID)){
+					/*if(dataRate.containsKey(pricplanID)){
 						//20141210 add
 						currency=pricePlanIdtoCurrency.get(pricplanID);
 						if(currency== null)
@@ -1717,17 +1727,20 @@ public class DVRSmain extends TimerTask{
 					}else{
 						sql="";
 						ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
-					}
+					}*/
+					
 					
 					//取的資料所在的Mccmnc
 					//20141211 add
 					if(mccmnc==null || "".equals(mccmnc)){
+						logger.debug("Findding MCCMNC by IP range");
 						mccmnc=searchMccmncByIP(ipaddr);
 						if(mccmnc!=null && !"".equals(mccmnc))
 							logger.debug("For CDR usageId="+usageId+" which is without mccmnc. Found mccmnc="+mccmnc+" by IP range.");
 					}
 					
 					if(mccmnc==null || "".equals(mccmnc)){
+						logger.debug("Findding MCCMNC by serviceid");
 						mccmnc=searchMccmncBySERVICEID(serviceid);
 						if(mccmnc!=null && !"".equals(mccmnc))
 							logger.debug("For CDR usageId="+usageId+" which is without mccmnc. Found mccmnc="+mccmnc+" by serviceid.");
@@ -1739,11 +1752,24 @@ public class DVRSmain extends TimerTask{
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
-					//判斷Mccmnc是否在Datarate中
-					if(!dataRate.get(pricplanID).containsKey(mccmnc)){
+					if(dataRate.containsKey(pricplanID)){
+						
+						currency=pricePlanIdtoCurrency.get(pricplanID);
+						if(currency== null)
+							ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+"find currency="+currency);
+						
+						//判斷Mccmnc是否在Datarate中
+						if(!dataRate.get(pricplanID).containsKey(mccmnc)){
+							sql="";
+							ErrorHandle("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+						}
+					}else{
 						sql="";
-						ErrorHandle("usageId:"+usageId+",IMSI:"+imsi+" can't charge correctly without mccmnc or mccmnc is not in Data_Rate table ! ");
+						ErrorHandle("FOR IMSI:"+imsi+",the PRICEPLANID:"+pricplanID+" NOT EXIST in HUR_DATA_RATE!");
 					}
+					
+					
+
 					
 					//如果為華人上網包的客戶，不批價設定為0
 					int cd=checkQosAddon(serviceid, mccmnc, callTime);
@@ -1799,7 +1825,7 @@ public class DVRSmain extends TimerTask{
 							//new Version
 							if(newVersion){
 								//System.out.println("New Version check Point defaultRate.");
-								//抓取不同幣別月上限
+								//預設費率
 								if("NTD".equals(pricePlanIdtoCurrency.get(pricplanID)))
 									defaultRate = getSystemConfigDoubleParam(pricplanID,"NTD_DEFAULT_RATE");
 								if("HKD".equals(pricePlanIdtoCurrency.get(pricplanID)))
@@ -2924,6 +2950,7 @@ public class DVRSmain extends TimerTask{
 		//mailReceiver=props.getProperty("mail.Receiver");
 		logger.info("Send resumeReport result.");
 		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
+		resume = false;
 		
 	}
 	
@@ -4049,9 +4076,8 @@ public class DVRSmain extends TimerTask{
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
-				
-				//當執行時間為1日0點時進行復網
-				if("0100".equals(programeTime)){
+
+				if(resume){
 					checkResume();
 				}
 
