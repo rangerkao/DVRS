@@ -111,6 +111,7 @@ public class DVRSmain extends TimerTask{
 	static Properties props=new Properties();
 
 	static boolean resume = false;
+	static boolean resumeSpeed = false;
 	
 	//mail conf
 	static String mailSender="";
@@ -186,11 +187,16 @@ public class DVRSmain extends TimerTask{
 	List<Map<String,Object>> IPtoMccmncList = new ArrayList<Map<String,Object>>();
 	Set<String> sSX001 = new HashSet<String>();
 	Set<String> sSX002 = new HashSet<String>();
+	
+	Map<String,String> IMSItoServiceIdMap = new HashMap<String,String>();
+	Map<String,String> ServiceIdtoIMSIMap = new HashMap<String,String>();
+	
 	//new Version
 	Map<String,Map<String,Object>> systemConfig = new HashMap<String,Map<String,Object>>();
 	//new version end
 	
-	boolean newVersion = true;
+	//20160624 add
+	List<Map<String,Object>> slowDownList = new ArrayList<Map<String,Object>>();
 	
 	/*************************************************************************
 	 *************************************************************************
@@ -210,7 +216,7 @@ public class DVRSmain extends TimerTask{
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
 		//TODO test
-		//calendar.set(2016,0, 1, 1, 30, 0);
+		//calendar.set(2016,6, 2, 1, 30, 0);
 		System.out.println(calendar.getTime());
 		
 		
@@ -230,15 +236,21 @@ public class DVRSmain extends TimerTask{
 		//當執行時間為1日0點時進行復網
 		if("0100".equals(programeTime)){
 			resume = true;
+			NTTalerted = false;
+			NTT75alerted = false;
+		}
+		if("00".equals(programeTime.substring(2))){
+			resumeSpeed = true;
 		}
 		
 		return true;
 	}
-	
+
 	/**
 	 * 設定華人上網包MCCMNC資料 20141118 排除華人上網包
 	 */
 	private boolean setQosData(){
+		checkConnection();
 		logger.info("setQosData...");
 		sSX001.clear();
 		sSX002.clear();
@@ -270,6 +282,78 @@ public class DVRSmain extends TimerTask{
 	 *                                表格資料設定
 	 *************************************************************************
 	 *************************************************************************/
+	SimpleDateFormat year_month_day_sdf = new SimpleDateFormat("yyyyMMdd");
+	//20160624 add
+		/**
+		 * 設定降速參數
+		 */
+		private boolean setSlowDownList(){
+			checkConnection();
+			logger.info("setSlowDownList...");
+			
+			
+			
+			sql = ""
+					+ "SELECT A.MCCMNC,A.PRICEPLANID,A.LIMIT,A.START_DATE,A.END_DATE,A.ISDAYLY,A.GPRS_NAME "
+					+ "from HUR_SLOWDOWN_LIST A ";
+		
+			/*String sql2 = ""
+					+ "SELECT A.MCCMNC,A.PRICEPLANID,A.LIMIT,To_DATE(A.START_DATE,'yyyyMMdd') START_DATE,TO_DATE(A.END_DATE,'yyyyMMdd') END_DATE,A.ISDAYLY "
+					+ "from HUR_SLOWDOWN_LIST A "
+					+ "where A.START_DATE < sysdate and A.END_DATE> sysdate ";*/
+			
+			boolean result = false;
+			Statement st = null;
+			ResultSet rs = null;
+			try {
+				st = conn.createStatement();
+				logger.debug("Query SlowDownList SQL : "+sql);
+				rs = st.executeQuery(sql);
+				logger.info("Query end!");
+				
+				while(rs.next()){
+					
+					boolean isdayly = "1".equals(rs.getString("ISDAYLY"))?true:false;
+					String sDate = null,eDate = null;
+					if(isdayly){
+						Calendar c = Calendar.getInstance();
+						c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+						sDate = year_month_day_sdf.format(c.getTime());
+						
+						c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH)+1);
+						eDate = year_month_day_sdf.format(c.getTime());
+					}else{
+						sDate = rs.getString("START_DATE");
+						eDate = rs.getString("END_DATE");
+					}
+					System.out.println(sDate+"~"+eDate);
+					
+					Map<String,Object> m = new HashMap<String,Object>();
+					m.put("MNO", rs.getString("MCCMNC"));
+					m.put("PRICEPLAN", rs.getString("PRICEPLANID"));
+					m.put("LIMIT", rs.getInt("LIMIT")*1024);//500MB
+					m.put("TIMESTART", sDate);
+					m.put("TIMEEND", eDate);
+					m.put("GPRS_NAME", rs.getString("GPRS_NAME"));
+					slowDownList.add(m);
+				}
+				
+				result = true;
+			} catch (SQLException e) {
+				ErrorHandle("At set setSlowDownList Got a SQLException", e);
+			}finally{
+				try {
+					if(st!=null)
+						st.close();
+					
+					if(rs!=null)
+						rs.close();
+				} catch (SQLException e) {
+				}
+			}
+			return result;
+		}
+		
 	//new Version
 	/**
 	 * NTD_MONTH_LIMIT
@@ -280,7 +364,9 @@ public class DVRSmain extends TimerTask{
 	 * VOLUME_LIMIT2
 	 */
 	public boolean setSystemConfig(){
+		checkConnection();
 		//System.out.println("New Version check Point 11.");
+		logger.info("setSystemConfig...");
 		boolean result = false;
 		Statement st = null;
 		ResultSet rs = null;
@@ -289,7 +375,7 @@ public class DVRSmain extends TimerTask{
 			st = conn.createStatement();
 			logger.debug("Query SystemConfig SQL : "+sql);
 			rs = st.executeQuery(sql);
-
+			logger.info("Query end!");
 			while(rs.next()){
 				String pricePlanId = rs.getString("PRICE_PLAN_ID");
 				if(pricePlanId==null)
@@ -393,6 +479,7 @@ public class DVRSmain extends TimerTask{
 	 * Key:MONTH,Value:Map(serviceid,Map(CHARGE,LAST_FILEID,SMS_TIMES,LAST_DATA_TIME,VOLUME,EVER_SUSPEND,LAST_ALERN_VOLUME)))
 	 */
 	private boolean setCurrentMap(){
+		checkConnection();
 		logger.info("setCurrentMap...");
 		currentMap.clear();
 		
@@ -414,7 +501,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Execute SQL : "+sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
 				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();
@@ -491,6 +578,7 @@ public class DVRSmain extends TimerTask{
 	 * 20141209 修改取出近兩個月
 	 */
 	private boolean setCurrentMapDay(){
+		checkConnection();
 		logger.info("setCurrentMapDay...");
 		currentDayMap.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -501,14 +589,14 @@ public class DVRSmain extends TimerTask{
 		boolean result = false; 
 		try {
 			sql=
-					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY,A.ALERT "
+					"SELECT A.SERVICEID,A.CHARGE,A.LAST_FILEID,to_char(A.LAST_DATA_TIME,'yyyy/MM/dd hh24:mi:ss') LAST_DATA_TIME,A.VOLUME,A.UPDATE_DATE,A.CREATE_DATE,A.MCCMNC,A.DAY,A.ALERT,A.IS_SLOWDOWN "
 					+ "FROM HUR_CURRENT_DAY A "
 					+ "WHERE SUBSTR(A.DAY,0,6) IN ('"+sYearmonth+"','"+sYearmonth2+"') ";
 			
 			logger.debug("Execute SQL : "+sql);
 			st = conn.createStatement();
 			rs =st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				Map<String,Object> map=new HashMap<String,Object>();
 				Map<String,Map<String,Object>> map2=new HashMap<String,Map<String,Object>>();			
@@ -523,7 +611,7 @@ public class DVRSmain extends TimerTask{
 								mccmnc!=null && !"".equals(mccmnc)){
 					if(currentDayMap.containsKey(day)){
 						map3=currentDayMap.get(day);
-						if(map.containsKey(serviceid)){
+						if(map3.containsKey(serviceid)){
 							map2=map3.get(serviceid);
 						}
 					}
@@ -533,7 +621,7 @@ public class DVRSmain extends TimerTask{
 					map.put("CHARGE", rs.getDouble("CHARGE"));
 					map.put("VOLUME", rs.getDouble("VOLUME"));
 					map.put("ALERT", rs.getString("ALERT"));
-
+					map.put("IS_SLOWDOWN", rs.getString("IS_SLOWDOWN"));
 					map2.put(mccmnc, map);
 					
 					map3.put(serviceid, map2);
@@ -579,6 +667,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	//20150324 modify add network info
 	private boolean setDataRate(){
+		checkConnection();
 		logger.info("setDataRate...");
 		dataRate.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -647,6 +736,7 @@ public class DVRSmain extends TimerTask{
 	 * 取出以Priceplan對應到的幣別
 	 */
 	public boolean setCurrencyMap(){
+		checkConnection();
 		pricePlanIdtoCurrency.clear();
 		Statement st = null;
 		ResultSet rs = null;
@@ -658,7 +748,7 @@ public class DVRSmain extends TimerTask{
 			st = conn.createStatement();
 			logger.debug("Query Currency And IMSI SQL : "+sql);
 			rs = st.executeQuery(sql);
-
+			logger.info("Query end!");
 			while(rs.next()){
 				String id = rs.getString("PRICEPLANID");
 				String currency = rs.getString("CURRENCY");
@@ -690,6 +780,7 @@ public class DVRSmain extends TimerTask{
 	 * @return 
 	 */
 	private boolean setThreshold(){
+		checkConnection();
 		logger.info("setThreshold...");
 		thresholdMap.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -713,7 +804,7 @@ public class DVRSmain extends TimerTask{
 			}
 			result =true;
 		} catch (SQLException e) {
-			ErrorHandle("At setThreshold occur SQLException error!");
+			ErrorHandle("At setThreshold occur SQLException error!",e);
 		}finally{
 			try {
 				if(st!=null)
@@ -732,6 +823,7 @@ public class DVRSmain extends TimerTask{
 	 * Map Key:IMSI,VALUE:VLN
 	 */
 	private boolean setSERVICEIDtoVLN(){
+		checkConnection();
 		logger.info("setSERVICEIDtoVLN...");
 		SERVICEIDtoVLN.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -742,16 +834,18 @@ public class DVRSmain extends TimerTask{
 		boolean result =false;
 		sql=
 				"SELECT A.VLR_NUMBER,A.SERVICEID "
-				+ "FROM UTCN.BASICPROFILE A "
-				+ "WHERE A.VLR_NUMBER is not null ";
+				+ "FROM UTCN.BASICPROFILE A ";
 		
 		try {
 			logger.debug("Execute SQL : "+sql);
 			st = conn2.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
-				SERVICEIDtoVLN.put(rs.getString("SERVICEID"), rs.getString("VLR_NUMBER"));
+				//20160701 mod
+				String vlrNumber = rs.getString("VLR_NUMBER");
+				if(vlrNumber!=null)
+					SERVICEIDtoVLN.put(rs.getString("SERVICEID"), vlrNumber);
 			}
 			result =true;
 		} catch (SQLException e) {
@@ -778,6 +872,7 @@ public class DVRSmain extends TimerTask{
 	 * MAP KEY：VLN,VALUE:TADIG
 	 */
 	private boolean setVLNtoTADIG(){
+		checkConnection();
 		logger.info("setVLNtoTADIG...");
 		VLNtoTADIG.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -794,7 +889,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Execute SQL : "+sql);
 			st = conn2.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				VLNtoTADIG.put(rs.getString("VLR"), rs.getString("TADIG"));
 			}
@@ -822,6 +917,7 @@ public class DVRSmain extends TimerTask{
 	 * MAP KEY：TADIG,VALUE:MCCMNC
 	 */
 	private boolean setTADIGtoMCCMNC(){
+		checkConnection();
 		logger.info("setTADIGtoMCCMNC...");
 		TADIGtoMCCMNC.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -838,7 +934,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Execute SQL : "+sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				TADIGtoMCCMNC.put(rs.getString("TADIG"), rs.getString("MCCMNC"));
 			}
@@ -866,6 +962,7 @@ public class DVRSmain extends TimerTask{
 	 * MAP KEY：CODE,VALUE:(PHONE,NAME)
 	 */
 	private boolean setCostomerNumber(){
+		checkConnection();
 		logger.info("setCostomerNumber...");
 		codeMap.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -882,7 +979,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Execute SQL : "+sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				Map<String,String> map = new HashMap<String,String>();
 				map.put("PHONE", rs.getString("PHONE"));
@@ -966,6 +1063,7 @@ public class DVRSmain extends TimerTask{
 	 * List Map KEY:MSISDN,VALUE(IMSI,MSISDN,SERVICEID,SERVICECODE,STARTDATE,ENDDATE)>
 	 */
 	private boolean setAddonData(){
+		checkConnection();
 		logger.info("setAddonData...");
 		addonDataList.clear();
 		
@@ -981,7 +1079,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Execute SQL : "+sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-			
+			logger.info("Query end!");
 			while(rs.next()){
 				Map<String,Object> map = new HashMap<String,Object>();
 				map.put("IMSI", rs.getString("IMSI"));
@@ -1013,6 +1111,7 @@ public class DVRSmain extends TimerTask{
 	 * Map Value:START_NUM,END_NUM,MCCMNC
 	 */
 	private boolean setIPtoMccmncList(){
+		checkConnection();
 		logger.info("setIPtoMccmncList...");
 		IPtoMccmncList.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -1029,7 +1128,7 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Query AddonData SQL : "+sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
-
+			logger.info("Query end!");
 			while(rs.next()){
 				Map<String,Object> map = new HashMap<String,Object>();
 				map.put("START_NUM", rs.getLong("START_NUM"));
@@ -1061,6 +1160,7 @@ public class DVRSmain extends TimerTask{
 	 * 增加serviceid to map，做以serviceid反查
 	 */
 	private boolean setMsisdnMap(){
+		checkConnection();
 		logger.info("setMsisdnMap...");
 		msisdnMap.clear();
 		long subStartTime = System.currentTimeMillis();
@@ -1069,16 +1169,50 @@ public class DVRSmain extends TimerTask{
 		ResultSet rs = null;
 		boolean result = false;
 		sql=
-				"SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,B.ICCID, "
-				+ "(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
-				+ "FROM SERVICE A,IMSI B,PARAMETERVALUE C "
-				+ "WHERE A.SERVICEID=B.SERVICEID(+) AND A.SERVICECODE IS NOT NULL "
-				+ "AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748";
+				"SELECT da.IMSI,da.SERVICECODE,da.PRICEPLANID,da.SUBSIDIARYID,da.SERVICEID,da.ICCID, da.NCODE "
+				+ "from ("
+				+ "        SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,B.ICCID, "
+				+ "				(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
+				+ "			FROM SERVICE A,IMSI B,PARAMETERVALUE C "
+				+ "			WHERE A.SERVICEID=B.SERVICEID(+) AND A.SERVICECODE IS NOT NULL "
+				+ "			AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748 ) da, (select serviceid from hur_current where month in ('"+sYearmonth+"','"+sYearmonth2+"')) cho "
+				+ "        WHERE da.serviceid = cho.serviceid ";
+		
+		String sql2= 
+				"SELECT da.IMSI,da.SERVICECODE,da.PRICEPLANID,da.SUBSIDIARYID,da.SERVICEID,da.ICCID, da.NCODE "
+				+ "from ("
+				+ "        SELECT B.IMSI,A.SERVICECODE,A.PRICEPLANID,A.SUBSIDIARYID,A.SERVICEID,B.ICCID, "
+				+ "				(CASE A. STATUS WHEN '1' then to_char(C.value) when '3' then to_char( C.value) when '10' then to_char(C.value) else null end) NCODE "
+				+ "			FROM SERVICE A,IMSI B,PARAMETERVALUE C "
+				+ "			WHERE A.SERVICEID=B.SERVICEID(+) AND A.SERVICECODE IS NOT NULL "
+				+ "			AND B.SERVICEID=C.SERVICEID(+) AND C.PARAMETERVALUEID(+)=3748 ) da, (select imsi from hur_data_usage where charge is null) cho "
+				+ "        WHERE da.imsi = cho.imsi ";
 		
 		try {
+			
+			st = conn.createStatement();
+			
 			logger.info("Execute SQL :"+sql);
-			st = conn2.createStatement();
 			rs=st.executeQuery(sql);
+			logger.info("Query1 end!");
+			
+			while(rs.next()){
+				Map<String,String> map =new HashMap<String,String>();
+				map.put("MSISDN", rs.getString("SERVICECODE"));
+				map.put("PRICEPLANID", rs.getString("PRICEPLANID"));
+				map.put("SUBSIDIARYID", rs.getString("SUBSIDIARYID"));
+				map.put("NCODE", rs.getString("NCODE"));
+				map.put("SERVICEID", rs.getString("SERVICEID"));
+				map.put("IMSI", rs.getString("IMSI"));
+				map.put("ICCID", rs.getString("ICCID"));
+				msisdnMap.put(rs.getString("IMSI"), map);
+				msisdnMap.put(rs.getString("SERVICEID"), map);
+			}
+			
+			
+			logger.info("Execute SQL :"+sql2);
+			rs=st.executeQuery(sql2);
+			logger.info("Query2 end!");
 			
 			while(rs.next()){
 				Map<String,String> map =new HashMap<String,String>();
@@ -1108,15 +1242,16 @@ public class DVRSmain extends TimerTask{
 		return result;
 	}
 	
-	Map<String,String> IMSItoServiceIdMap = new HashMap<String,String>();
-	Map<String,String> ServiceIdtoIMSIMap = new HashMap<String,String>();
+	
 	/**
 	 * 設定IMSI對應到ServiceID Map 20150115 add
 	 * 
 	 * 先從MSISDN MAP(IMSI table 資料找尋 SERVICEID)
 	 * 找不到再從此Table(換卡記錄)找尋
 	 */
+
 	private boolean setIMSItoServiceIDMap(){
+		checkConnection();
 		logger.info("setIMSItoServiceIDMap...");
 		logger.info("setServiceIDtoImsiMap...");
 		IMSItoServiceIdMap.clear();
@@ -1126,36 +1261,104 @@ public class DVRSmain extends TimerTask{
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result =false;
-		sql=  ""
-				+ "SELECT A.SERVICEID,A.IMSI"
-				+ "		FROM("
-				+ "			SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
-				+ "			FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
-				+ "		    WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
-				+ "		    UNION"
-				+ "		    SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
-				+ "		    FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
-				+ "		    WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A,"
-				+ "		    	(SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE"
-				+ "				from(SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE"
-				+ "             		FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B"
-				+ "                     WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713"
-				+ "                     UNION"
-				+ "                     SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE"
-				+ "                     FROM SERVICEORDER A,NEWSERVICEORDERINFO B"
-				+ "                     WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713)"
-				+ "                     GROUP BY IMSI )B"
-				+ "		WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE";
+		String sql2 = null;
+		
+		if(TEST_MODE){
+			sql = "SELECT A.SERVICEID,A.IMSI "
+				+ "		FROM( "
+				+ "				SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+				+ "				FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "				WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "				UNION "
+				+ "				SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+				+ "				FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "				WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
+				+ "			(	SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE "
+				+ "				from(	SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+				+ "						FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+				+ "						WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+				+ "						UNION "
+				+ "						SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+				+ "						FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+				+ "						WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
+				+ "				GROUP BY IMSI )B "
+				+ "		WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ";
+		}else{
+			
+			sql=  ""
+					+ "select da.serviceid,da.imsi "
+					+ "from "
+					+ "(	SELECT A.SERVICEID,A.IMSI "
+					+ "		FROM( "
+					+ "				SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+					+ "				FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+					+ "				WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+					+ "				UNION "
+					+ "				SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+					+ "				FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+					+ "				WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
+					+ "			(	SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE "
+					+ "				from(	SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+					+ "						FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+					+ "						WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+					+ "						UNION "
+					+ "						SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+					+ "						FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+					+ "						WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
+					+ "				GROUP BY IMSI )B "
+					+ "		WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ) da , "
+					+ "(	select serviceid from hur_current where month in ('"+sYearmonth+"','"+sYearmonth2+"'))  cho "
+					+ "		WHERE da.serviceid = cho.serviceid ";
+			
+			sql2 = ""
+					+ "select da.serviceid,da.imsi "
+					+ "from "
+					+ "(	SELECT A.SERVICEID,A.IMSI "
+					+ "		FROM("
+					+ "				SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+					+ "				FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+					+ "				WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+					+ "				UNION "
+					+ "				SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+					+ "				FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+					+ "				WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713 )A, "
+					+ "			(	SELECT IMSI,MAX(COMPLETEDATE) COMPLETEDATE "
+					+ "				from(	SELECT A.SERVICEID,B.NEWVALUE IMSI,A.COMPLETEDATE "
+					+ "						FROM SERVICEORDER A,SERVICEINFOCHANGEORDER B "
+					+ "						WHERE A.ORDERID =B.ORDERID AND  B.FIELDID=3713 "
+					+ "						UNION "
+					+ "						SELECT A.SERVICEID,B.FIELDVALUE IMSI,A.COMPLETEDATE "
+					+ "						FROM SERVICEORDER A,NEWSERVICEORDERINFO B "
+					+ "						WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
+					+ "				GROUP BY IMSI )B "
+					+ "		WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ) da , "
+					+ "(	select imsi from hur_data_usage where charge is null)  cho "
+					+ "		WHERE da.imsi = cho.imsi ";
+		}
+		
 		
 		
 		try {
+			if(TEST_MODE){
+				st = conn2.createStatement();
+			}else{
+				st = conn.createStatement();
+			}
 			logger.info("Execute SQL :"+sql);
-			st = conn2.createStatement();
 			rs=st.executeQuery(sql);
-			
+			logger.info("Query1 end!");
 			while(rs.next()){
 				IMSItoServiceIdMap.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
 				ServiceIdtoIMSIMap.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
+			}
+			if(!TEST_MODE){
+				logger.info("Execute SQL :"+sql2);
+				rs=st.executeQuery(sql2);
+				logger.info("Query2 end!");
+				while(rs.next()){
+					IMSItoServiceIdMap.put(rs.getString("IMSI"), rs.getString("SERVICEID"));
+					ServiceIdtoIMSIMap.put(rs.getString("SERVICEID"), rs.getString("IMSI"));
+				}
 			}
 			result =true;
 		} catch (SQLException e) {
@@ -1400,7 +1603,6 @@ public class DVRSmain extends TimerTask{
 				logger.info("closeConnect1...");
 				conn.close();
 			} catch (SQLException e) {
-				ErrorHandle("close Connect Error", e);
 			}
 
 		}
@@ -1411,7 +1613,6 @@ public class DVRSmain extends TimerTask{
 				logger.info("closeConnect2...");
 				conn2.close();
 			} catch (SQLException e) {
-				ErrorHandle("close Connect2 Error", e);
 			}
 
 		}
@@ -1547,23 +1748,6 @@ public class DVRSmain extends TimerTask{
 		
 
 		int cd=0;
-		//20150724
-		/*if(imsi!=null && !"".equals(imsi)){
-			//String msisdn=null;
-			if(msisdnMap.containsKey(imsi)) {
-				//msisdn=msisdnMap.get(imsi).get("MSISDN");
-			for(Map<String,Object> m : addonDataList){
-				if(imsi.equals(m.get("IMSI"))&&
-						(("SX001".equals(m.get("SERVICECODE"))&& sSX001.contains(mccmnc))||
-						("SX002".equals(m.get("SERVICECODE"))&& sSX002.contains(mccmnc)))&&
-						(callTime.after((Date) m.get("STARTDATE"))||callTime.equals((Date) m.get("STARTDATE")))&&
-						(m.get("ENDDATE")==null ||callTime.before((Date) m.get("ENDDATE"))||callTime.equals((Date) m.get("ENDDATE")))){
-					cd=1;
-					break;
-				}
-			}
-			}
-		}*/
 				
 		//20150623 search by serviceid 
 		if(serviceID!=null && !"".equals(serviceID)){
@@ -1696,8 +1880,7 @@ public class DVRSmain extends TimerTask{
 					//抓到對應的Serviceid
 					//20150115 add
 					String serviceid = null;
-					/*if(msisdnMap.get(imsi)!=null)
-						serviceid = msisdnMap.get(imsi).get("SERVICEID");*/
+			
 					//從換卡記錄找IMSI最後的ServiceID
 					if(IMSItoServiceIdMap.get(imsi)!=null)
 						serviceid = IMSItoServiceIdMap.get(imsi);
@@ -1822,24 +2005,22 @@ public class DVRSmain extends TimerTask{
 							if("HKD".equalsIgnoreCase(currency))
 								ec=exchangeRate;
 							
-							//new Version
-							if(newVersion){
-								//System.out.println("New Version check Point defaultRate.");
-								//預設費率
-								if("NTD".equals(pricePlanIdtoCurrency.get(pricplanID)))
-									defaultRate = getSystemConfigDoubleParam(pricplanID,"NTD_DEFAULT_RATE");
-								if("HKD".equals(pricePlanIdtoCurrency.get(pricplanID)))
-									defaultRate = getSystemConfigDoubleParam(pricplanID,"HKD_DEFAULT_RATE");
-								
-								//取不到任何上限值 跳過
-								if(defaultRate == null){
-									sql="";
-									ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricplanID+" cannot get defaultRate! ");
-									continue;
-								}
-								System.out.println("Default Rate:"+defaultRate);
+							
+							//System.out.println("New Version check Point defaultRate.");
+							//預設費率
+							if("NTD".equals(pricePlanIdtoCurrency.get(pricplanID)))
+								defaultRate = getSystemConfigDoubleParam(pricplanID,"NTD_DEFAULT_RATE");
+							if("HKD".equals(pricePlanIdtoCurrency.get(pricplanID)))
+								defaultRate = getSystemConfigDoubleParam(pricplanID,"HKD_DEFAULT_RATE");
+							
+							//取不到任何上限值 跳過
+							if(defaultRate == null){
+								sql="";
+								ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricplanID+" cannot get defaultRate! ");
+								continue;
 							}
-							//new version end
+							System.out.println("Default Rate:"+defaultRate);
+							
 							charge=Math.ceil(volume*kByte)*defaultRate/ec;
 						}
 					}else{
@@ -2156,7 +2337,7 @@ public class DVRSmain extends TimerTask{
 		boolean result= false;
 		sql=
 				"UPDATE HUR_CURRENT_DAY A "
-				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.LAST_DATA_TIME=TO_DATE(?,'yyyy/MM/dd hh24:mi:ss'),A.VOLUME=?,A.ALERT=?,A.UPDATE_DATE=SYSDATE "
+				+ "SET A.CHARGE=?,A.LAST_FILEID=?,A.LAST_DATA_TIME=TO_DATE(?,'yyyy/MM/dd hh24:mi:ss'),A.VOLUME=?,A.ALERT=?,A.IS_SLOWDOWN=?,A.UPDATE_DATE=SYSDATE "
 				+ "WHERE A.DAY=? AND A.SERVICEID=? AND A.MCCMNC=? ";
 		
 		logger.info("Execute SQL :"+sql);
@@ -2174,9 +2355,10 @@ public class DVRSmain extends TimerTask{
 						pst.setString(3, (String) currentDayMap.get(day).get(serviceid).get(nccNet).get("LAST_DATA_TIME"));
 						pst.setDouble(4,(Double) currentDayMap.get(day).get(serviceid).get(nccNet).get("VOLUME"));
 						pst.setString(5,(String) currentDayMap.get(day).get(serviceid).get(nccNet).get("ALERT"));
-						pst.setString(6, day);
-						pst.setString(7, serviceid);
-						pst.setString(8, nccNet);
+						pst.setString(6,(String) currentDayMap.get(day).get(serviceid).get(nccNet).get("IS_SLOWDOWN"));
+						pst.setString(7, day);
+						pst.setString(8, serviceid);
+						pst.setString(9, nccNet);
 						pst.addBatch();
 						count++;
 						if(count==dataThreshold){
@@ -2552,31 +2734,28 @@ public class DVRSmain extends TimerTask{
 				}
 				//取得Priceplanid舊版本使用0
 				String priceplanid = "0";
-				//new Version
-				if(newVersion){
-					//System.out.println("New Version check Point 1.");
-					if(msisdnMap.get(serviceid)==null){
-						sql="";
-						ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" without in msisdnMap and can't find priceplanid!");
-						continue;
-					}
-						
-					priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
-					if(priceplanid==null ||"".equals(priceplanid)){
-						sql="";
-						ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
-						continue;
-					}
-					
-					//
-					if(smsSettingMap.get(priceplanid)==null){
-						sql="";
-						ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
-						continue;
-					}
+	
+				//System.out.println("New Version check Point 1.");
+				if(msisdnMap.get(serviceid)==null){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" without in msisdnMap and can't find priceplanid!");
+					continue;
 				}
-				//new version end
+					
+				priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
+				if(priceplanid==null ||"".equals(priceplanid)){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! The serviceid:"+serviceid+" can't find priceplanid!");
+					continue;
+				}
 				
+				//
+				if(smsSettingMap.get(priceplanid)==null){
+					sql="";
+					ErrorHandle("At sendAlertSMS occur error! Can't find priceplanid="+priceplanid+" setting in smsSetting!");
+					continue;
+				}
+		
 				List<Object> ids = smsSettingMap.get(priceplanid).get("ID");
 				List<Object> brackets = smsSettingMap.get(priceplanid).get("BRACKET");
 				List<Object> msgids = smsSettingMap.get(priceplanid).get("MEGID");
@@ -2596,25 +2775,23 @@ public class DVRSmain extends TimerTask{
 				Double DEFAULT_THRESHOLD = 5000D;
 				String[] contentid=null;
 				
-				//new Version
-				if(newVersion){
-					//System.out.println("New Version check Point 2.");
-					DEFAULT_THRESHOLD = null;
-					contentid=null;
-					//抓取不同幣別月上限
-					if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-						DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
-					if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-						DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
-					
-					//取不到任何上限值 跳過
-					if(DEFAULT_THRESHOLD == null){
-						sql="";
-						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
-						continue;
-					}
+				
+				//System.out.println("New Version check Point 2.");
+				DEFAULT_THRESHOLD = null;
+				contentid=null;
+				//抓取不同幣別月上限
+				if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"NTD_MONTH_LIMIT");
+				if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+					DEFAULT_THRESHOLD = getSystemConfigDoubleParam(priceplanid,"HKD_MONTH_LIMIT");
+				
+				//取不到任何上限值 跳過
+				if(DEFAULT_THRESHOLD == null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get Month Limit! ");
+					continue;
 				}
-				//new version end
+				
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網
 				Double threshold=null;
@@ -2708,39 +2885,35 @@ public class DVRSmain extends TimerTask{
 						//如果為VIP客戶預設發3號簡訊
 						contentid=new String[]{"3"};
 						
-						if(newVersion){
-							//System.out.println("New Version check Point 12.");
-							contentid = null;
-							String vipSMS = null;
-							//抓取不同幣別VIP簡訊
-							if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-								vipSMS = getSystemConfigParam(priceplanid,"NTD_VIP_MSG_ID");
-							if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
-								vipSMS = getSystemConfigParam(priceplanid,"HKD_VIP_MSG_ID");
-							
-							//取不到任何上限值 跳過
-							if(vipSMS == null){
-								sql="";
-								ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VIP SMS number! ");
-								continue;
-							}
-							contentid = vipSMS.split(",");
+						
+						contentid = null;
+						String vipSMS = null;
+						//抓取不同幣別VIP簡訊
+						if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+							vipSMS = getSystemConfigParam(priceplanid,"NTD_VIP_MSG_ID");
+						if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+							vipSMS = getSystemConfigParam(priceplanid,"HKD_VIP_MSG_ID");
+						
+						//取不到任何上限值 跳過
+						if(vipSMS == null){
+							sql="";
+							ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VIP SMS number! ");
+							continue;
 						}
+						contentid = vipSMS.split(",");
+						
 					}
 				}				
 				
 				if(sendSMS){
 					String currency = "";
-					//new Version
-					if(newVersion){
-						//System.out.println("New Version check Point 3.");
-						currency = pricePlanIdtoCurrency.get(priceplanid);
-						if(currency== null){
-							ErrorHandle("The PRICEPLANID:"+priceplanid+"find currency="+currency);
-							continue;
-						}
+					
+					currency = pricePlanIdtoCurrency.get(priceplanid);
+					if(currency== null){
+						ErrorHandle("The PRICEPLANID:"+priceplanid+"find currency="+currency);
+						continue;
 					}
-					//new version end
+					
 					
 					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket);				
@@ -2833,7 +3006,6 @@ public class DVRSmain extends TimerTask{
 	
 	public void checkResume(){
 		logger.info("checkResume...");
-		//TODO
 		String resumeReport="";
 		List<Map<String,String>> beenSuspended = new ArrayList<Map<String,String>>();
 		Map<String,String> CHTSuspended = new HashMap<String,String>();
@@ -2949,7 +3121,11 @@ public class DVRSmain extends TimerTask{
 		}
 		//mailReceiver=props.getProperty("mail.Receiver");
 		logger.info("Send resumeReport result.");
-		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
+		String mailReceiver = "k1988242001@gmail.com";
+		if(!TEST_MODE){
+			mailReceiver+=",Yvonne.lin@sim2travel.com";
+		}
+		sendMail("DVRS Resume GPRS Report.",resumeReport,"DVRS Alert",mailReceiver);
 		resume = false;
 		
 	}
@@ -3061,6 +3237,7 @@ public class DVRSmain extends TimerTask{
 			String phone = null;
 			for(String serviceid:currentDayMap.get(sYearmonthday).keySet()){
 				
+				//為了每日警示內容中帶入月累計費用才需要
 				Double charge=(Double) currentMap.get(sYearmonth).get(serviceid).get("CHARGE");
 				
 				//20141216 add 斷網過後，不發送每日簡訊，避免預估斷網後，每日帶出實際累計引發爭議
@@ -3091,40 +3268,36 @@ public class DVRSmain extends TimerTask{
 				String alerted ="0";
 				Double DEFAULT_DAY_THRESHOLD =  500D;
 				String[]  contentid = {"99"};
-				//new Version
 				
-				if(newVersion){
-					//System.out.println("New Version check Point 6.");
-					DEFAULT_DAY_THRESHOLD = null;
-					contentid=null;
-					//抓取不同幣別日上限
-					if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
-						DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
-						String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
-						if(contentids != null )
-							contentid = contentids.split(",");
-					}
-					if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
-						DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
-						String contentids = getSystemConfigParam(pricePlanID,"HKD_DAY_LIMIT_MSG_ID");
-						if(contentids != null )
-							contentid = contentids.split(",");
-					}
-					
-					//取不到每日上限 跳過
-					if(DEFAULT_DAY_THRESHOLD== null){
-						sql="";
-						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
-						continue;
-					}
-					//取不到每日上限 簡訊內容跳過
-					if(contentid == null){
-						sql="";
-						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
-						continue;
-					}
+				DEFAULT_DAY_THRESHOLD = null;
+				contentid=null;
+				//抓取不同幣別日上限
+				if("NTD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"NTD_DAY_LIMIT");
+					String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
+					if(contentids != null )
+						contentid = contentids.split(",");
 				}
-				//new version end
+				if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
+					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
+					String contentids = getSystemConfigParam(pricePlanID,"HKD_DAY_LIMIT_MSG_ID");
+					if(contentids != null )
+						contentid = contentids.split(",");
+				}
+				
+				//取不到每日上限 跳過
+				if(DEFAULT_DAY_THRESHOLD== null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit! ");
+					continue;
+				}
+				//取不到每日上限 簡訊內容跳過
+				if(contentid == null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+pricePlanID+" cannot get Daily Limit SMS content! ");
+					continue;
+				}
+				
 				
 				//累計
 				for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
@@ -3133,6 +3306,7 @@ public class DVRSmain extends TimerTask{
 					if("1".equals(a)) alerted="1";
 				}
 
+				//確認是否達到每日上限
 				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
 					smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
 					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
@@ -3159,191 +3333,103 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Log to table...executeBatch");
 		}
 	}
-	
+	static boolean NTTalerted = false;
+	static boolean NTT75alerted = false;
 	//canceled
-	/*public void checkNTTVolumeAlert(){
-		//NTT
-		//暫存數據用量資料 Key:SERVICEID,Value:Volume
-		Map<String,Double> tempMap = new HashMap<String,Double>();
-		//是否需要計算的pricePlanid
-		Set<String> checkedPriceplanid =new HashSet<String>();
-		checkedPriceplanid.add("155");
-		checkedPriceplanid.add("156");
-		checkedPriceplanid.add("157");
-		checkedPriceplanid.add("158");
-		checkedPriceplanid.add("159");
-		checkedPriceplanid.add("160");
+	public void checkNTTVolumeAlert(){
 		
-		Set<String> checkedMCCNET =new HashSet<String>();
-		checkedMCCNET.add("460China Unicom");//46001
-		checkedMCCNET.add("460CMCC");//46007.46002,460000,46000
-		checkedMCCNET.add("454CMHK");//45412
-		
-		//是否為Data Only 客戶 NTT
-		Set<String> checkedPriceplanid2 =new HashSet<String>();
-		checkedPriceplanid2.add("158");
-		checkedPriceplanid2.add("159");
-		checkedPriceplanid2.add("160");
-		for(String day : currentDayMap.keySet()){
-			//這個月的月資料
-			if(sYearmonth.equalsIgnoreCase(day.substring(0, 6))){
-				for(String serviceid:currentDayMap.get(day).keySet()){
-					//確認priceplanid 與 subsidiaryid
-					
-					String priceplanid = null;
-					String subsidiaryid = null;
-					if(msisdnMap.containsKey(serviceid)){
-						priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
-						subsidiaryid = msisdnMap.get(serviceid).get("SUBSIDIARYID");
-					}
-					//是否為NTT需要計算
-					if(checkedPriceplanid.contains(priceplanid)&&"72".equalsIgnoreCase(subsidiaryid)){
-						for(String mccNet:currentDayMap.get(day).get(serviceid).keySet()){
-							//確認Mccmnc
-							if(checkedMCCNET.contains(mccNet)){
-								//進行累計
-								Double oldVolume=0D;
-								Double volume=(Double) currentDayMap.get(day).get(serviceid).get(mccNet).get("VOLUME");
-								if(tempMap.containsKey(serviceid)){
-									oldVolume=tempMap.get(serviceid);
-								}
-								tempMap.put(serviceid, oldVolume+volume);
-							}
-						}
-					}	
-				}
-			}
-		}
-		//1.5 GB
-		Double DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT1");
-		//2.0 GB
-		Double DEFAULT_VOLUME_THRESHOLD2 = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
-		
-		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
-			sql="";
-			ErrorHandle("At checkNTTVolumeAlert can't find DEFAULT_VOLUME_THRESHOLD!");
+		if(NTTalerted)
 			return;
+		
+		//NTT
+		logger.info("checkNTTVolumeAlert...");
+		long subStartTime = System.currentTimeMillis();
+		double volumn = 0L;
+		double limit = 85;
+		double limit2 = 63.75;
+		if(currentMap.containsKey(sYearmonth)){
+			//檢查這個月的資料作警示通知
+			for(String serviceid: currentMap.get(sYearmonth).keySet()){
+				String priceplanid = null;
+				String subsidiaryid = null;
+				if(msisdnMap.containsKey(serviceid)){
+					priceplanid = msisdnMap.get(serviceid).get("PRICEPLANID");
+					subsidiaryid = msisdnMap.get(serviceid).get("SUBSIDIARYID");
+				}
+				if("160".equals(priceplanid) && "72".equals(subsidiaryid)){
+					if("160".equals(priceplanid) && "72".equals(subsidiaryid)){
+						volumn=volumn+(Double) currentMap.get(sYearmonth).get(serviceid).get("VOLUME");
+					}
+				}
+			}
+		}
+		boolean sendMail = false ; 
+		String mail_subject="";
+		String mail_content=""
+				+ "Dear Sir,\n\n\n"
+				+ "Please be informed that the total pooled usage of HKNet Oneness SIM subscribers (85) has reached 75%/100% (63.75GB/85.00GB) of 85GB: nn.nnGB.\n\n"
+				+ "Thank you for your attention and please let me know if any queries.\n\n"
+				+ "Sim2travel\n\n"
+				+ "感謝！\n\n\n"
+				+ "BR/Yvonne "+new SimpleDateFormat("yyyy/MM/dd").format(new Date())+"";
+
+		String mail_sender="HKNet@sim2travel.com";
+		String mail_receiver=HKNetReceiver;
+		if(TEST_MODE){
+			mail_receiver = "k1988242001@gmail.com.tw,ranger.kao@sim2travel.com";
+		}
+		volumn = volumn/1024/1024/1024;
+		
+		if(limit<volumn){
+			sendMail=true;
+			NTTalerted = true;
+			mail_subject = "Notice-"+sYearmonth+": total pooled usage in HK reaches 100%";
+		}else if(limit2<volumn&&!NTT75alerted){
+			sendMail=true;
+			NTT75alerted = true;
+			mail_subject = "Notice-"+sYearmonth+": total pooled usage in HK reaches 75%";
 		}
 		
-		Statement st=null;
-		try {
-			int smsCount=0;
-			st=conn.createStatement();
-			for(String serviceid:tempMap.keySet()){
-				Double volume=tempMap.get(serviceid);
-				Double everAlertVolume = (Double) currentMap.get(sYearmonth).get(serviceid).get("LAST_ALERN_VOLUME");
-				//超過發簡訊，另外確認是否已通知過
-				boolean sendmsg=false;
-				String[] msgContent=null;
-				//NTT 流量警示內容為100～103
-				if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
-					//2.0 GB 
-					String msgids = getSystemConfigParam("0", "VOLUME_LIMIT2_MAIL_ID");
-					if(msgids!=null){
-						msgContent = msgids.split(",");
-						sendmsg=true;
-					}else{
-						sql="";
-						ErrorHandle("Cannot get VOLUME_LIMIT2_MAIL_ID! ");
-						continue;
-					}
-				}
-				if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
-					//1.5 GB 
-					String msgids = getSystemConfigParam("0", "VOLUME_LIMIT1_MAIL_ID");
-					if(msgids!=null){
-						msgContent = msgids.split(",");
-						sendmsg=true;
-					}else{
-						sql="";
-						ErrorHandle("Cannot get VOLUME_LIMIT1_MAIL_ID! ");
-						continue;
-					}
-					
-				}
-				
-				if(sendmsg){
+		if(sendMail){
 
-					//查詢所在國家的客服電話
-					String cPhone = null;
-					String nMccmnc=searchMccmncBySERVICEID(serviceid);
-					Map<String,String> map=null;
-					
-					if(nMccmnc!=null && !"".equals(nMccmnc))
-						map = codeMap.get(nMccmnc.substring(0,3));
-					if(map!=null)
-						cPhone=map.get("PHONE");
-
-					String mail_subject="";
-					String mail_content="";
-					String mail_sender="HKNet@sim2travel.com";
-					String mail_receiver=HKNetReceiver;
-					
-					//發送Mail
-					
-					String contentID = msgContent[0];
-
-					if("104".equals(contentID)){
-						mail_subject = "Notification on FUP 75% 1.5GB";
-						mail_content = content.get(contentID).get("CONTENT");
-						logger.info("For "+serviceid+" send 1.5GB decrease speed  message !");
-					}
-					if("105".equals(contentID)){
-						mail_subject = "Notification on FUP 100% 2GB";
-						mail_content = content.get(contentID).get("CONTENT");
-						logger.info("For "+serviceid+" send 2.0GB decrease speed  message !");
-					}
-					
-					mail_content = processMag(mail_content,null,cPhone,msisdnMap.get(serviceid).get("ICCID"));
-					smsCount++;
-					sendMail(new String(mail_subject.getBytes("ISO8859-1"),"BIG5"), 
-							new String(mail_content.getBytes("ISO8859-1"),"BIG5").replaceAll("%2b", "+"),mail_sender ,mail_receiver );
-					
-					
-					sql="INSERT INTO HUR_SMS_LOG"
-							+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-							+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+mail_content+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
-					//寫入資料庫
-					//st.addBatch(sql);
-					st.executeUpdate(sql);
-					logger.debug("execute SQL : "+sql); 
-					
-					//更新CurrentMap
-					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume);
-					
-					//20150629 add
-					Set<String> set2 = new HashSet<String>();
-
-					if(updateMap.containsKey(sYearmonth)){	
-						set2 = updateMap.get(sYearmonth);
-					}
-					set2.add(serviceid);
-					updateMap.put(sYearmonth, set2);
-				}
-				
-			}
-			logger.debug("Total send NTT volume alert mail "+smsCount+" ...");
-			//st.executeBatch();			
-		} catch (SQLException e) {
-			ErrorHandle("At send NTT volume alert mail occur SQLException error!", e);
-		} catch (UnsupportedEncodingException e) {
-			sql="";
-			ErrorHandle("At send NTT volume alert mail occur UnsupportedEncodingException error!", e);
-		} catch (Exception e) {
-			sql="";
-			ErrorHandle("At send NTT volume alert mail occur Exception error!", e);
-		} finally{
+			sql="INSERT INTO HUR_SMS_LOG"
+					+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+					+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+mail_content+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
+			//寫入資料庫
+			
+			Statement st = null;
+			
 			try {
-				if(st!=null)
-					st.close();
+				sendMail(new String(mail_subject.getBytes("ISO8859-1"),"BIG5"), 
+						new String(mail_content.getBytes("ISO8859-1"),"BIG5").replaceAll("%2b", "+"),mail_sender ,mail_receiver );
+				
+				st = conn.createStatement();
+				logger.debug("execute SQL : "+sql); 
+				st.executeUpdate(sql);
 			} catch (SQLException e) {
+				ErrorHandle("At checkNTTVolumeAlert occur SQLException!");
+			} catch (UnsupportedEncodingException e) {
+				ErrorHandle("At checkNTTVolumeAlert occur UnsupportedEncodingException!");
+			} catch (Exception e) {
+				ErrorHandle("At checkNTTVolumeAlert occur Exception!");
+			}finally{
+				if(st!=null){
+					try {
+						st.close();
+					} catch (SQLException e) {
+
+					}
+				}
 			}
 		}
-	}*/
+		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
+	}
 	
 
 	
 	public void addonVolumeAlert(){
+		logger.info("addonVolumeAlert...");
+		long subStartTime = System.currentTimeMillis();
 		//20150623 新增華人上網包
 		//暫存數據用量資料 Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
@@ -3374,21 +3460,14 @@ public class DVRSmain extends TimerTask{
 		}
 		//1.5 GB
 		Double DEFAULT_VOLUME_THRESHOLD = 1.5*1024*1024*1024D;
-		//new Version
-		if(newVersion){
-			//System.out.println("New Version check Point 7.");
-			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0", "VOLUME_LIMIT1");
-		}
-		//new version end
 		
+		DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0", "VOLUME_LIMIT1");
+	
 		//2.0 GB
 		Double DEFAULT_VOLUME_THRESHOLD2 = 2.0*1024*1024*1024D;
-		//new Version
-		if(newVersion){
-			//System.out.println("New Version check Point 8.");
-			DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
-		}
-		//new version end
+		
+		DEFAULT_VOLUME_THRESHOLD = getSystemConfigDoubleParam("0","VOLUME_LIMIT2");
+		
 		
 		if(DEFAULT_VOLUME_THRESHOLD == null || DEFAULT_VOLUME_THRESHOLD2 == null){
 			sql="";
@@ -3434,18 +3513,17 @@ public class DVRSmain extends TimerTask{
 			if(volume>=DEFAULT_VOLUME_THRESHOLD2 && everAlertVolume<DEFAULT_VOLUME_THRESHOLD2){
 				//2.0 GB 
 				String msgids = "107";
-				//new Version
-				if(newVersion){
-					msgids = null;
-					//System.out.println("New Version check Point 9.");
-					
-					msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT2_MSG_ID");
-					if(msgids == null){
-						sql="";
-						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT2_MSG_ID! ");
-						continue;
-					}
+				
+				msgids = null;
+				
+				
+				msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT2_MSG_ID");
+				if(msgids == null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT2_MSG_ID! ");
+					continue;
 				}
+				
 				//new version end
 				contentid = msgids.split(",");
 				sendmsg=true;
@@ -3454,18 +3532,16 @@ public class DVRSmain extends TimerTask{
 			if(!sendmsg && volume>=DEFAULT_VOLUME_THRESHOLD && everAlertVolume<DEFAULT_VOLUME_THRESHOLD){
 				//1.5 GB 
 				String msgids = "106";
-				//new Version
-				if(newVersion){
-					msgids = null;
-					//System.out.println("New Version check Point 10.");
-					msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT1_MSG_ID");
-					 if(msgids == null){
-						sql="";
-						ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT1_MSG_ID! ");
-						continue;
-					}
+				
+				msgids = null;
+
+				msgids = getSystemConfigParam(priceplanid, "VOLUME_LIMIT1_MSG_ID");
+				 if(msgids == null){
+					sql="";
+					ErrorHandle("For ServiceID:"+serviceid+" PricePlanId:"+priceplanid+" cannot get VOLUME_LIMIT1_MSG_ID! ");
+					continue;
 				}
-				//new version end
+				
 				contentid = msgids.split(",");
 				sendmsg=true;
 			}
@@ -3487,8 +3563,332 @@ public class DVRSmain extends TimerTask{
 			}	
 		}
 		logger.debug("Total send 華人上網包 volume alert SMS "+smsCount+" ...");
+		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
+	}
+	
+	private void checkSlowDown(){
+		logger.info("checkSlowDown...");
+		long subStartTime = System.currentTimeMillis();
+		//Key:day , value:Map(SERVICEID,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
+		//重建不同的current day 結構
+		Map<String,Map<String,Map<String,Map<String,Object>>>> slowTempList = new HashMap<String,Map<String,Map<String,Map<String,Object>>>>();
+		for(String day : currentDayMap.keySet()){
+			Map<String,Map<String,Map<String,Object>>> oneDayMap = currentDayMap.get(day);
+			for(String serviceid: oneDayMap.keySet() ){
+				Map<String,Map<String,Object>> serviceidMap = oneDayMap.get(serviceid);
+				for(String mccmnc:serviceidMap.keySet()){
+					
+					Map<String,Object> mccmncMap = serviceidMap.get(mccmnc);
+					
+					if("1".equals(mccmncMap.get("IS_SLOWDOWN"))){
+						//降速過則跳過
+						continue;
+					}
+					
+					Map<String,Object> map;
+					Map<String,Map<String,Object>> map2; 
+					Map<String,Map<String,Map<String,Object>>> map3;
+					
+					if(slowTempList.containsKey(serviceid)){
+						map3=slowTempList.get(serviceid);
+						if(map3.containsKey(mccmnc)){
+							map2 = map3.get(mccmnc);
+						}else{
+							map2= new HashMap<String,Map<String,Object>>();
+						}
+					}else{
+						map3 = new HashMap<String,Map<String,Map<String,Object>>>();
+						map2= new HashMap<String,Map<String,Object>>();
+					}
+					
+					map = new HashMap<String,Object>();
+					map.put("LAST_FILEID", mccmncMap.get("LAST_FILEID"));
+					map.put("LAST_DATA_TIME", mccmncMap.get("LAST_DATA_TIME"));
+					map.put("CHARGE", mccmncMap.get("CHARGE"));
+					map.put("VOLUME", mccmncMap.get("VOLUME"));
+					map.put("ALERT", mccmncMap.get("ALERT"));
+					
+					map2.put(day, map);
+					map3.put(mccmnc, map2);
+					
+					slowTempList.put(serviceid, map3);
+					
+				}
+			}
+		}
+		
+		if(slowTempList.isEmpty()){
+			logger.info("need not slowdown");
+			return;
+		}
+		
+		//確認是否需要降速
+		for(Map<String,Object> m: slowDownList){
+			String mccmnc = (String) m.get("MNO");
+			Set<String> mccmncs = new HashSet<String>();
+			for(String s:mccmnc.split(","))
+				mccmncs.add(s);
+			
+			String priceplan = (String) m.get("PRICEPLAN");
+			Set<String> priceplans = new HashSet<String>();
+			for(String s:priceplan.split(","))
+				priceplans.add(s);
+			Integer limit = (Integer) m.get("LIMIT");	
+			String nGPRSName = (String) m.get("GPRS_NAME");
+			Date sDate,eDate;
+			try {
+				sDate = year_month_day_sdf.parse((String) m.get("TIMESTART"));
+				eDate = year_month_day_sdf.parse((String) m.get("TIMEEND"));
+			} catch (ParseException e1) {
+				ErrorHandle("For slowdown date mcc="+mccmncs+" ,priceplan="+priceplan+" parse date error.");
+				continue;
+			}
+			
+			Set<String> days = new HashSet<String>();
+			Set<String> mccs = new HashSet<String>();
+
+			for(String serviceid:slowTempList.keySet()){
+				double total = 0D;
+				days.clear();
+				mccs.clear();
+				String pricplanID = msisdnMap.get(serviceid).get("PRICEPLANID");
+				if (!priceplans.contains(pricplanID)) {
+					continue;
+				}
+				Map<String,Map<String,Map<String,Object>>> mccMncMap = slowTempList.get(serviceid);
+				
+				
+				try {
+					for(String mcc:mccmncs){
+						Map<String, Map<String, Object>> dayMap = mccMncMap.get(mcc);
+						
+						if(dayMap!=null){
+							for (String day : dayMap.keySet()) {
+								Date d = null;
+								
+									d = year_month_day_sdf.parse(day);
+	
+								if ((d.after(sDate) || d.equals(sDate))	&& d.before(eDate)) {
+									total += (Double) dayMap.get(day).get(
+											"VOLUME");
+									days.add(day);
+									mccs.add(mcc);
+								}
+							}
+						}	
+					}
+				} catch (ParseException e) {
+					ErrorHandle("For slowdown when parse customer date error! serviceid="+serviceid+".");
+					continue;
+				}
+				if(limit<=total){
+					for(String mcc:mccs){
+						for (String day : days) {
+							currentDayMap.get(day).get(serviceid).get(mcc).put("IS_SLOWDOWN", "1");
+							
+							//標記Update
+							Map <String,Set<String>> map6 = new HashMap<String,Set<String>>();
+							Set<String> set1 = new HashSet<String>();					
+
+							if(updateMapD.containsKey(day)){	
+								map6 = updateMapD.get(day);
+								if(map6.containsKey(serviceid)){
+									set1 = map6.get(serviceid);
+								}
+							}
+							set1.add(mcc);
+							map6.put(serviceid, set1);
+							updateMapD.put(day, map6);
+						}
+					}
+					doSlowDown(serviceid,nGPRSName);
+				}		
+			}		
+		}
+		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
+	}
+	
+	private void doSlowDown(String serviceid,String nGPRSName){
+		logger.info("doSlowDown...");
+		
+		suspendGPRS sus = new suspendGPRS(conn,conn2,logger);
+		String imsi = msisdnMap.get(serviceid).get("IMSI");
+		String msisdn = msisdnMap.get(serviceid).get("MSISDN");
+		String oGPRSName = null;
+		
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn2.createStatement();
+			
+			String sql2 = 
+					"SELECT B.SERVICEID, B.SERVICECODE, C.PDPSUBSID, C.PDPSUBSNAME "
+					+ "FROM PARAMETERVALUE A, SERVICE B, GPRSSUBSCRIPTION C "
+					+ "WHERE A.PARAMETERVALUEID=3749 AND A.SERVICEID=B.SERVICEID "
+					+ "AND B.PRICEPLANID=139 AND B.STATUS IN (1,3) "
+					+ "AND A.VALUE=C.PDPSUBSID AND B.SERVICECODE = '"+msisdn+"' ";
+			
+			logger.info("Query PDPSUBSNAME SQL:"+sql2);
+			rs = st.executeQuery(sql2);
+			
+			while(rs.next()){
+				oGPRSName = rs.getString("PDPSUBSNAME");
+			}
+		} catch (SQLException e) {
+			ErrorHandle("At doSlowDown occur Exception error!", e);
+		}finally{
+			try {
+				if(st!=null) st.close();
+				if(rs!=null) rs.close();
+			} catch (SQLException e) {
+			}
+		}
+		
+		
+		if(oGPRSName == null){
+			ErrorHandle("At doSlowDown occur error! Can't find serviceid="+serviceid+"'s PDPSUBSNAME.");
+			return ;
+		}
+		
+
+		PreparedStatement pst = null;
+		try {
+			
+			sql = "";
+			//20141118 add 傳回suspend排程的 service order nbr
+			Map<String,String> orderNBR = null;
+			orderNBR = sus.ReqStatus_16_Act(imsi, msisdn, "1", nGPRSName);
+			serviceOrderNBR.add(orderNBR);
+			sql=
+					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
+					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN,GPRS_STATUS,IS_SLOWDOWN) "
+					+ "VALUES(?,?,SYSDATE,?,?,?)";
+			
+			pst=conn.prepareStatement(sql);
+			pst.setString(1,orderNBR.get("cServiceOrderNBR") );
+			pst.setString(2,imsi );
+			pst.setString(3,msisdn );
+			pst.setString(4,oGPRSName );
+			pst.setString(5,"1" );
+			logger.info("Execute SQL : "+sql);
+			
+			pst.executeUpdate();
+		} catch (SQLException e) {
+			ErrorHandle("At doSlowDown occur SQLException error!", e);
+		/*} catch (IOException e) {
+			sql="";
+			ErrorHandle("At doSlowDown occur IOException error!", e);
+		} catch (ClassNotFoundException e) {
+			sql="";
+			ErrorHandle("At doSlowDown occur ClassNotFoundException error!", e);*/
+		} catch (Exception e) {
+			sql="";
+			ErrorHandle("At doSlowDown occur Exception error!", e);
+		}finally{
+			try {
+				if(pst!=null) pst.close();
+				if(sus.Temprs!=null) sus.Temprs.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
+	
+	private void doResumeSpeed(){
+		logger.info("doResumeSpeed...");
+		
+		String resumeSpeedReport = "";
+		
+		sql = "select A.MSISDN,A.GPRS_STATUS,B.SERVICEID,C.IMSI,TO_CHAR(A.CREATE_DATE,'yyyy-MM-dd hh24:mi:ss') CREATE_DATE "
+				+ "from HUR_SUSPEND_GPRS_LOG A,SERVICE B,IMSI C "
+				+ "WHERE A.MSISDN=B.SERVICECODE AND B.SERVICEID = C.SERVICEID "
+				+ "AND A.IS_SLOWDOWN = '1' AND RESULT = '000' AND A.CREATE_DATE>=sysdate-1 AND A.CREATE_DATE<=sysdate ";
+		Statement st = null;
+		ResultSet rs = null;
+		
+		List<Map<String,String>> resumeSpeedList = new ArrayList<Map<String,String>>();
+		try {
+			st = conn.createStatement();
+			
+			logger.info("Query slow up SQL:"+sql);
+			rs = st.executeQuery(sql);
+			
+			while(rs.next()){
+				Map<String,String> m = new HashMap<String,String>();
+				m.put("SERVICEID", rs.getString("SERVICEID"));
+				m.put("IMSI", rs.getString("IMSI"));
+				m.put("MSISDN", rs.getString("MSISDN"));
+				m.put("GPRS_STATUS", rs.getString("GPRS_STATUS"));
+				m.put("CREATE_DATE", rs.getString("CREATE_DATE"));
+				resumeSpeedList.add(m);
+			}
+			
+		} catch (SQLException e) {
+			ErrorHandle("At doResumeSpeed occur Exception error!", e);
+		}finally{
+			try {
+				if(st!=null) st.close();
+				if(rs!=null) rs.close();
+			} catch (SQLException e) {
+			}
+		}
+		
+		PreparedStatement pst = null;
+		suspendGPRS sus = new suspendGPRS(conn,conn2,logger);
+		try {
+			for(Map<String,String> m : resumeSpeedList){
+				
+				String imsi = m.get("IMSI");
+				String msisdn = m.get("MSISDN");
+				String GPRS_STATUS = m.get("GPRS_STATUS");
+				String time = m.get("CREATE_DATE");
+				//20141118 add 傳回suspend排程的 service order nbr
+				Map<String,String> orderNBR = null;
+				orderNBR = sus.ReqStatus_16_Act(imsi, msisdn , "1", GPRS_STATUS);
+				serviceOrderNBR.add(orderNBR);
+				sql=
+						"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
+						+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN,GPRS_STATUS) "
+						+ "VALUES(?,?,SYSDATE,?,?)";
+				
+				pst=conn.prepareStatement(sql);
+				pst.setString(1,orderNBR.get("cServiceOrderNBR") );
+				pst.setString(2,imsi );
+				pst.setString(3,msisdn );
+				pst.setString(4,GPRS_STATUS );
+				logger.info("Execute SQL : "+sql);
+				pst.executeUpdate();
+				
+				resumeSpeedReport += msisdn+" had been resume speed!( slowDown at "+time+")\n";
+				try {
+					Thread.sleep(1000);
+				} catch (Exception e) {
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			ErrorHandle("At doSlowDown occur SQLException error!", e);
+		} catch (Exception e) {
+			sql="";
+			ErrorHandle("At doSlowDown occur Exception error!", e);
+		}finally{
+			try {
+				if(pst!=null) pst.close();
+				if(sus.Temprs!=null) sus.Temprs.close();
+			} catch (SQLException e) {
+			}
+		}
+		String mailReceiver = "k1988242001@gmail.com";
+		if(!TEST_MODE){
+			mailReceiver+=",Yvonne.lin@sim2travel.com";
+		}
+		
+		logger.info("Send resumeSpeedReport result.");
+		sendMail("DVRS Resume speed Report.",resumeSpeedReport,"DVRS Alert",mailReceiver);
+		resumeSpeed = false;
 		
 	}
+
 	
 	/**
 	 * 依照額度需求發送警示簡訊
@@ -3504,10 +3904,13 @@ public class DVRSmain extends TimerTask{
 			try {
 				ckeckMonthAlert();
 				checkDailyAlert();
-				//降速提醒簡訊判斷*************************************
-				//20150702 cancel
-				//checkNTTVolumeAlert();
+				//華人上網包降速提醒簡訊
 				addonVolumeAlert();
+				//20160624 對特定條件客戶進行降速
+				checkSlowDown();
+				//20160701 mod ，重新啟用NTT用量告警
+				checkNTTVolumeAlert();
+				
 			} catch (Exception e) {
 				sql="";
 				ErrorHandle("At sendAlertSMS got Exception!",e);
@@ -3642,7 +4045,7 @@ public class DVRSmain extends TimerTask{
 			
 			sql = "";
 			//20141118 add 傳回suspend排程的 service order nbr
-			Map<String,String> orderNBR=sus.ReqStatus_17_Act(imsi, msisdn,GPRSStatus);
+			Map<String,String> orderNBR=sus.ReqStatus_16_Act(imsi, msisdn,GPRSStatus);
 			serviceOrderNBR.add(orderNBR);
 			sql=
 					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
@@ -3866,6 +4269,7 @@ public class DVRSmain extends TimerTask{
 						+ "WHERE A.SERVICE_ORDER_NBR='"+NBR.get("cServiceOrderNBR")+"'";
 				
 				Statement st2 = conn.createStatement();
+				logger.info("Update HUR_SUSPEND_GPRS_LOG:"+sql);
 				st2.executeUpdate(sql);
 				st2.close();
 				//conn.createStatement().executeUpdate(sql);
@@ -3945,6 +4349,9 @@ public class DVRSmain extends TimerTask{
 			}
 			logger.info("Query_SyncFileDtlStatus:" + Integer.toString(i)
 					+ " Times " + cSt);
+			
+			if("000".equals(cSt))
+				break;
 		}
 		return cSt;
     }
@@ -3962,7 +4369,6 @@ public class DVRSmain extends TimerTask{
 	
 	public static void main(String[] args) {
 		
-
 		IniProgram();
 		
 		if(TEST_MODE){
@@ -4034,11 +4440,12 @@ public class DVRSmain extends TimerTask{
 			executing=false;
 		}
 	}
+	long connectionTime1,connectionTime2;
 	
 	private void process() {
 		// 程式開始時間
+		
 		long startTime;
-	
 		logger.info("RFP Program Start! "+new Date());
 		
 		// 進行DB連線
@@ -4050,15 +4457,15 @@ public class DVRSmain extends TimerTask{
 			logger.debug("connect success!");
 			
 			startTime = System.currentTimeMillis();
-			
-			//取消自動Commit
-			cancelAutoCommit();
+			connectionTime1 = startTime;
+			connectionTime2 = startTime;
 			
 			if(
 					setDayDate() && //設定日期
 					setIMSItoServiceIDMap()&&//設定IMSI至ServiecId的對應
-					//setServiceIDtoImsiMap()&&//設定ServiecId至IMSI的對應
-					//setLastFileID()&&//取得最後更新的FileID
+					//20160624 add
+					setSlowDownList()&&
+	
 					setThreshold()&&//取出HUR_THRESHOLD
 					setDataRate()&&//取出HUR_DATARATE
 					setMsisdnMap()&&//取出msisdn資訊
@@ -4070,24 +4477,33 @@ public class DVRSmain extends TimerTask{
 					setAddonData()&&//華人上網包申請資料
 					setQosData()&&//設定SX001,SX002資料
 					setCurrencyMap()&&//設定PricePlanID對應幣別
-					//new Version
-					(newVersion&&setSystemConfig())&&//系統Comfig設定
-					//new version end
+					setSystemConfig()&&//系統Comfig設定
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
 
 				if(resume){
+					checkConnection();
 					checkResume();
 				}
+				if(resumeSpeed){
+					checkConnection();
+					doResumeSpeed();
+				}
+				
 
 				//開始批價 
+				checkConnection();
 				charge();
 
 				//發送警示簡訊
+				checkConnection();
 				sendAlertSMS();
 				
 				//回寫批價結果
+				checkConnection();
+				//取消自動Commit
+				cancelAutoCommit();
 				if(
 						updateCdr()&&
 						insertCurrentMap()&&
@@ -4104,10 +4520,9 @@ public class DVRSmain extends TimerTask{
 						}
 						ErrorHandle("At commit occur SQLException error!",e);
 					}
-
-					//suspend的後續追蹤處理
-					processSuspendNBR();
 				}
+				//suspend的後續追蹤處理
+				processSuspendNBR();
 			}
 
 			// 程式執行完成
@@ -4119,6 +4534,32 @@ public class DVRSmain extends TimerTask{
 			ErrorHandle("Cannot connect to DB(connect is null)!!");
 		}
 	}	
+	
+	
+	private void checkConnection(){
+		if(System.currentTimeMillis()-connectionTime1>30*60*1000){
+			if(conn!=null){
+				try {
+					conn.close();
+					
+				} catch (SQLException e1) {
+				}
+			}
+			connectDB();
+			connectionTime1 = System.currentTimeMillis();
+		}
+		if(System.currentTimeMillis()-connectionTime2>30*60*1000){
+			if(conn2!=null){
+				try {
+					conn2.close();
+					
+				} catch (SQLException e1) {
+				}
+			}
+			connectDB2();
+			connectionTime2 = System.currentTimeMillis();
+		}
+	}
 }
 
 

@@ -42,14 +42,25 @@ public class suspendGPRS {
 	private SimpleDateFormat dFormat3=new SimpleDateFormat("yyMMddHHmm");
 	private SimpleDateFormat dFormat4=new SimpleDateFormat("yyMMddHHmmss");
 	private String cFileID,cFileName,c910SEQ,sCount,cWorkOrderNBR,sDATE,Sdate,sDataType,sValue,sSubCode,sStepNo,sTypeCode,sMap,sM_CTYPE,cGPRSStatus;
+	//20160628 add
+	private String cGPRSName;
+	
 	private String sFMTH,sFMTHa,sSFMTH,sSFMTHa;
 	static Vector<String> vln=new Vector<String>();
 	public ResultSet Temprs;
 	private String sSql;	
 	
-	public Map<String,String> ReqStatus_17_Act(String imsi,String msisdn,String GPRSStatus) throws SQLException,
+	//20160628 add
+	public Map<String, String> ReqStatus_16_Act(String imsi, String msisdn,	String GPRSStatus) throws SQLException, IOException, ClassNotFoundException, Exception{
+		
+		String GPRSName = "CHT-GPRS";
+		
+		return ReqStatus_16_Act(imsi,msisdn,GPRSStatus,GPRSName);
+	}
+	//20160628 mod
+	public Map<String,String> ReqStatus_16_Act(String imsi,String msisdn,String GPRSStatus,String GPRSName) throws SQLException,
 			IOException, ClassNotFoundException, Exception {
-		logger.debug("ReqStatus_17_Act");
+		logger.debug("ReqStatus_16_Act");
 		
 		cS2TIMSI=imsi;
 		cS2TMSISDN=msisdn;
@@ -67,6 +78,8 @@ public class suspendGPRS {
 		//20160115 add 以參數方式從外部帶入
 		//cGPRSStatus="0";
 		cGPRSStatus = GPRSStatus;
+		//20160628 add
+		cGPRSName = GPRSName;
 		
 		//設定sCount 
 		Temprs = null;
@@ -613,13 +626,15 @@ public class suspendGPRS {
 				sValue = sSFMTH;
 			} else if ("SFMTH_A".equals(TeRtA.getString("MAP_VALUE"))) {
 				sValue = sSFMTHa;
-			} else if ("FORWARD_TO_HOME_NO"
-					.equals(TeRtA.getString("MAP_VALUE"))) {
+			} else if ("FORWARD_TO_HOME_NO".equals(TeRtA.getString("MAP_VALUE"))) {
 				sValue = sFORWARD_TO_HOME_NO;
-			} else if ("S_FORWARD_TO_HOME_NO".equals(TeRtA
-					.getString("MAP_VALUE"))) {
+			} else if ("S_FORWARD_TO_HOME_NO".equals(TeRtA.getString("MAP_VALUE"))) {
 				sValue = sS_FORWARD_TO_HOME_NO;
+			}else if("N_GPRS".equals(TeRtA.getString("MAP_VALUE"))) {
+				//20160628 add
+				sValue = cGPRSName;
 			}
+			
 			logger.debug("MAP_VALUE:" + sMap + "=" + sValue + ",StepNo:"
 					+ sStepNo + ",DataType:" + sDataType + ",TypeCode:"
 					+ sTypeCode);
