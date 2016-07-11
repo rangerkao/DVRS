@@ -158,6 +158,8 @@ public class DVRSmain extends TimerTask{
 	private static boolean executing =false;
 	private static boolean hasWaiting = false;
 	
+	//20160706 add
+	long subStartTime = 0;
 	
 	static Map<String,Map<String,Map<String,Object>>> currentMap = new HashMap<String,Map<String,Map<String,Object>>>();
 	static Map<String,Map<String,Map<String,Map<String,Object>>>> currentDayMap = new HashMap<String,Map<String,Map<String,Map<String,Object>>>>();
@@ -210,7 +212,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private boolean setDayDate(){
 		logger.info("setMonthDate...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 
 		//目前時間
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
@@ -238,7 +240,10 @@ public class DVRSmain extends TimerTask{
 			resume = true;
 			NTTalerted = false;
 			NTT75alerted = false;
+			updateSystemConfig("NTT_ALERTED","0");
 		}
+		//201607 add
+		//當執行時間為0點時進行速度恢復
 		if("00".equals(programeTime.substring(2))){
 			resumeSpeed = true;
 		}
@@ -255,7 +260,7 @@ public class DVRSmain extends TimerTask{
 		sSX001.clear();
 		sSX002.clear();
 		
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		//sSX001
 		sSX001.add("45412");
 		
@@ -314,27 +319,15 @@ public class DVRSmain extends TimerTask{
 				while(rs.next()){
 					
 					boolean isdayly = "1".equals(rs.getString("ISDAYLY"))?true:false;
-					String sDate = null,eDate = null;
-					if(isdayly){
-						Calendar c = Calendar.getInstance();
-						c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-						sDate = year_month_day_sdf.format(c.getTime());
-						
-						c.set(Calendar.DAY_OF_MONTH, c.get(Calendar.DAY_OF_MONTH)+1);
-						eDate = year_month_day_sdf.format(c.getTime());
-					}else{
-						sDate = rs.getString("START_DATE");
-						eDate = rs.getString("END_DATE");
-					}
-					System.out.println(sDate+"~"+eDate);
-					
+
 					Map<String,Object> m = new HashMap<String,Object>();
 					m.put("MNO", rs.getString("MCCMNC"));
 					m.put("PRICEPLAN", rs.getString("PRICEPLANID"));
-					m.put("LIMIT", rs.getInt("LIMIT")*1024);//500MB
-					m.put("TIMESTART", sDate);
-					m.put("TIMEEND", eDate);
+					m.put("LIMIT", rs.getInt("LIMIT")*1024);//KB to B
+					m.put("TIMESTART", rs.getString("START_DATE"));
+					m.put("TIMEEND", rs.getString("END_DATE"));
 					m.put("GPRS_NAME", rs.getString("GPRS_NAME"));
+					m.put("ISDAILY", isdayly);
 					slowDownList.add(m);
 				}
 				
@@ -389,6 +382,15 @@ public class DVRSmain extends TimerTask{
 					m.put(rs.getString("NAME"), rs.getObject("VALUE"));
 					systemConfig.put(id, m);
 				}
+				
+				//20160704 add
+				if("NTT_ALERTED".equals(rs.getString("NAME"))){
+					if("100".equals(rs.getObject("VALUE"))){
+						NTTalerted = true;
+					}else if("75".equals(rs.getObject("VALUE"))){
+						NTT75alerted = true;
+					}
+				}
 			}
 			result= true;
 			
@@ -432,7 +434,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	/*private boolean setLastFileID(){
 		logger.info("setLastFileID...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		boolean result = false;
 		
 		Statement st = null;
@@ -483,7 +485,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("setCurrentMap...");
 		currentMap.clear();
 		
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result = false;
@@ -558,7 +560,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("setoldChargeMap...");
 		oldChargeMap.clear();
 		
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		if(currentMap.containsKey(sYearmonth)){
 			for(String serviceid : currentMap.get(sYearmonth).keySet()){
 				oldChargeMap.put(serviceid, (Double)currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
@@ -581,7 +583,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setCurrentMapDay...");
 		currentDayMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -670,7 +672,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setDataRate...");
 		dataRate.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		boolean result = false;
 		Statement st = null;
 		ResultSet rs = null;
@@ -783,7 +785,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setThreshold...");
 		thresholdMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -826,7 +828,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setSERVICEIDtoVLN...");
 		SERVICEIDtoVLN.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -875,7 +877,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setVLNtoTADIG...");
 		VLNtoTADIG.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -920,7 +922,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setTADIGtoMCCMNC...");
 		TADIGtoMCCMNC.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -965,7 +967,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setCostomerNumber...");
 		codeMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -1008,7 +1010,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private int dataCount(){
 		logger.info("dataCount...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		sql="SELECT COUNT(1) count  FROM HUR_DATA_USAGE A WHERE A.CHARGE is null ";
@@ -1049,7 +1051,7 @@ public class DVRSmain extends TimerTask{
 	//20151229 del
 	/*private double defaultRate(){
 		logger.info("defaultRate...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		double defaultRate=0.011;
 		logger.info("defaultRate : " +defaultRate+" TWD ");
@@ -1067,7 +1069,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("setAddonData...");
 		addonDataList.clear();
 		
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result = false;
@@ -1114,7 +1116,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setIPtoMccmncList...");
 		IPtoMccmncList.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -1163,7 +1165,7 @@ public class DVRSmain extends TimerTask{
 		checkConnection();
 		logger.info("setMsisdnMap...");
 		msisdnMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -1256,7 +1258,7 @@ public class DVRSmain extends TimerTask{
 		logger.info("setServiceIDtoImsiMap...");
 		IMSItoServiceIdMap.clear();
 		ServiceIdtoIMSIMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		Statement st = null;
 		ResultSet rs = null;
@@ -1381,7 +1383,7 @@ public class DVRSmain extends TimerTask{
 	/*private boolean setServiceIDtoImsiMap(){
 		logger.info("setServiceIDtoImsiMap...");
 		ServiceIdtoIMSIMap.clear();
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		boolean result =false;
@@ -1817,7 +1819,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private void charge(){
 		logger.info("charge...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		//20151230 add
 		//20151231 cancel
@@ -2201,7 +2203,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private boolean updateCdr(){
 		logger.info("updateCdr...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		boolean result =false;
 		int count=0;
@@ -2250,7 +2252,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private boolean updateCurrentMap(){
 		logger.info("updateCurrentMap...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 
 		boolean result = false;
 		int count=0;
@@ -2331,7 +2333,7 @@ public class DVRSmain extends TimerTask{
 	}
 	private boolean updateCurrentMapDay(){
 		logger.info("updateCurrentMapDay...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 
 		int count=0;
 		boolean result= false;
@@ -2395,7 +2397,7 @@ public class DVRSmain extends TimerTask{
 	
 	private boolean insertCurrentMap(){
 		logger.info("insertCurrentMap...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		
 		boolean result = false;
 		int count = 0 ;
@@ -2459,7 +2461,7 @@ public class DVRSmain extends TimerTask{
 	
 	private boolean insertCurrentMapDay(){
 		logger.info("insertCurrentMapDay...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 
 		boolean result = false;
 		int count = 0;
@@ -3343,7 +3345,7 @@ public class DVRSmain extends TimerTask{
 		
 		//NTT
 		logger.info("checkNTTVolumeAlert...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		double volumn = 0L;
 		double limit = 85;
 		double limit2 = 63.75;
@@ -3392,20 +3394,29 @@ public class DVRSmain extends TimerTask{
 		
 		if(sendMail){
 
-			sql="INSERT INTO HUR_SMS_LOG"
-					+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
-					+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+mail_content+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
-			//寫入資料庫
+			
 			
 			Statement st = null;
 			
 			try {
-				sendMail(new String(mail_subject.getBytes("ISO8859-1"),"BIG5"), 
-						new String(mail_content.getBytes("ISO8859-1"),"BIG5").replaceAll("%2b", "+"),mail_sender ,mail_receiver );
+				
+				sql="INSERT INTO HUR_SMS_LOG"
+						+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE) "
+						+ "VALUES(DVRS_SMS_ID.NEXTVAL,'"+mail_receiver+"','"+new String(mail_content.getBytes("BIG5"),"ISO8859-1")+"',TO_DATE('"+spf.format(new Date())+"','yyyy/MM/dd HH24:mi:ss'),'success',SYSDATE)";
+				//寫入資料庫
+				
+				sendMail(mail_subject,mail_content,mail_sender ,mail_receiver );
 				
 				st = conn.createStatement();
 				logger.debug("execute SQL : "+sql); 
 				st.executeUpdate(sql);
+				
+				if(NTTalerted){
+					updateSystemConfig("NTT_ALERTED","100");
+				}else if(NTT75alerted){
+					updateSystemConfig("NTT_ALERTED","75");
+				}
+				
 			} catch (SQLException e) {
 				ErrorHandle("At checkNTTVolumeAlert occur SQLException!");
 			} catch (UnsupportedEncodingException e) {
@@ -3425,11 +3436,37 @@ public class DVRSmain extends TimerTask{
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 	}
 	
+	
+	//20160704 add
+	private void updateSystemConfig(String name,String value){
+		Statement st = null;
+		try {
+			st = conn.createStatement();
+			sql = "update HUR_DVRS_CONFIG A set A.VALUE = '"+value+"' where A.NAME = '"+name+"'";
+			logger.debug("updateSystemConfig SQL : "+sql); 
+			st.executeUpdate(sql);
+			
+			
+		} catch (SQLException e) {
+			ErrorHandle("At updateSystemConfig occur SQLException!");
+		} catch (Exception e) {
+			ErrorHandle("At updateSystemConfig occur Exception!");
+		}finally{
+			if(st!=null){
+				try {
+					st.close();
+				} catch (SQLException e) {
+
+				}
+			}
+		}
+	}
+	
 
 	
 	public void addonVolumeAlert(){
 		logger.info("addonVolumeAlert...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		//20150623 新增華人上網包
 		//暫存數據用量資料 Key:SERVICEID,Value:Volume
 		Map<String,Double> tempMap = new HashMap<String,Double>();
@@ -3568,7 +3605,7 @@ public class DVRSmain extends TimerTask{
 	
 	private void checkSlowDown(){
 		logger.info("checkSlowDown...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 		//Key:day , value:Map(SERVICEID,Map(MCCMNC,Map(LAST_FILEID,LAST_DATA_TIME,CHARGE,VOLUME,ALERT)))
 		//重建不同的current day 結構
 		Map<String,Map<String,Map<String,Map<String,Object>>>> slowTempList = new HashMap<String,Map<String,Map<String,Map<String,Object>>>>();
@@ -3635,14 +3672,36 @@ public class DVRSmain extends TimerTask{
 				priceplans.add(s);
 			Integer limit = (Integer) m.get("LIMIT");	
 			String nGPRSName = (String) m.get("GPRS_NAME");
-			Date sDate,eDate;
+			boolean isdaily = (Boolean) m.get("ISDAILY");
+			
+			
+			Date sDate=null,eDate=null;
+			Date dataSDate = null,dataEDate = null;
 			try {
-				sDate = year_month_day_sdf.parse((String) m.get("TIMESTART"));
-				eDate = year_month_day_sdf.parse((String) m.get("TIMEEND"));
+				sDate = m.get("TIMESTART") !=null ? year_month_day_sdf.parse((String) m.get("TIMESTART")):null;
+				
+				if(m.get("TIMEEND")!=null){
+					eDate = year_month_day_sdf.parse((String) m.get("TIMEEND"));
+					eDate = new Date(eDate.getTime()+24*60*60*1000);
+				}
+				
+				if(isdaily){
+					dataSDate = year_month_day_sdf.parse(sYearmonthday);
+					dataEDate = new Date(dataSDate.getTime()+24*60*60*1000);
+				}else{
+					return;
+				}
+				System.out.println(dataSDate+"~"+dataEDate);
 			} catch (ParseException e1) {
 				ErrorHandle("For slowdown date mcc="+mccmncs+" ,priceplan="+priceplan+" parse date error.");
 				continue;
 			}
+			
+			
+			
+			
+			
+			
 			
 			Set<String> days = new HashSet<String>();
 			Set<String> mccs = new HashSet<String>();
@@ -3660,22 +3719,33 @@ public class DVRSmain extends TimerTask{
 				
 				try {
 					for(String mcc:mccmncs){
-						Map<String, Map<String, Object>> dayMap = mccMncMap.get(mcc);
-						
-						if(dayMap!=null){
-							for (String day : dayMap.keySet()) {
-								Date d = null;
-								
-									d = year_month_day_sdf.parse(day);
-	
-								if ((d.after(sDate) || d.equals(sDate))	&& d.before(eDate)) {
-									total += (Double) dayMap.get(day).get(
-											"VOLUME");
-									days.add(day);
-									mccs.add(mcc);
-								}
+						for(String dMcc:mccMncMap.keySet()){
+							Map<String, Map<String, Object>> dayMap = null;
+							if(mcc.equals(dMcc)||mcc.substring(0,3).equals(dMcc.substring(0,3))){
+								dayMap = mccMncMap.get(dMcc);
+							}else{
+								continue;
 							}
-						}	
+							
+							
+							if(dayMap!=null){
+								for (String day : dayMap.keySet()) {
+									Date d = null;
+									
+										d = year_month_day_sdf.parse(day);
+		
+									if (
+											((sDate == null || d.after(sDate) || d.equals(sDate))	&& (eDate ==null ||d.before(eDate)))&& //有效區間
+											((d.after(dataSDate) || d.equals(dataSDate))	&& d.before(dataEDate))//符合的計算時間
+											){
+										total += (Double) dayMap.get(day).get(
+												"VOLUME");
+										days.add(day);
+										mccs.add(dMcc);
+									}
+								}
+							}	
+						}
 					}
 				} catch (ParseException e) {
 					ErrorHandle("For slowdown when parse customer date error! serviceid="+serviceid+".");
@@ -3701,7 +3771,8 @@ public class DVRSmain extends TimerTask{
 							updateMapD.put(day, map6);
 						}
 					}
-					doSlowDown(serviceid,nGPRSName);
+					System.out.println("IS doing slow down...");
+					//doSlowDown(serviceid,nGPRSName);
 				}		
 			}		
 		}
@@ -3898,7 +3969,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	private void sendAlertSMS(){
 		logger.info("sendAlertSMS...");
-		long subStartTime = System.currentTimeMillis();
+		subStartTime = System.currentTimeMillis();
 
 		if(getSMSsetting()&&getSMSContents()){
 			try {
@@ -4456,12 +4527,18 @@ public class DVRSmain extends TimerTask{
 			
 			logger.debug("connect success!");
 			
+			//20160706 add
+			Thread subCheckThread = new Thread(new ThreadWatcher());
+			threadCheck = true;
+			subCheckThread.start();
+			
 			startTime = System.currentTimeMillis();
 			connectionTime1 = startTime;
 			connectionTime2 = startTime;
 			
 			if(
 					setDayDate() && //設定日期
+					setSystemConfig()&&//系統Comfig設定
 					setIMSItoServiceIDMap()&&//設定IMSI至ServiecId的對應
 					//20160624 add
 					setSlowDownList()&&
@@ -4477,7 +4554,7 @@ public class DVRSmain extends TimerTask{
 					setAddonData()&&//華人上網包申請資料
 					setQosData()&&//設定SX001,SX002資料
 					setCurrencyMap()&&//設定PricePlanID對應幣別
-					setSystemConfig()&&//系統Comfig設定
+					
 					(currentMap.size()!=0||setCurrentMap())&&//取出HUR_CURRENT
 					setoldChargeMap()&&//設定old 20151027 modified update old Map every times
 					(currentDayMap.size()!=0||setCurrentMapDay())){//取出HUR_CURRENT
@@ -4528,6 +4605,7 @@ public class DVRSmain extends TimerTask{
 			// 程式執行完成
 			logger.info("Program execute time :" + (System.currentTimeMillis() - startTime));
 			closeConnect();
+			threadCheck = false;
 
 		} else {
 			sql="";
@@ -4535,9 +4613,29 @@ public class DVRSmain extends TimerTask{
 		}
 	}	
 	
+	boolean threadCheck = false;
+	class ThreadWatcher implements Runnable {
+
+		@Override
+		public void run() {
+			while(threadCheck){
+				logger.info("threadCheck running...");
+				try {
+					Thread.sleep(5*60*1000);	
+				} catch (InterruptedException e) {
+				}
+				
+				if(System.currentTimeMillis()-subStartTime>=30*60*1000){
+					ErrorHandle("Subprocess had ececuted longger than 30min.\n\nPlease check if the program is in normal.");
+				}
+			}
+		}
+		
+	}
+	
 	
 	private void checkConnection(){
-		if(System.currentTimeMillis()-connectionTime1>30*60*1000){
+		if(System.currentTimeMillis()-connectionTime1>10*60*1000){
 			if(conn!=null){
 				try {
 					conn.close();
@@ -4548,7 +4646,7 @@ public class DVRSmain extends TimerTask{
 			connectDB();
 			connectionTime1 = System.currentTimeMillis();
 		}
-		if(System.currentTimeMillis()-connectionTime2>30*60*1000){
+		if(System.currentTimeMillis()-connectionTime2>10*60*1000){
 			if(conn2!=null){
 				try {
 					conn2.close();
