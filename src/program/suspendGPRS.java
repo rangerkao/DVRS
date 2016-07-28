@@ -49,6 +49,7 @@ public class suspendGPRS {
 	static Vector<String> vln=new Vector<String>();
 	public ResultSet Temprs;
 	private String sSql;	
+	private String priceplanID;
 	
 	//20160628 add
 	public Map<String, String> ReqStatus_16_Act(String imsi, String msisdn,	String GPRSStatus) throws SQLException, IOException, ClassNotFoundException, Exception{
@@ -237,8 +238,16 @@ public class suspendGPRS {
 			}
 			
 			st3.close();
-			if(sHOMEIMSI==null || "".equals(sHOMEIMSI) || PARTNERMSISDN==null || "".equals(PARTNERMSISDN))
-				throw new Exception("Can't find HOMEIMSI,PARTNERMSISDN");
+			if(sHOMEIMSI==null || "".equals(sHOMEIMSI) || PARTNERMSISDN==null || "".equals(PARTNERMSISDN)){
+			
+				//20160725 mod
+				if("139".equals(priceplanID))
+					throw new Exception("Can't find HOMEIMSI,PARTNERMSISDN");
+				else{
+					sHOMEIMSI = cS2TIMSI;
+					PARTNERMSISDN = cS2TMSISDN;
+				}
+			}
 			
 		}
 	
@@ -794,5 +803,13 @@ public class suspendGPRS {
 
 	     return cSt;
 	    }
+	public String getPriceplanID() {
+		return priceplanID;
+	}
+	public void setPriceplanID(String priceplanID) {
+		this.priceplanID = priceplanID;
+	}
 
+	 
+	 
 }

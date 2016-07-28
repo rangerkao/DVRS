@@ -32,9 +32,10 @@ public class MenuControl extends BaseControl {
 		l2.add(new Link("settingList","smsContentSettingLink","簡訊內容設定"));
 		l2.add(new Link("settingList","smsThresholdSettingLink","簡訊警示設定"));
 		l2.add(new Link("settingList","limitSettingLink","警示上限設定"));
-
+		
 		//層級三
 		List<Link> l3=new ArrayList<Link>();
+		l3.add(new Link("searchList","volumePocketSettingLink","美國流量包設定"));
 		l3.add(new Link("searchList","smsQueryLink","超量簡訊發送查詢"));
 		l3.add(new Link("searchList","dataRateLink","費率查詢"));
 		l3.add(new Link("searchList","currentMonthLink","每月累計查詢"));

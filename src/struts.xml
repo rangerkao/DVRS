@@ -43,6 +43,7 @@
 			<result name="cardChangeHistory" type="tiles">cardChangeHistory</result>
 			<result name="numberChangeHistory" type="tiles">numberChangeHistory</result>
 			<result name="sendSMS" type="tiles">sendSMS</result>
+			<result name="volumePocketSetting" type="tiles">volumePocketSetting</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -145,5 +146,11 @@
     <!-- History -->
     	<action name="queryCardChangeHistory" method="queryCardChangeHistory" class="action.HistoryAction"/>
         <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction"/>    
+    <!-- VolumePocket -->
+     	<action name="queryVolumePocketList" method="queryVolumePocketList" class="action.VolumePocketAction"/>
+        <action name="inserVolumePocket" method="inserVolumePocket" class="action.VolumePocketAction"/> 
+        <action name="updateVolumePocket" method="updateVolumePocket" class="action.VolumePocketAction"/> 
+        <action name="cancelVolumePocket" method="cancelVolumePocket" class="action.VolumePocketAction"/>      
+       
     </package>
 </struts>

@@ -27,7 +27,6 @@ import dao.SMSDao;
 public class SMSControl extends BaseControl{
 
 	SMSDao smsDao = new SMSDao();
-	String smsId="6";
 	
 	public SMSControl() throws Exception {
 		super();
@@ -51,27 +50,13 @@ public class SMSControl extends BaseControl{
 	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
 		return smsDao.queryAlertLimit();
 	}
-	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
+	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws Exception{
 		
+		int result = smsDao.insertAlertLimit(imsi,limit);
 		if(sendSMS){
-			String content=smsDao.getSMSContent(smsId);
-			if(content!=null && !"".equals(content)){
-				if(msisdn==null ||"".equals(msisdn)){
-				}else{
-					String cphone=queryCustmerServicePhone(imsi);
-					
-					if(cphone==null)
-						cphone="";
-					content=content.replace("{{customerService}}", cphone);
-					
-					String res=setSMSPostParam(content,msisdn,cphone);
-					
-					smsDao.logSendSMS(msisdn, content, res,"VIP");
-				}
-					
-			}
+			sendSMS("6",msisdn,imsi,"VIP");
 		}
-		return smsDao.insertAlertLimit(imsi,limit);
+		return result;
 	}
 	public int updateAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
 		/*if(sendSMS){
@@ -114,6 +99,21 @@ public class SMSControl extends BaseControl{
 		return smsDao.queryTWNMSISDN(msisdn);
 	}
 	
+	public void sendSMS(String smsId,String msisdn,String imsi,String SMStype) throws Exception{
+		String content=smsDao.getSMSContent(smsId);
+		if(content!=null && !"".equals(content)){
+			if(msisdn==null ||"".equals(msisdn)){
+			}else{
+				
+				String res=setSMSPostParam(content,msisdn);
+				smsDao.logSendSMS(msisdn, content, res,SMStype);
+			}
+				
+		}else {
+			throw new Exception("Can't send SMS without content!");
+		}
+	}
+	
 	
 	
 	
@@ -126,7 +126,7 @@ public class SMSControl extends BaseControl{
 	 * @throws IOException
 	 */
 	@SuppressWarnings("unused")
-	private String setSMSPostParam(String msg,String phone,String cphone) throws IOException{
+	private String setSMSPostParam(String msg,String phone) throws IOException{
 		StringBuffer sb=new StringBuffer ();
 		if("true".equals(props.getProperty("progrma.TEST_MODE"))){
 			System.out.println("test mode");
@@ -153,9 +153,7 @@ public class SMSControl extends BaseControl{
 		param=param.replace("{{charset}}",charset );
 		param=param.replace("{{InfoCharCounter}}",InfoCharCounter );
 		param=param.replace("{{PID}}",PID );
-		param=param.replace("{{DCS}}",DCS );
-		
-		
+		param=param.replace("{{DCS}}",DCS );		
 		
 		return HttpPost("http://10.42.200.100:8800/Send%20Text%20Message.htm", param,"");
 	}
@@ -249,21 +247,21 @@ public class SMSControl extends BaseControl{
 
 		String res;
 		try {
-			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn);
 			System.out.println("send A result = "+res);
 			smsDao.logSendSMS(msisdn, new String(content.get("A").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 			}
-			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn);
 			System.out.println("send B result = "+res);
 			smsDao.logSendSMS(msisdn, new String(content.get("B").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 			}
-			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn,null);
+			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn);
 			System.out.println("send C result = "+res);
 			smsDao.logSendSMS(msisdn, new String(content.get("C").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 		} finally{

@@ -32,29 +32,60 @@ function pagination(){
 	$("#page_contain").empty();
 	
 	var count=0;
+	
+	$("#page_contain").append("<table  align='center' style='vertical-align: middle; ' class='pages' id='page"+totalPage+"'  width='95%'></table>");
+
+	$("#page"+totalPage).append("<tr align='center'></tr>");
+	$.each(tHead,function(i,head){
+		if(head.name=="radio_disabled"){
+			//do nothing
+		}else{
+			if(head.name=="button" || head.name=="checkbox" || head.name=="radio")
+				$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'></td>");
+			else
+				$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'>"+head.name+"</td>");
+		}
+		
+	});
+	
+	count++;
+	
+	
 	$.each(dataList,function(i,data){
 		
 		if(count==0){
 			//$("ul.pagination").append("<li><a href='#page"+totalPage+"'>"+totalPage+"</a></li>");
 			
-			$("#page_contain").append("<table  align='center' class='pages' id='page"+totalPage+"'  width='95%'></table>");
+			$("#page_contain").append("<table  align='center' style='vertical-align: middle; ' class='pages' id='page"+totalPage+"'  width='95%'></table>");
 
 			$("#page"+totalPage).append("<tr align='center'></tr>");
 			$.each(tHead,function(i,head){
-				if(head.name=="button" || head.name=="checkbox")
-					$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'></td>");
-				else
-					$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'>"+head.name+"</td>");
+				if(head.name=="radio_disabled"){
+					//do nothing
+				}else{
+					if(head.name=="button" || head.name=="checkbox" || head.name=="radio")
+						$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'></td>");
+					else 
+						$("#page"+totalPage+" tr").first().append("<td class='columnLabel' width='"+head._width+"'>"+head.name+"</td>");
+				}
 			});
 		}
 		$("#page"+totalPage).append("<tr align='center'></tr>");
 		$.each(tHead,function(i,head){
-			if(head.name=="button")
-				$("#page"+totalPage+" tr").last().append(head.col);
-			else if(head.name=="checkbox")
-				$("#page"+totalPage+" tr").last().append("<td><input type='checkbox' "+(data[head.col]? "checked='checked'":"")+"disabled='disabled'></td>");
-			else
-				$("#page"+totalPage+" tr").last().append("<td>"+data[head.col]+"</td>");
+			if(head.name=="radio_disabled"){
+				//do nothing
+			}else{
+				if(head.name=="button")
+					$("#page"+totalPage+" tr").last().append(head.col);
+				else if(head.name=="checkbox")
+					$("#page"+totalPage+" tr").last().append("<td><input type='checkbox' "+(data[head.col]? "checked='checked'":"")+"disabled='disabled'></td>");
+				else if(head.name=="radio")
+					$("#page"+totalPage+" tr").last().append("<input type='radio' name='r' value='"+data[head.col]+"' "+
+							(data["radio_disabled"]=="true"?" disabled='disabled'":"")+">");
+				else 
+					$("#page"+totalPage+" tr").last().append("<td>"+data[head.col]+"</td>");
+			}
+			
 		});
 		
        count++;

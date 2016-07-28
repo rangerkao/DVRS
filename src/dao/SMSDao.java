@@ -519,18 +519,18 @@ public class SMSDao extends BaseDao{
 		
 		String result=null;
 		
-		sql="SELECT A.CONTENT FROM HUR_SMS_CONTENT A WHERE A.ID=? ";
+		sql="SELECT A.CONTENT FROM HUR_SMS_CONTENT A WHERE A.ID='"+smsId+"' ";
 		
-		PreparedStatement pst = conn.prepareStatement(sql);
-		
-		pst.setString(1, smsId);
-		ResultSet rs = pst.executeQuery();
+		Statement st = conn.createStatement();
+
+		System.out.println("Execute SQL :"+sql);
+		ResultSet rs = st.executeQuery(sql);
 		
 		while(rs.next()){
 			result=rs.getString("CONTENT");
 		}
 		rs.close();
-		pst.close();
+		st.close();
 		return result;
 	}
 	

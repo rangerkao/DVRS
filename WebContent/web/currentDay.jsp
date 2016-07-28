@@ -145,7 +145,8 @@ $(document).ready(function(){
 	<div class="row max_height" align="center">
 		<h3>單日累計查詢</h3>
 		<div class="col-xs-4" align="right">查詢期間從</div>
-		<div class="col-xs-8" align="left"><input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="dateChange=true">
+		<div class="col-xs-8" align="left">
+		<input type="text"  disabled="disabled" id="dateFrom" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px " onchange="dateChange=true">
 		到
 		<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" onchange="dateChange=true"></div>
 		<div class="col-xs-4" align="right"><label for="imsi">IMSI:</label></div>

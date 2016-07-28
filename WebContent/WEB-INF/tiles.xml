@@ -87,6 +87,10 @@
 	<definition name="sendSMS" extends="web_base">
 		<put-attribute name="main" value="/web/sendSMS.jsp" />
 	</definition>
+	
+	<definition name="volumePocketSetting" extends="web_base">
+		<put-attribute name="main" value="/web/volumePocketSetting.jsp" />
+	</definition>
 
 	<definition name="cache" extends="web_base">
 		<put-attribute name="main" value="/web/Cache.jsp" />
