@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 <!-- Latest compiled and minified JavaScript -->
 <script type="text/javascript">
-
+var pid;
 var dString;
 $(function(){
 	$(".datapicker").datepicker({
@@ -33,8 +33,16 @@ $(function(){
 	$("#dateFrom").val(ds);
 	
 	whenDateChange();
+	init();
+	
+});
+
+function init(){
 	$("#MSISDN").val("886");
-})
+	
+	$("#update").attr('disabled', true);
+	$("#delete").attr('disabled', true);
+}
 
 var pocketList;
 var dataList;
@@ -62,9 +70,15 @@ function setdata(){
 }
 function query(){
 	
+	var msisdn = $("#MSISDN").val();
+	
+	if(msisdn=="886"){
+		msisdn = '';
+	}
+	
 	$.ajax({
 	      url: '<s:url action="queryVolumePocketList"/>',
-	      data: {"input":$("#MSISDN").val()},//parameters go here in object literal form
+	      data: {"input":msisdn},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
 	      success: function(json) {  
@@ -95,6 +109,7 @@ function query(){
           complete:function(){
         	  enableButton();
         	  pagination();
+        	  init();
           }
 	    });
 }
@@ -176,6 +191,7 @@ function insertItem(){
           complete:function(){
         	  enableButton();
         	  pagination();
+        	  init();
           }
 	    });
 }
@@ -189,7 +205,7 @@ function whenDateChange(){
 	
 }
 
-var pid;
+
 function updateItem(){
 	if(!pid){
 		alert("請選擇項目！");
@@ -255,6 +271,7 @@ function updateItem(){
 	          complete:function(){
 	        	  enableButton();
 	        	  pagination();
+	        	  init();
 	          }
 		    });
 	}
@@ -318,7 +335,20 @@ function deleteItem(){
 
 function loadItem(){
 	
+	if(!pocketList){
+		alert("請進行查詢後選擇項目!");
+		return;
+	}
+	
+	
+		
+	
 	pid = $("input[name='r']:checked").val();
+	
+	if(!pid||pid==''){
+		alert("請選擇項目!");
+		return;
+	}
 	
 	$.each(pocketList,function(i,pocket){
 		if((pocket.pid)==pid){
@@ -328,7 +358,17 @@ function loadItem(){
 			 $("#customerName").val(pocket.customerName);
 			 $("#phoneType").val(pocket.phoneType);
 			 $("#email").val(pocket.email);
+			 
+			 
+			 var s = pocket.startDate;
+			 $("#dateFrom").val(s.substring(0,4)+"-"+s.substring(4,6)+"-"+s.substring(6,8));
+			 var e = pocket.endDate;
+			 
+			 $("#dateTo").val(e.substring(0,4)+"-"+e.substring(4,6)+"-"+e.substring(6,8));
+			 
 			 alert("帶入成功");
+			 $("#update").attr('disabled', false);
+			 $("#delete").attr('disabled', false);
 			 return;
 		}
 	});
@@ -384,7 +424,7 @@ function validat(){
 		    </div>
 		    <div class="col-xs-12">
 		    	<div class="col-xs-2" align="right" style="margin-bottom: 5px;"><label for="callerName">進線者姓名:</label></div>
-		    	<div class="col-xs-2" align="left" ><input type="text" id="callerName" /></div>
+		    	<div class="col-xs-2" align="left" ><input type="text" id="callerName" /><font size="1" color="red">（非本人進線或公司戶）</font></div>
 		    	<div class="col-xs-2" align="right" style="margin-bottom: 5px;"><label for="phoneType">手機型號:</label></div>
 		    	<div class="col-xs-2" align="left" ><input type="text" id="phoneType" /></div>	
 		    	
@@ -400,9 +440,9 @@ function validat(){
 		    	 </div>
 		    	<div class="col-xs-4" align="left" >
 		    		 <input type="button" id="insert" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="新增" onclick="insertItem()"/>
-			    	 <input type="button" id="update" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="修改日期" onclick="updateItem()"/>
-			    	 <input type="button" id="delete" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="刪除" onclick="deleteItem()"/>
 			    	 <input type="button" id="load" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="帶入" onclick="loadItem()"/>
+			    	 <input type="button" id="update" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="修改日期" onclick="updateItem()"/>
+			    	 <input type="button" id="delete" class="btn btn-primary btn-sm"  style="margin-left: 5px;" value="取消" onclick="deleteItem()"/>
 		    	</div>	
 		    </div>
 		</form>

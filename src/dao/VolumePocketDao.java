@@ -47,7 +47,7 @@ public class VolumePocketDao extends BaseDao {
 				+ "A.START_DATE,A.END_DATE,"
 				+ "TO_CHAR(A.CREATE_TIME,'yyyy/MM/dd hh24:mi:ss') CREATE_TIME,TO_CHAR(A.CANCEL_TIME,'yyyy/MM/dd hh24:mi:ss') CANCEL_TIME "
 				+ "from HUR_VOLUME_POCKET A,FOLLOWMEDATA B "
-				+ "WHERE A.SERVICEID = B.SERVICEID "
+				+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 "
 				+ "ORDER BY A.START_DATE DESC ";
 		
 		
@@ -89,7 +89,7 @@ public class VolumePocketDao extends BaseDao {
 						+ "A.START_DATE,A.END_DATE,"
 						+ "TO_CHAR(A.CREATE_TIME,'yyyy/MM/dd hh24:mi:ss') CREATE_TIME,TO_CHAR(A.CANCEL_TIME,'yyyy/MM/dd hh24:mi:ss') CANCEL_TIME "
 						+ "from HUR_VOLUME_POCKET A,FOLLOWMEDATA B "
-						+ "WHERE A.SERVICEID = B.SERVICEID AND B.FOLLOWMENUMBER='"+chtMsisdn+"' "
+						+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 AND B.FOLLOWMENUMBER='"+chtMsisdn+"' "
 						+ "ORDER BY A.START_DATE DESC";		
 		
 		Statement st = conn.createStatement();
@@ -125,7 +125,7 @@ public class VolumePocketDao extends BaseDao {
 	public List<VolumePocket> inserVolumePocket(VolumePocket v) throws SQLException{
 		
 		sql = 
-				"SELECT MAX(PID)+1 PID "
+				"SELECT NVL(MAX(PID),0)+1 PID "
 				+ "FROM HUR_VOLUME_POCKET ";
 		
 		Statement st = conn.createStatement();
@@ -137,8 +137,8 @@ public class VolumePocketDao extends BaseDao {
 		}
 		
 		sql=
-				"INSERT into HUR_VOLUME_POCKET(PID,SERVICEID,START_DATE,END_DATE,CREATE_TIME,ID,CALLER_NAME,CUSTOMER_NAME,PHONE_TYPE,EMAIL) "
-				+ "VALUES('"+v.getPid()+"','"+v.getServiceid()+"','"+v.getStartDate()+"','"+v.getEndDate()+"',sysdate,'"+v.getId()+"','"+v.getCallerName()+"','"+v.getCustomerName()+"','"+v.getPhoneType()+"','"+v.getEmail()+"')";
+				"INSERT into HUR_VOLUME_POCKET(PID,SERVICEID,START_DATE,END_DATE,CREATE_TIME,ID,CALLER_NAME,CUSTOMER_NAME,PHONE_TYPE,EMAIL,TYPE) "
+				+ "VALUES('"+v.getPid()+"','"+v.getServiceid()+"','"+v.getStartDate()+"','"+v.getEndDate()+"',sysdate,'"+v.getId()+"','"+v.getCallerName()+"','"+v.getCustomerName()+"','"+v.getPhoneType()+"','"+v.getEmail()+"',0)";
 		
 		
 		System.out.println("Execute SQL :"+sql);
@@ -155,7 +155,7 @@ public class VolumePocketDao extends BaseDao {
 		sql=
 				"SELECT count(1) c "
 				+ "FROM HUR_VOLUME_POCKET A,FOLLOWMEDATA B "
-				+ "WHERE A.SERVICEID = B.SERVICEID AND A.CANCEL_TIME IS NULL "
+				+ "WHERE A.SERVICEID = B.SERVICEID AND A.CANCEL_TIME IS NULL AND A.TYPE=0 "
 				+ "AND B.FOLLOWMENUMBER = '"+v.getChtMsisdn()+"' "
 				+ "AND ('"+v.getStartDate()+"' between A.START_DATE AND A.END_DATE "
 				+ "		OR '"+v.getEndDate()+"' between A.START_DATE AND A.END_DATE) ";

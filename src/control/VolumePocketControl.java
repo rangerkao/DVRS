@@ -30,7 +30,7 @@ public class VolumePocketControl extends BaseControl {
 	public List<VolumePocket> inserVolumePocket(VolumePocket v) throws Exception{
 		String serviceid = volumePocketDao.queryServiceidByTwnMsisdn(v.getChtMsisdn());
 		if(serviceid == null)
-			throw new Exception("This customer is not in use.");
+			throw new Exception("請確認是否有申請環球卡");
 		
 		if(!volumePocketDao.ckeckVolumePocket(v))
 			throw new Exception("The date range error.");
