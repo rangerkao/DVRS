@@ -1,5 +1,9 @@
 package bean;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class VolumePocket {
@@ -22,15 +26,17 @@ public class VolumePocket {
 	String phoneType;
 	String email;
 	
+	String IMSI;
+	String reason;
 	
 	public VolumePocket(){
 		
 	}
 	
 	
-	public VolumePocket(JSONObject j){
+	public VolumePocket(JSONObject j) throws SecurityException, NoSuchMethodException, IllegalArgumentException, JSONException, IllegalAccessException, InvocationTargetException{
 		for(String name:JSONObject.getNames(j)){
-			if("pid".equalsIgnoreCase(name)){
+			/*if("pid".equalsIgnoreCase(name)){
 				this.pid = j.getString(name);
 			}else if("serviceid".equalsIgnoreCase(name)){
 				this.serviceid = j.getString(name);
@@ -54,11 +60,23 @@ public class VolumePocket {
 				this.email = j.getString(name);
 			}else if("chtMsisdn".equalsIgnoreCase(name)){
 				this.chtMsisdn = j.getString(name);
+			}*/
+			
+			for(Field f:VolumePocket.class.getDeclaredFields()){
+				if(name.equalsIgnoreCase(f.getName())){
+					this.getClass().getDeclaredMethod(parSetName(name), f.getType()).invoke(this, j.getString(name));
+				}
 			}
 		};
 	}
 	
-	
+	public static String parSetName(String fieldName) {  
+        if (null == fieldName || "".equals(fieldName)) {  
+            return null;  
+        }  
+        return "set" + fieldName.substring(0, 1).toUpperCase()  
+                + fieldName.substring(1);  
+    }  
 	
 	public String getServiceid() {
 		return serviceid;
@@ -170,6 +188,26 @@ public class VolumePocket {
 
 	public void setPid(String pid) {
 		this.pid = pid;
+	}
+
+
+	public String getIMSI() {
+		return IMSI;
+	}
+
+
+	public void setIMSI(String iMSI) {
+		IMSI = iMSI;
+	}
+
+
+	public String getReason() {
+		return reason;
+	}
+
+
+	public void setReason(String reason) {
+		this.reason = reason;
 	}
 
 	

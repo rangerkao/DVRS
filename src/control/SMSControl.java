@@ -54,7 +54,7 @@ public class SMSControl extends BaseControl{
 		
 		int result = smsDao.insertAlertLimit(imsi,limit);
 		if(sendSMS){
-			sendSMS("6",msisdn,imsi,"VIP");
+			sendSMS("6",msisdn,imsi,"VIP",null,null);
 		}
 		return result;
 	}
@@ -99,9 +99,16 @@ public class SMSControl extends BaseControl{
 		return smsDao.queryTWNMSISDN(msisdn);
 	}
 	
-	public void sendSMS(String smsId,String msisdn,String imsi,String SMStype) throws Exception{
+	public void sendSMS(String smsId,String msisdn,String imsi,String SMStype,String[] paramName,String[] paramValue) throws Exception{
 		String content=smsDao.getSMSContent(smsId);
 		if(content!=null && !"".equals(content)){
+			
+			if(paramName!=null){
+				for(int i = 0;i<paramName.length;i++){
+					content = content.replace(paramName[i], paramValue[i]);
+				}
+			}
+			
 			if(msisdn==null ||"".equals(msisdn)){
 			}else{
 				

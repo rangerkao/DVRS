@@ -244,11 +244,12 @@ function tqueryTWNMSISDN(){
 <body>
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: top;">
-		<div class="col-xs-12" style="visibility: hidden;">
+		<!-- <div class="col-xs-12" style="visibility: hidden;">
 			<label id="x" >x.index</label>
 			<label id="y" >y.index</label>
 			<label id="menuAuth"></label>
-		</div>
+		</div> -->
+		<div><font size="3px">Sim2Travel 維運管理系統</font></div>
 		<div class="col-xs-12" style="padding-right: 0px;padding-left: 0px;">
 			<div class="col-xs-12">
 				<!-- <input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled"> -->

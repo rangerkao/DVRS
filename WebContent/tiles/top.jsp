@@ -199,7 +199,7 @@ div.scroll {
 </head>
 <body>
 	<div class="wapper" align="center">
-		<h1>Sim2Travel 維運管理系統</h1>
+		<!-- Sim2Travel 維運管理系統 -->
 	</div>
 	<form action="createExcel" method="post" target="sub_iframe" id="reportFrom" style="display: none;">
 			<input type="text" name="dataList">

@@ -14,14 +14,11 @@
 	<div class="row max_height">
 		<table class="col-xs-12 max_height" >
 			<tr>
-				<td colspan="2" bgcolor="#AFFEFF" style="height: 10%;"><tiles:insertAttribute
-						name="top" /></td>
-			</tr>
-			<tr style="height: 90%;">
-				<td width="190px" bgcolor="#AFFFB0" ><tiles:insertAttribute
-						name="menu" /></td>
-				<td  bgcolor="#AFFFD8" ><tiles:insertAttribute
-						name='main' />
+				<td colspan="2" bgcolor="#AFFEFF" style="height: 10px;"><tiles:insertAttribute name="top" /></td>
+			</tr> 
+			<tr style="height: 100%;">
+				<td width="240px" bgcolor="#AFFFB0" ><tiles:insertAttribute name="menu" /></td>
+				<td  bgcolor="#AFFFD8" ><tiles:insertAttribute name='main' />
 				</td>
 			</tr>
 		</table>

@@ -207,9 +207,15 @@ public class DVRSmain extends TimerTask{
 		logger.info("setVolumePocketMap...");
 		volumePocketMap.clear();
 		volumeList.clear();	
-		sql = ""
+		/*sql = ""
 				+ "SELECT A.SERVICEID,A.MCC,A.START_DATE,A.END_DATE,A.CURRENCY,A.ALERTED,A.TYPE,A.LIMIT "
-				+ "FROM HUR_VOLUME_POCKET A WHERE A.CANCEL_TIME IS NULL ";
+				+ "FROM HUR_VOLUME_POCKET A WHERE A.CANCEL_TIME IS NULL ";*/
+		
+		sql = ""
+				+ "select distinct A.SERVICEID,A.MCC,A.CURRENCY,A.TYPE,A.LIMIT,A.ALERTED,B.PID,B.START_DATE,B.END_DATE "
+				+ "from HUR_VOLUME_POCKET A,(	select A.PID,MIN(A.START_DATE) START_DATE,MAX(A.END_DATE) END_DATE "
+				+ "								from HUR_VOLUME_POCKET A WHERE A.CANCEL_TIME IS NULL group by A.PID ) B "
+				+ "WHERE A.PID = B.PID ";
 	
 		boolean result = false;
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
@@ -229,6 +235,7 @@ public class DVRSmain extends TimerTask{
 				m.put("ALERTED", rs.getString("ALERTED"));
 				m.put("TYPE", rs.getString("TYPE"));
 				m.put("LIMIT", rs.getString("LIMIT"));
+				m.put("PID", rs.getString("PID"));
 				
 				Map<String, Map<String, String>> m2 = new HashMap<String,Map<String,String>>();
 				if(volumePocketMap.containsKey(rs.getString("SERVICEID")))
@@ -268,6 +275,7 @@ public class DVRSmain extends TimerTask{
 	 * @return
 	 */
 	private boolean sendStartPocketDateSMS(){
+		logger.info("sendStartPocketDateSMS...");
 		boolean result =false;
 		for(String serviceid : volumePocketMap.keySet()){
 			for(String mcc : volumePocketMap.get(serviceid).keySet()){
@@ -278,12 +286,16 @@ public class DVRSmain extends TimerTask{
 						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
 					if(phone==null ||"".equals(phone)){
 						sql="";
-						ErrorHandle("At checkVolumePocket sendAlertSMS occur error! The serviceid:"+serviceid+",MCC:"+mcc+" can't find msisdn to send! ");
+						ErrorHandle("At sendStartPocketDateSMS sendAlertSMS occur error! The serviceid:"+serviceid+",MCC:"+mcc+" can't find msisdn to send! ");
 						continue;
 					}
+					String startDate = volumePocketMap.get(serviceid).get(mcc).get("START_DATE");
+					String endDate = volumePocketMap.get(serviceid).get(mcc).get("END_DATE");
 					String msgID = getSystemConfigParam("0", "VOLUME_POCKET_START_MSG");
 					//發送簡訊
-					sendSMS(serviceid,msgID.split(","),null,phone,null);
+					sendSMS(serviceid,msgID.split(","),phone,
+							new String[]{"{{date_start}}","{{date_end}}"},
+							new String[]{startDate.substring(4,6)+"/"+startDate.substring(6,8),endDate.substring(4,6)+"/"+endDate.substring(6,8)});
 				}
 			}
 		}		
@@ -292,6 +304,42 @@ public class DVRSmain extends TimerTask{
 		return result;
 	}
 
+	//TODO
+	//20160824 add
+	/**
+	 * 當美國流量包開始結束時，寄出簡訊告知
+	 * @return
+	 */
+	private boolean sendEndPocketDateSMS(){
+		logger.info("sendEndPocketDateSMS...");
+		boolean result =false;
+		for(String serviceid : volumePocketMap.keySet()){
+			for(String mcc : volumePocketMap.get(serviceid).keySet()){
+				if("0".equals(volumePocketMap.get(serviceid).get(mcc).get("TYPE")) && sYearmonthday.equals(volumePocketMap.get(serviceid).get(mcc).get("END_DATE"))){
+					//檢查門號是否存在，如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
+					String phone = null;
+					if(msisdnMap.containsKey(serviceid))
+						phone=(String) msisdnMap.get(serviceid).get("MSISDN");
+					if(phone==null ||"".equals(phone)){
+						sql="";
+						ErrorHandle("At checkVolumePocket sendAlertSMS occur error! The serviceid:"+serviceid+",MCC:"+mcc+" can't find msisdn to send! ");
+						continue;
+					}
+					String startDate = volumePocketMap.get(serviceid).get(mcc).get("START_DATE");
+					String endDate = volumePocketMap.get(serviceid).get(mcc).get("END_DATE");
+					String msgID = getSystemConfigParam("0", "VOLUME_POCKET_END_MSG");
+					//發送簡訊
+					sendSMS(serviceid,msgID.split(","),phone,
+							new String[]{"{{date_start}}","{{date_end}}"},
+							new String[]{startDate.substring(4,6)+"/"+startDate.substring(6,8),endDate.substring(4,6)+"/"+endDate.substring(6,8)});
+				}
+			}
+		}		
+		
+		checkPocketEnd = false;
+		return result;
+	}
+		
 	/**
 	 * 設定計費週期
 	 * 取特定日期那個月的，前面加上calendar.setTime(date);設定date日期
@@ -304,7 +352,7 @@ public class DVRSmain extends TimerTask{
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
 		
 		//TODO test
-		//calendar.set(2016,6, 28, 1, 30, 0);
+		calendar.set(2016,8, 3, 22, 30, 0);
 		System.out.println(calendar.getTime());
 		
 		calendar.setTimeInMillis(calendar.getTimeInMillis()-1000*60*60);	//系統時間提前一小時,當00：30執行時，所處理的資料為前一天的23：00
@@ -331,6 +379,10 @@ public class DVRSmain extends TimerTask{
 		if("00".equals(programeTime.substring(2))){
 			resumeSpeed = true;
 			checkPocketStart = true;
+		}
+		//希望在22:30時執行
+		if("21".equals(programeTime.substring(2))){
+			checkPocketEnd = true;
 		}
 		
 		//20160816
@@ -1631,7 +1683,8 @@ public class DVRSmain extends TimerTask{
 	 */
 	private static  void loadProperties(){
 		System.out.println("initial Log4j, property !");
-		String path=DVRSmain.class.getResource("").toString().replace("file:", "")+"/Log4j.properties";
+		String path=DVRSmain.class.getResource("").toString().replace("file:", "")+"Log4j.properties";
+		System.out.println("path:"+path);
 		try {
 			props.load(new   FileInputStream(path));
 			PropertyConfigurator.configure(props);
@@ -1945,7 +1998,7 @@ public class DVRSmain extends TimerTask{
 	 *20150115 ALTER 取消檢查門號
 	 */
 	List<Map<String,String>> insertVolumeList = new ArrayList<Map<String,String>> ();
-	private int checkDataPrepay(String serviceID,String cMccmnc,Date callTime,String cPriceplan){
+	private int checkDataPrepay(String serviceID,String nccNet,Date callTime,String cPriceplan){
 		int cd=0;
 		
 		for(Map<String,String> map :slowDownMap.get("0")){
@@ -1959,19 +2012,24 @@ public class DVRSmain extends TimerTask{
 			for(String s:priceplan.split(","))
 				priceplans.add(s);
 			
-			if(priceplans.contains(cPriceplan)&&(mccmncs.contains(cMccmnc)||mccmncs.contains(cMccmnc.substring(0,3)))){
+			if(priceplans.contains(cPriceplan)&&(mccmncs.contains(nccNet)||mccmncs.contains(nccNet.substring(0,3)))){
 				//屬於降速非每日，暫時只有數據包符合
 				cd = 1;
 				//XXX
-				if(volumePocketMap.containsKey(serviceID)&&volumePocketMap.get(serviceID).containsKey(cMccmnc.substring(0,3))){
-					Double volume = volumeList.get(serviceID).get(cMccmnc.substring(0,3));
+				if(volumePocketMap.containsKey(serviceID)&&volumePocketMap.get(serviceID).containsKey(nccNet.substring(0,3))){
+					Double volume = volumeList.get(serviceID).get(nccNet.substring(0,3));
 					//使用超過1G過量警示
 					if(volume/1024/1024>1024){
 						ErrorHandle("The customer(serviceid="+serviceID+") had been exceed 1G.");
 					}
 				}else{
 					//如果是非每日降速包，流量統計無資料的話，新增
-					String mcc = cMccmnc.substring(0,3);
+					String pid = getVolumePocketPID();
+					
+					if(pid == null )
+						ErrorHandle("Can't get pid.");
+					
+					String mcc = nccNet.substring(0,3);
 					String sDate = year_month_day_sdf.format(callTime);
 					String eDate = year_month_day_sdf.format(new Date(callTime.getTime()+7*24*60*60*1000));//結束日期為起始+7天，供8天
 					Map<String,String> iMap = new HashMap<String,String>();
@@ -1981,6 +2039,7 @@ public class DVRSmain extends TimerTask{
 					iMap.put("EDATE", eDate);
 					iMap.put("TYPE", "1");
 					iMap.put("LIMIT", (String) map.get("LIMIT"));
+					iMap.put("PID", pid);
 					insertVolumeList.add(iMap);
 					
 					//加入Map供之後檢查
@@ -1991,7 +2050,7 @@ public class DVRSmain extends TimerTask{
 					m.put("ALERTED", "0");
 					m.put("TYPE", "1");
 					m.put("LIMIT", (String)map.get("LIMIT"));
-					
+					m.put("PID", pid);
 					Map<String, Map<String, String>> m2 = new HashMap<String,Map<String,String>>();
 					if(volumePocketMap.containsKey(serviceID))
 						m2=volumePocketMap.get(serviceID);
@@ -2167,12 +2226,27 @@ public class DVRSmain extends TimerTask{
 						logger.debug("usageId:"+usageId+" set mccmnc to default!");
 					}
 					
+					//察看是否有以存在的資料，有的話取出做累加
+					//20150324 modify mccmnc to mcc + network
+					
+					
+					//以國碼+業者代碼作為累計的key值，不同業者不一起累計
+					String nccNet;
+					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
+							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
+						System.out.println(mccmnc);
+						nccNet=mccmnc.substring(0,3);
+						nccNet+=dataRate.get(pricplanID).get(mccmnc).get(0).get("NETWORK");
+					}else{
+						nccNet=DEFAULT_MCCMNC;
+					}
+					
 
 					String mcc = mccmnc.substring(0,3);
 
 					if(checkQosAddon(serviceid, mccmnc, callTime)==1){
 						//是華人上網包，不批價設定為0
-					}else if(checkDataPrepay(serviceid, mccmnc, callTime, pricplanID)==1){
+					}else if(checkDataPrepay(serviceid, nccNet, callTime, pricplanID)==1){
 						//是台灣數據預付卡，不批價設定為0
 						//將流量加起來
 						Map<String,Double> m = new HashMap<String,Double>();
@@ -2306,22 +2380,6 @@ public class DVRSmain extends TimerTask{
 					cdrChargeMap.put(usageId, charge);
 					logMsg+="UsageId "+usageId+" ,IMSI "+imsi+" ,MCCMNC "+mccmnc+" charge result is "+cdrChargeMap.get(usageId)+". ";
 
-					
-					//察看是否有以存在的資料，有的話取出做累加
-					//20150324 modify mccmnc to mcc + network
-					
-					
-					//以國碼+業者代碼作為累計的key值，不同業者不一起累計
-					String nccNet;
-					if(pricplanID!=null && !"".equals(pricplanID) && !DEFAULT_MCCMNC.equals(mccmnc) &&
-							dataRate.containsKey(pricplanID)&&dataRate.get(pricplanID).containsKey(mccmnc)){
-						System.out.println(mccmnc);
-						nccNet=mccmnc.substring(0,3);
-						nccNet+=dataRate.get(pricplanID).get(mccmnc).get(0).get("NETWORK");
-					}else{
-						nccNet=DEFAULT_MCCMNC;
-					}
-					
 					
 					//日累計處理
 					String cDay=year_month_day_sdf.format(callTime);
@@ -2819,7 +2877,8 @@ public class DVRSmain extends TimerTask{
 	Map<String,Map<String,List<String>>> smsSettingMap = new HashMap<String,Map<String,List<String>>>();
 	
 	private Boolean getSMSsetting(){
-		
+		logger.info("getSMSsetting...");
+		subStartTime = System.currentTimeMillis();
 		Statement st = null;
 		ResultSet rs = null;
 		try {
@@ -2881,7 +2940,7 @@ public class DVRSmain extends TimerTask{
 			} catch (SQLException e) {
 			}
 		}
-		
+		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		if(smsSettingMap.size()==0){
 			sql="";
 			ErrorHandle("Can't found SMS Setting!");
@@ -2889,17 +2948,21 @@ public class DVRSmain extends TimerTask{
 		}else{
 			return true;
 		}
+		
 	}
 
 	Map<String,Map<String,String>> content=new HashMap<String,Map<String,String>>();
 	public Boolean getSMSContents(){
+		logger.info("getSMSContents...");
+		subStartTime = System.currentTimeMillis();
 		//載入簡訊內容
 		Statement st = null;
 		ResultSet rs = null;
 		try {
 			sql=
 					"SELECT A.ID,A.CONTENT,A.CHARSET "
-					+ "FROM HUR_SMS_CONTENT A ";	
+					+ "FROM HUR_SMS_CONTENT A "
+					+ "order by A.ID ";	
 
 			st = conn.createStatement();
 			logger.debug("Execute SQL:"+sql); 
@@ -2925,7 +2988,7 @@ public class DVRSmain extends TimerTask{
 			} catch (SQLException e) {
 			}
 		}
-		
+		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		if(content.size()==0){
 			ErrorHandle("Can't found SMS Content sentting!");
 			return false;
@@ -3152,8 +3215,8 @@ public class DVRSmain extends TimerTask{
 						continue;
 					}
 					
-					
-					smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
+					//smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
+					smsCount += sendSMS(serviceid,contentid,phone,new String[]{"{{bracket}}","{{customerService}}"},new String[]{alertBracket.toString(),queryCustomerServicePhone(serviceid)});
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket.toString());				
 					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", String.valueOf((smsTimes+1)));
 					
@@ -3372,24 +3435,15 @@ public class DVRSmain extends TimerTask{
 		resume = false;
 		
 	}
-	
-	public int sendSMS(String serviceid,String[] contentid,Double alertBracket,String phone,String currency){
+	public int sendSMS(String serviceid,String[] contentid,String phone,String[] paramName,String[] paramValue){
+	//public int sendSMS(String serviceid,String[] contentid,Double alertBracket,String phone,String currency){
 		Statement st =null;
 		int smsCount=0;
 		String res;
 
 		try {
 			st = conn.createStatement();
-			//查詢所在國家的客服電話
-			String cPhone = null;
-			String nMccmnc=searchMccmncBySERVICEID(serviceid);
-			Map<String,String> map=null;
-			
-			if(nMccmnc!=null && !"".equals(nMccmnc))
-				map = codeMap.get(nMccmnc.substring(0,3));
-			if(map!=null)
-				cPhone=map.get("PHONE");
-			
+
 			for(String s:contentid){
 				if(s!=null){
 					//寄送簡訊
@@ -3401,11 +3455,11 @@ public class DVRSmain extends TimerTask{
 
 					cont = new String(cont.getBytes("ISO8859-1"),"big5");
 					
-					cont =processMag(cont,alertBracket,cPhone,currency);
+					cont =processMag(cont,paramName,paramValue);
 					
 					//WSDL方式呼叫 WebServer
 					//result=tool.callWSDLServer(setSMSXmlParam(cont,phone));
-					
+					String nMccmnc=searchMccmncBySERVICEID(serviceid);
 					//如果判斷客戶在印尼，則分段簡訊進行發送
 					if(nMccmnc!=null&&"510".equals(nMccmnc.substring(0,3))){
 						/*int number = 68;
@@ -3559,7 +3613,9 @@ public class DVRSmain extends TimerTask{
 				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
 					//為了每日警示內容中帶入月累計費用才需要
 					Double charge=parseDouble((String) currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
-					smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
+
+					//smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
+					smsCount+=sendSMS(serviceid,contentid,phone,new String[]{"{{bracket}}","{{customerService}}"},new String[]{charge.toString(),queryCustomerServicePhone(serviceid)});
 					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
@@ -3583,6 +3639,21 @@ public class DVRSmain extends TimerTask{
 			logger.debug("Total send day alert "+smsCount+" ...");
 			logger.debug("Log to table...executeBatch");
 		}
+	}
+	
+	
+	public String queryCustomerServicePhone(String serviceid){
+		//查詢所在國家的客服電話
+		String cPhone = null;
+		String nMccmnc=searchMccmncBySERVICEID(serviceid);
+		Map<String,String> map=null;
+		
+		if(nMccmnc!=null && !"".equals(nMccmnc))
+			map = codeMap.get(nMccmnc.substring(0,3));
+		if(map!=null)
+			cPhone=map.get("PHONE");
+		
+		return cPhone;
 	}
 	static boolean NTTalerted = false;
 	static boolean NTT75alerted = false;
@@ -3633,7 +3704,7 @@ public class DVRSmain extends TimerTask{
 		String mail_subject="";
 		String mail_content=""
 				+ "Dear Sir,\n\n\n"
-				+ "Please be informed that the total pooled usage of HKNet Oneness SIM subscribers (85) has reached 75%/100% ("+limit2+"GB/"+limit+"GB) of "+limit+"GB: "+FormatDouble(volume, "0.00")+"GB.\n\n"
+				+ "Please be informed that the total pooled usage of HKNet Oneness SIM subscribers ("+limit+") has reached 75%/100% ("+limit2+"GB/"+limit+"GB) of "+limit+"GB: "+FormatDouble(volume, "0.00")+"GB.\n\n"
 				+ "Thank you for your attention and please let me know if any queries.\n\n"
 				+ "Sim2travel.\n";
 
@@ -3708,9 +3779,11 @@ public class DVRSmain extends TimerTask{
 			for(String mcc : sMap.keySet()){
 				double v = sMap.get(mcc);
 				v = v*kByte;//轉換為由B轉換為KB 
+				String pid = (String)volumePocketMap.get(serviceid).get(mcc).get("PID");
 				int alerted = parseInt((String)volumePocketMap.get(serviceid).get(mcc).get("ALERTED"));
 				int type = parseInt((String)volumePocketMap.get(serviceid).get(mcc).get("TYPE"));
 				double pocketLimit = parseDouble((String)volumePocketMap.get(serviceid).get(mcc).get("LIMIT"));
+				String endDate = (String)volumePocketMap.get(serviceid).get(mcc).get("END_DATE");
 				
 				if(type==0){ //美國流量包
 					String msgID = null;
@@ -3718,9 +3791,9 @@ public class DVRSmain extends TimerTask{
 					
 					//檢查額度
 					if(v>=pocketLimit && alerted < 100){//達到500M的100%
-						alerted = 100;
+						/*alerted = 100;
 						msgID = getSystemConfigParam("0", "VOLUME_POCKET_MSG_ID3");
-						sendSMS = true;
+						sendSMS = true;*/
 					}else if(v>=pocketLimit*0.7 && alerted < 70){//達到500M的70%
 						alerted = 70;
 						msgID = getSystemConfigParam("0", "VOLUME_POCKET_MSG_ID2");
@@ -3743,11 +3816,10 @@ public class DVRSmain extends TimerTask{
 							continue;
 						}
 						//發送簡訊
-						count += sendSMS(serviceid,msgID.split(","),null,phone,null);	
+						count += sendSMS(serviceid,msgID.split(","),phone,new String[]{"{{date_end}}"},new String[]{endDate.substring(4,6)+"/"+endDate.substring(6,8)});	
 						//更新Volume已警示部分
 						Map<String,String> m = new HashMap<String,String>();
-						m.put("SERVICEID", serviceid);
-						m.put("MCC", mcc);
+						m.put("PID", pid);
 						m.put("ALERTED", ""+alerted);
 						updateVolumePocketMap.add(m);
 					}
@@ -3791,8 +3863,7 @@ public class DVRSmain extends TimerTask{
 									pst.executeUpdate();
 									//更新Volume已警示部分
 									Map<String,String> m = new HashMap<String,String>();
-									m.put("SERVICEID", serviceid);
-									m.put("MCC", mcc);
+									m.put("PID", pid);
 									m.put("ALERTED", ""+alerted);
 									updateVolumePocketMap.add(m);
 									
@@ -3835,24 +3906,15 @@ public class DVRSmain extends TimerTask{
 			st = conn.createStatement();
 			//新增資料
 			for(Map<String,String> m : insertVolumeList){
-				
-				sql = "select nvl(MAX(PID),0)+1 PID from HUR_VOLUME_POCKET ";
-				logger.debug("select pid : "+sql); 
-				rs=st.executeQuery(sql);
-				String pid = null;
-				while(rs.next()){
-					pid = rs.getString("PID");
-				}
-				
-				
+
 				sql = "insert into HUR_VOLUME_POCKET(SERVICEID,START_DATE,END_DATE,CREATE_TIME,MCC,PID,TYPE,LIMIT)"
-						+ "VALUES('"+m.get("SERVICEID")+"','"+m.get("SDATE")+"','"+m.get("EDATE")+"',sysdate,'"+m.get("MCC")+"',"+pid+","+m.get("TYPE")+","+m.get("LIMIT")+")";
+						+ "VALUES('"+m.get("SERVICEID")+"','"+m.get("SDATE")+"','"+m.get("EDATE")+"',sysdate,'"+m.get("MCC")+"',"+m.get("PID")+","+m.get("TYPE")+","+m.get("LIMIT")+")";
 				logger.debug("insertVolumePocket SQL : "+sql); 
 				st.executeUpdate(sql);
 			}
 			//更新資料
 			for(Map<String,String> m : updateVolumePocketMap){
-				sql = "update HUR_VOLUME_POCKET A set A.ALERTED = '"+m.get("ALERTED")+"' where A.SERVICEID='"+m.get("SERVICEID")+"' AND A.MCC = '"+m.get("MCC")+"' ";
+				sql = "update HUR_VOLUME_POCKET A set A.ALERTED = '"+m.get("ALERTED")+"' where A.PID="+m.get("PID")+" ";
 				logger.debug("updateVolumePocket SQL : "+sql); 
 				st.executeUpdate(sql);
 			}
@@ -3878,6 +3940,34 @@ public class DVRSmain extends TimerTask{
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return result;
+	}
+	public String getVolumePocketPID(){
+		String pid = null;
+		sql = "select nvl(MAX(PID),0)+1 PID from HUR_VOLUME_POCKET ";
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			logger.debug("select pid : "+sql); 
+			rs=st.executeQuery(sql);
+			while(rs.next()){
+				pid = rs.getString("PID");
+			}
+		} catch (SQLException e) {
+			ErrorHandle("At updateVolumePocket occur SQLException!");
+		} catch (Exception e) {
+			ErrorHandle("At updateVolumePocket occur Exception!");
+		}finally{
+			
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+			}
+		}
+		return pid;
 	}
 	
 	//20160704 add
@@ -4001,7 +4091,7 @@ public class DVRSmain extends TimerTask{
 			}
 			
 			if(sendmsg){
-				smsCount+=sendSMS(serviceid,contentid,null,phone,null);
+				smsCount+=sendSMS(serviceid,contentid,phone,null,null);
 				
 				//更新CurrentMap
 				currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_VOLUME",volume.toString());
@@ -4290,7 +4380,19 @@ public class DVRSmain extends TimerTask{
 	 * @return
 	 */
 	
-	private String processMag(String msg,Double bracket,String cPhone,String currency){
+	private String processMag(String msg,String[] paramName,String[] paramValue){
+		
+		if(paramName!=null){
+			for(int i = 0;i<paramName.length;i++){
+				msg = msg.replace(paramName[i], paramValue[i]);
+			}
+		}
+		
+		return msg;
+	}
+	
+	
+	/*private String processMag(String msg,Double bracket,String cPhone,String currency){
 		return processMag(msg,bracket,cPhone,null,currency);
 	}
 	
@@ -4315,7 +4417,7 @@ public class DVRSmain extends TimerTask{
 		msg=msg.replace("{{ICCID}}",ICCID);
 		
 		return msg;
-	}
+	}*/
 	
 	/**
 	 * 發送簡訊功能
@@ -4379,7 +4481,7 @@ public class DVRSmain extends TimerTask{
 		if(PID==null)PID="";
 		if(DCS==null)DCS="";
 		param=param.replace("{{PhoneNumber}}",PhoneNumber );
-		param=param.replace("{{Text}}",Text.replaceAll("/+", "%2b") );
+		param=param.replace("{{Text}}",Text.replaceAll("\\+", "%2b") );
 		param=param.replace("{{charset}}",charset );
 		param=param.replace("{{InfoCharCounter}}",InfoCharCounter );
 		param=param.replace("{{PID}}",PID );
@@ -4845,6 +4947,7 @@ public class DVRSmain extends TimerTask{
 	long connectionTime1,connectionTime2;
 	
 	boolean checkPocketStart = false;
+	boolean checkPocketEnd = false;
 	
 	private void process(){
 		
@@ -4885,7 +4988,9 @@ public class DVRSmain extends TimerTask{
 					setDataRate()&&//取出HUR_DATARATE
 					setMsisdnMap()&&//取出msisdn資訊
 					setIPtoMccmncList()&&//20141211 add IP 對應到 MCCMNC
-					
+					getSMSsetting()&&
+					getSMSContents()&&
+
 					//以SERVICEID 從登記之VLN找出用戶目前的MCCMNC
 					setSERVICEIDtoVLN()&&//IMSI 對應到 vln
 					setVLNtoTADIG()&&//vln 對應到 TADIG
@@ -4908,52 +5013,53 @@ public class DVRSmain extends TimerTask{
 					
 					){
 				
-				if(resume) checkResume();
+				//if(resume) checkResume();
 				
-				if(resumeSpeed)doResumeSpeed();
+				//if(resumeSpeed)doResumeSpeed();
 
 				if(checkPocketStart)sendStartPocketDateSMS();
+				
+				if(checkPocketEnd)sendEndPocketDateSMS();
 
 				charge();	//開始批價 
 
 				//發送警示
-				if(getSMSsetting()&&getSMSContents()){
-					try {
-						ckeckMonthAlert(); //月警示
-						checkDailyAlert(); //日警示
-						addonVolumeAlert();//華人上網包降速提醒簡訊
-						checkNTTVolumeAlert();//20160701 mod ，重新啟用NTT用量告警
-						checkDailySlowDown();//20160624 對特定條件客戶進行降速
-						checkVolumePocket();//20160721 add 美國流量包
-						
-						//取消自動Commit
-						cancelAutoCommit();
-						if(
-								updateCdr()&&//回寫批價結果
-								insertCurrentMap()&&
-								updateCurrentMap()&&
-								insertCurrentMapDay()&&
-								updateCurrentMapDay()&&
-								updateVolumePocket()){
-							//避免資料異常，完全處理完之後在commit
+				try {
+					//ckeckMonthAlert(); //月警示
+					checkDailyAlert(); //日警示
+					addonVolumeAlert();//華人上網包降速提醒簡訊
+					checkNTTVolumeAlert();//20160701 mod ，重新啟用NTT用量告警
+					checkDailySlowDown();//20160624 對特定條件客戶進行降速
+					checkVolumePocket();//20160721 add 美國流量包
+					
+					//取消自動Commit
+					cancelAutoCommit();
+					if(
+							updateCdr()&&//回寫批價結果
+							insertCurrentMap()&&
+							updateCurrentMap()&&
+							insertCurrentMapDay()&&
+							updateCurrentMapDay()&&
+							updateVolumePocket()){
+						//避免資料異常，完全處理完之後在commit
+						try {
+							conn.commit();
+						} catch (SQLException e) {
 							try {
-								conn.commit();
-							} catch (SQLException e) {
-								try {
-									conn.rollback();
-								} catch (SQLException e1) {
-								}
-								ErrorHandle("At commit occur SQLException error!",e);
+								conn.rollback();
+							} catch (SQLException e1) {
 							}
+							ErrorHandle("At commit occur SQLException error!",e);
 						}
-						//suspend的後續追蹤處理
-						processSuspendNBR();
-					} catch (Exception e) {
-						sql="";
-						ErrorHandle("At sendAlertSMS got Exception!",e);
 					}
+					//suspend的後續追蹤處理
+					processSuspendNBR();
+				} catch (Exception e) {
+					sql="";
+					ErrorHandle("At sendAlertSMS got Exception!",e);
 				}
 			}
+			
 
 			// 程式執行完成
 			logger.info("Program execute time :" + (System.currentTimeMillis() - startTime));

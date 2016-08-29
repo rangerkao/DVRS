@@ -48,7 +48,7 @@
 
 		<!-- Struts Action Definition -->
 		<action name="login" method="execute" class="action.LoginAction">
-			<result name="success" type="tiles">web_base2</result>		
+			<result name="success" type="tiles">web_base2</result>
 		</action>
 
 		
@@ -147,6 +147,7 @@
     	<action name="queryCardChangeHistory" method="queryCardChangeHistory" class="action.HistoryAction"/>
         <action name="queryNumberChangeHistory" method="queryNumberChangeHistory" class="action.HistoryAction"/>    
     <!-- VolumePocket -->
+   		<action name="checkCustomer" method="checkCustomer" class="action.VolumePocketAction"/>
      	<action name="queryVolumePocketList" method="queryVolumePocketList" class="action.VolumePocketAction"/>
         <action name="inserVolumePocket" method="inserVolumePocket" class="action.VolumePocketAction"/> 
         <action name="updateVolumePocket" method="updateVolumePocket" class="action.VolumePocketAction"/> 

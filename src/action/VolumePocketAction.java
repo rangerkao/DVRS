@@ -25,6 +25,19 @@ public class VolumePocketAction extends BaseAction{
 	String input;
 	VolumePocketControl volumePocketControl = new VolumePocketControl();
 	
+	
+	public String checkCustomer(){
+		try {
+			result=makeResult(volumePocketControl.checkCustomer(input),null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
+		return SUCCESS;
+	}
+	
 	public String queryVolumePocketList(){
 		try {
 			List<VolumePocket> list = null;
