@@ -31,26 +31,396 @@ public class suspendGPRS {
 	}
 	
 	// TWN_IMSI、TWN_MSISDN先代空值，sMNOSubCode不重要，sCount忽略
-	private String cRCode,Process_Code,sCMHKLOGID,cMSISDNOLD,cM205OT,cMVLN,cGPRS,csta,bb;
-	private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
+	//private String cRCode,Process_Code,sCMHKLOGID,cMSISDNOLD,cM205OT,cMVLN,cGPRS,csta,bb;
+	//private String cReqStatus,dReqDate,cTicketNumber,cS2TIMSI,cS2TMSISDN,sFORWARD_TO_HOME_NO,sS_FORWARD_TO_HOME_NO;
 	//private String cTWNLDIMSI,cTWNLDMSISDN;
 	//TWNLDIMSI=>HOME IMSI,TWNLDMSISDN=>PARTNER MSISDN
-	private String sHOMEIMSI,PARTNERMSISDN;
-	private String sMNOSubCode,sMNOName,sWSFStatus,sWSFDStatus,cServiceOrderNBR;
+	//private String sHOMEIMSI,PARTNERMSISDN;
+	//private String sMNOSubCode,sMNOName,sWSFStatus,sWSFDStatus,cServiceOrderNBR;
 	private SimpleDateFormat dFormat1=new SimpleDateFormat("yyyyMMdd");
 	private SimpleDateFormat dFormat2=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	private SimpleDateFormat dFormat3=new SimpleDateFormat("yyMMddHHmm");
 	private SimpleDateFormat dFormat4=new SimpleDateFormat("yyMMddHHmmss");
-	private String cFileID,cFileName,c910SEQ,sCount,cWorkOrderNBR,sDATE,Sdate,sDataType,sValue,sSubCode,sStepNo,sTypeCode,sMap,sM_CTYPE,cGPRSStatus;
+	//private String cFileID,cFileName,c910SEQ,sCount,cWorkOrderNBR,sDATE,Sdate,sDataType,sValue,sSubCode,sStepNo,sTypeCode,sMap,sM_CTYPE,cGPRSStatus;
 	//20160628 add
-	private String cGPRSName;
+	//private String cGPRSName;
 	
-	private String sFMTH,sFMTHa,sSFMTH,sSFMTHa;
-	static Vector<String> vln=new Vector<String>();
+	//private String sFMTH,sFMTHa,sSFMTH,sSFMTHa;
+	//static Vector<String> vln=new Vector<String>();
 	public ResultSet Temprs;
+	public Statement st,st2;
 	private String sSql;	
-	private String priceplanID;
+	//private String priceplanID;	
+	private String sHOMEIMSI,PARTNERMSISDN,priceplanID;
+	private String cS2TIMSI,cS2TMSISDN,sCount,cReqStatus,dReqDate,sMNOSubCode,cTicketNumber;
+	private String c910SEQ,cFileID;
+	private String cWorkOrderNBR,cServiceOrderNBR;
+	String sMNOName;
 	
+	
+	
+	public void doSyncFile_SyncFileDtl(String imsi,String msisdn) throws Exception{
+		cS2TIMSI=imsi;
+		cS2TMSISDN=msisdn;
+		
+		//20141104 add
+		setPartnerCode();
+		
+		
+		dReqDate=dFormat3.format(new Date());
+		//20141103 set as TWNLD
+		sMNOSubCode="950";
+				
+		
+		//設定sCount 
+		Temprs = null;
+		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
+		//Temprs = conn.createStatement().executeQuery(sSql);
+		Statement st = conn.createStatement();
+		Temprs = st.executeQuery(sSql);
+		while (Temprs.next()) {
+			sCount = Temprs.getString("ab");
+		}
+		for (int i = sCount.length(); i < 3; i++) {
+			sCount = "0" + sCount;
+		}
+		st.close();
+		
+		cTicketNumber="D"+dReqDate+sCount;
+
+		Process_SyncFile("V");
+		Process_SyncFileDtl("V");
+	}
+	
+	public Map<String,String> doChangeGPRSStatus(String imsi,String msisdn,String GPRSStatus,String GPRSName) throws SQLException, Exception{
+		logger.debug("doChangeGPRSStatus..."+imsi+":"+msisdn);
+		if(imsi == null) throw new Exception("IMSI can't be null.");
+		if(msisdn == null) throw new Exception("MSISDN can't be null.");
+		try {
+			st = conn.createStatement();
+			st2 = conn2.createStatement();
+
+			if(GPRSName==null){
+				sSql="SELECT B.SERVICEID, B.SERVICECODE, C.PDPSUBSID, C.PDPSUBSNAME "
+						+ "FROM PARAMETERVALUE A, SERVICE B, GPRSSUBSCRIPTION C "
+						+ "WHERE A.PARAMETERVALUEID=3749 AND A.SERVICEID=B.SERVICEID "
+						+ "AND B.STATUS IN (1,3) "
+						+ "AND A.VALUE=C.PDPSUBSID AND B.SERVICECODE = '"+msisdn+"' ";
+				
+				logger.info("Query PDPSUBSNAME SQL:"+sSql);
+				Temprs = null;
+				Temprs = st2.executeQuery(sSql);
+				
+				while(Temprs.next()){
+					GPRSName = Temprs.getString("PDPSUBSNAME");
+				}
+				
+				if(GPRSName==null)
+					throw new Exception("Can't find GPRSName");
+			}
+			
+			//20141128 add chnage 17 to 16
+			cReqStatus="16";
+			doSyncFile_SyncFileDtl(imsi, msisdn);
+			
+			Process_ServiceOrder();
+			logger.info("Process_ServiceOrderItem...");
+			String sStepNo="1",sSubCode="056";
+			Process_ServiceOrderItem(sStepNo,sSubCode);
+			logger.info("Process_ServiceOrderItemDtl...");
+			Process_ServiceOrderItemDtl(sStepNo, "2", "1", cS2TMSISDN );
+			Process_ServiceOrderItemDtl(sStepNo, "1945", "0", GPRSStatus );
+			Process_ServiceOrderItemDtl(sStepNo, "1946", "1", GPRSName );
+			
+			sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
+					+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
+			st.executeUpdate(sSql);			
+			
+			Map<String,String> map =new HashMap<String,String>();
+			map.put("cServiceOrderNBR", cServiceOrderNBR);
+			map.put("cWorkOrderNBR", cWorkOrderNBR);
+			map.put("imsi", imsi);
+			map.put("msisdn", msisdn);
+			return map;
+		} finally{
+			if(st!=null)
+				st.close();
+			if(st2!=null)
+				st2.close();
+		}
+	}
+	
+	public Map<String,String> doTerminate(String imsi,String msisdn,String recycle) throws Exception{
+		logger.debug("doChangeGPRSStatus..."+imsi+":"+msisdn);
+		
+		if(imsi == null) throw new Exception("IMSI can't be null.");
+		if(msisdn == null) throw new Exception("MSISDN can't be null.");
+		
+		
+		if(recycle==null)
+			recycle = "0";
+		
+		try {
+			st = conn.createStatement();
+			st2 = conn2.createStatement();
+			
+			cReqStatus="99";
+			doSyncFile_SyncFileDtl(imsi, msisdn);
+			
+			
+			Process_ServiceOrder();
+			logger.info("Process_ServiceOrderItem...");
+			String sStepNo="1",sSubCode="006";
+			Process_ServiceOrderItem(sStepNo,sSubCode);
+			logger.info("Process_ServiceOrderItemDtl...");
+			Process_ServiceOrderItemDtl(sStepNo, "2", "1", cS2TMSISDN );
+			Process_ServiceOrderItemDtl(sStepNo, "188", "0", recycle );
+			Process_ServiceOrderItemDtl(sStepNo, "37", "0", "999999998" );
+			
+			sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
+					+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
+			st.executeUpdate(sSql);			
+			
+			Map<String,String> map =new HashMap<String,String>();
+			map.put("cServiceOrderNBR", cServiceOrderNBR);
+			map.put("cWorkOrderNBR", cWorkOrderNBR);
+			map.put("imsi", imsi);
+			map.put("msisdn", msisdn);
+			return map;
+			
+		} finally{
+			if(st!=null)
+				st.close();
+			if(st2!=null)
+				st2.close();
+		}
+	}
+	
+	public void Process_SyncFile(String sSFStatus) throws SQLException,
+			Exception {
+		logger.info("Process_SyncFile...");
+
+		// 格式為YYYYMMDDXXX
+		String sDATE = dFormat1.format(new Date());
+		c910SEQ = sDATE + sCount;
+		String cFileName = "S2TDI" + c910SEQ + "." + sMNOSubCode;
+		cFileID = "";
+		Temprs = null;
+		sSql = "select S2T_SQ_FILE_CNTRL.NEXTVAL as ab from dual";
+		// Temprs = conn.createStatement().executeQuery(sSql);
+		Statement st = conn.createStatement();
+		Temprs = st.executeQuery(sSql);
+		while (Temprs.next()) {
+			cFileID = Temprs.getString("ab");
+		}
+		st.close();
+		// dReqDate 要求時間，訂為即時
+		dReqDate = dFormat1.format(new Date());
+		sSql = "INSERT INTO S2T_TB_TYPEB_WO_SYNC_FILE "
+				+ "(FILE_ID,FILE_NAME,FILE_SEND_DATE,FILE_SEQ,CMCC_BRANCH_ID,FILE_CREATE_DATE,STATUS) "
+				+ "VALUES " + "(" + cFileID + ",'" + cFileName + "','"
+				+ dReqDate.substring(0, 8) + "','" + c910SEQ.substring(8, 11)
+				+ "','" + sMNOSubCode + "',sysdate,'" + sSFStatus + "')";
+		logger.debug("Process_SyncFile:" + sSql);
+		// conn.createStatement().executeUpdate(sSql);
+		Statement st2 = conn.createStatement();
+		st2.executeUpdate(sSql);
+		st2.close();
+	}
+
+	public void Process_SyncFileDtl(String sSFDStatus) throws SQLException,
+			IOException {
+		logger.info("Process_SyncFileDtl...");
+		String Sdate = dFormat2.format(new Date());
+
+		cWorkOrderNBR = "";
+		// Temprs =
+		// conn.createStatement().executeQuery("select S2T_SQ_WORK_ORDER.nextval as ab from dual");
+
+		Statement st = conn.createStatement();
+		Temprs = st
+				.executeQuery("select S2T_SQ_WORK_ORDER.nextval as ab from dual");
+
+		while (Temprs.next()) {
+			cWorkOrderNBR = Temprs.getString("ab");
+		}
+		st.close();
+
+		Temprs = null;
+		cServiceOrderNBR = "";
+		// Temprs =
+		// conn.createStatement().executeQuery("select S2T_SQ_SERVICE_ORDER.nextval as ab from dual");
+		Statement st2 = conn.createStatement();
+		Temprs = st2
+				.executeQuery("select S2T_SQ_SERVICE_ORDER.nextval as ab from dual");
+
+		while (Temprs.next()) {
+			cServiceOrderNBR = Temprs.getString("ab");
+		}
+		st2.close();
+		sSql = "INSERT INTO S2T_TB_TYPB_WO_SYNC_FILE_DTL (WORK_ORDER_NBR,"
+				+ "WORK_TYPE, FILE_ID, SEQ_NO, CMCC_OPERATIONDATE, ORIGINAL_CMCC_IMSI,"
+				+ "ORIGINAL_CMCC_MSISDN, S2T_IMSI, S2T_MSISDN, FORWARD_TO_HOME_NO, "
+				+ "FORWARD_TO_S2T_NO_1, IMSI_FLAG, STATUS, SERVICE_ORDER_NBR, SUBSCR_ID)"
+				+ " VALUES ("+ cWorkOrderNBR+ ",'"+ cReqStatus+ "',"+ cFileID+ ",'"+ c910SEQ+ "',to_date('"+ Sdate+ "','MM/dd/yyyy HH24:mi:ss'),'"
+				+ sHOMEIMSI+ "','+"+ PARTNERMSISDN+ "','"+ cS2TIMSI+ "','"+ cS2TMSISDN+ "','+"+ PARTNERMSISDN+ "','"+ PARTNERMSISDN+ "', '2', '"
+				+ sSFDStatus+ "','"+ cServiceOrderNBR+ "','"+ cTicketNumber+ "')";
+		logger.debug("Process_SyncFileDtl:" + sSql);
+		// conn.createStatement().executeUpdate(sSql);
+		Statement st3 = conn.createStatement();
+		st3.executeUpdate(sSql);
+		st3.close();
+	}
+
+	public void Process_ServiceOrder() throws SQLException, IOException {
+		logger.info("Process_ServiceOrder...");
+		sSql = "INSERT INTO S2T_TB_SERVICE_ORDER (SERVICE_ORDER_NBR, "
+				+ "WORK_TYPE, S2T_MSISDN, SOURCE_TYPE, SOURCE_ID, STATUS, "
+				+ "CREATE_DATE) " + "VALUES ('" + cServiceOrderNBR + "','"
+				+ cReqStatus + "','" + cS2TMSISDN + "'," + "'B_TYPE',"
+				+ cWorkOrderNBR + ", '', sysdate)";
+
+		logger.info("Process_ServiceOrder[1]:" + sSql);
+
+		// conn.createStatement().executeUpdate(sSql);
+
+		Statement st = conn.createStatement();
+		st.executeUpdate(sSql);
+		st.close();
+
+		Temprs = null;
+
+		sSql = "Select MNO_NAME from S2T_TB_MNO_COMPANY "
+				+ "Where MNO_SUB_CODE='" + sMNOSubCode + "'";
+
+		logger.debug("Process_ServiceOrder[2]:" + sSql);
+		// Temprs = conn.createStatement().executeQuery(sSql);
+		Statement st2 = conn.createStatement();
+		Temprs = st2.executeQuery(sSql);
+
+		while (Temprs.next()) {
+			sMNOName = Temprs.getString("MNO_NAME");
+		}
+		st2.close();
+	}
+	
+	public void Process_ServiceOrderItem(String sStepNo,String sSubCode) throws SQLException, IOException {
+		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM (SERVICE_ORDER_NBR,STEP_NO, SUB_CODE, IDENTIFIER, STATUS, SEND_DATE) "
+				+ "Values (" + cServiceOrderNBR + "," + sStepNo + ",'"+ sSubCode + "', S2T_SQ_SERVICE_ORDER_ITEM.nextval, 'N', sysdate)";
+		
+		logger.debug("Process_ServiceOrderItem:" + sSql);
+		//conn.createStatement().executeUpdate(sSql);
+		Statement st=conn.createStatement();
+		st.executeUpdate(sSql);
+		st.close();
+	}
+
+	public void Process_ServiceOrderItemDtl(String sStepNo,String sTypeCode,String sDataType,String sValue) throws SQLException, IOException {
+		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM_DTL "
+				+ "(SERVICE_ORDER_NBR, STEP_NO, TYPE_CODE, DATA_TYPE, VALUE) "
+				+ "VALUES (" + cServiceOrderNBR + "," + sStepNo + ","
+				+ sTypeCode + "," + sDataType + ",'" + sValue + "')";
+		logger.debug("Process_ServiceOrderItemDtl:" + sSql);
+		//conn.createStatement().executeUpdate(sSql);
+		Statement st = conn.createStatement();
+		st.executeUpdate(sSql);
+		st.close();
+	}
+	//20141104 add
+	public void setPartnerCode() throws Exception{
+		logger.debug("setPartnerCode");
+		
+		
+		//From AVAILABLEMSISDN
+		sSql=
+				"SELECT HOMEIMSI , PARTNERMSISDN ,C.PRICEPLANID "
+				+ "FROM AVAILABLEMSISDN A, IMSI B, SERVICE C "
+				+ "WHERE A.S2TMSISDN=C.SERVICECODE AND B.SERVICEID=C.SERVICEID "
+				+ "AND B.IMSI='"+cS2TIMSI+"'";
+				
+		logger.info("Get HOMEIMSI,PARTNERMSISDN from AVAILABLEMSISDN :" + sSql);
+		Temprs = null;
+		//Temprs = conn.createStatement().executeQuery(sSql);
+		Statement st = conn.createStatement();
+		Temprs = st.executeQuery(sSql);
+
+		while(Temprs.next()){
+			priceplanID = Temprs.getString("PRICEPLANID");
+			sHOMEIMSI = Temprs.getString("HOMEIMSI");
+			PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+		}
+		
+		st.close();
+		
+		if(sHOMEIMSI!=null && !"".equals(sHOMEIMSI) && PARTNERMSISDN!=null && !"".equals(PARTNERMSISDN))
+			return;
+		
+		// mBOSS From TWNLD record
+		sSql=
+				"SELECT HOMEIMSI, PARTNERMSISDN "
+				+ "FROM ( 	SELECT '"+cS2TIMSI+"' IMSI,VALUE PARTNERMSISDN "
+				+ "			FROM NEWSERVICEORDERPARAMETERVALUE "
+				+ "			WHERE PARAMETERVALUEID=3792 AND SERVICEID= (SELECT MAX(SERVICEID) "
+				+ "														FROM NEWSERVICEORDERINFO "
+				+ "														WHERE FIELDVALUE='"+cS2TIMSI+"') ) A, "
+				+ "IMSI B "
+				+ "WHERE A.IMSI=B.IMSI";
+		
+		logger.info("Get HOMEIMSI,PARTNERMSISDN mBOSS From TWNLD record :" + sSql);
+		Temprs = null;
+		//Temprs = conn2.createStatement().executeQuery(sSql);
+		
+		Statement st2 = conn2.createStatement();
+		
+		Temprs = st2.executeQuery(sSql);
+		
+		while(Temprs.next()){
+			sHOMEIMSI = Temprs.getString("HOMEIMSI");
+			PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+		}
+		
+		st2.close();
+		
+		if(sHOMEIMSI!=null && !"".equals(sHOMEIMSI) && PARTNERMSISDN!=null && !"".equals(PARTNERMSISDN))
+			return;
+		
+		//mBOSS From change sim card record  
+		
+		sSql=
+				"SELECT HOMEIMSI , PARTNERMSISDN "
+				+ "FROM ( 	SELECT '"+cS2TIMSI+"' IMSI, VALUE PARTNERMSISDN "
+				+ "			FROM NEWSERVICEORDERPARAMETERVALUE A,(	SELECT MAX(A.ORDERID), B.SERVICEID "
+				+ "													FROM SERVICEINFOCHANGEORDER A, SERVICEORDER B "
+				+ "													WHERE A.ORDERID=B.ORDERID AND A.FIELDID=3713 AND A.OLDVALUE<>A.NEWVALUE AND A.NEWVALUE='"+cS2TIMSI+"' "
+				+ "													GROUP BY B.SERVICEID) B "
+				+ "			WHERE PARAMETERVALUEID=3792 AND A.SERVICEID=B.SERVICEID  ) A,IMSI B "
+				+ "WHERE A.IMSI=B.IMSI ";
+
+		logger.info("Get HOMEIMSI,PARTNERMSISDN mBOSS From change sim card record  :" + sSql);
+		Temprs = null;
+		//Temprs = conn2.createStatement().executeQuery(sSql);
+		Statement st3 = conn2.createStatement();
+		Temprs = st3.executeQuery(sSql);
+		while(Temprs.next()){
+			sHOMEIMSI = Temprs.getString("HOMEIMSI");
+			PARTNERMSISDN = Temprs.getString("PARTNERMSISDN");
+		}
+		
+		st3.close();
+		if(sHOMEIMSI==null || "".equals(sHOMEIMSI) || PARTNERMSISDN==null || "".equals(PARTNERMSISDN)){
+		
+			//20160725 mod
+			if("139".equals(priceplanID))
+				throw new Exception("Can't find HOMEIMSI,PARTNERMSISDN");
+			else{
+				sHOMEIMSI = cS2TIMSI;
+				PARTNERMSISDN = cS2TMSISDN;
+			}
+		}
+		
+	}
+
+	/*
 	//20160628 add
 	public Map<String, String> ReqStatus_16_Act(String imsi, String msisdn,	String GPRSStatus) throws SQLException, IOException, ClassNotFoundException, Exception{
 		
@@ -99,9 +469,9 @@ public class suspendGPRS {
 		cTicketNumber="D"+dReqDate+sCount;
 		
 
-		/*
+		
 		 * logger.debug("ReqStatus_17_Act");
-		 */
+		 
 		
 		//20141117 新增 必須的檢查與賦予值
 		Check_Type_Code_87_MAP_VALUE(cS2TMSISDN); 
@@ -120,13 +490,13 @@ public class suspendGPRS {
 		st2.close();
 		//conn.createStatement().executeUpdate(sSql);
 		logger.debug("update SERVICE_ORDER:" + sSql);
-		/* Query_PreProcessResult(out17, "000"); */
+		 Query_PreProcessResult(out17, "000"); 
 		Query_GPRSStatus();
 		// 待實做Log紀錄停止GPRS 回傳結果 desc
 		
 		//20141118 add 確認狀態，實做在Main後面持續監測
 		//System.out.println("rcode : "+Query_ServiceOrderStatus());
-		/*sSql="update S2T_TB_TYPB_WO_SYNC_FILE_DTL set s2t_operationdate="+
+		sSql="update S2T_TB_TYPB_WO_SYNC_FILE_DTL set s2t_operationdate="+
 	              "to_date('"+dFormat4.format(new Date())+
 	              "','YYYYMMDDHH24MISS')"+
 	              " where WORK_ORDER_NBR='"+cWorkOrderNBR+"'";
@@ -148,7 +518,7 @@ public class suspendGPRS {
 	              " where SERVICE_ORDER_NBR='"+cServiceOrderNBR+"'";
 	                
 	         logger.debug("Update S2T_TB_SERVICE_ORDER:"+sSql);
-	         conn.createStatement().executeUpdate(sSql);*/
+	         conn.createStatement().executeUpdate(sSql);
 		
 		Map<String,String> map =new HashMap<String,String>();
 		map.put("cServiceOrderNBR", cServiceOrderNBR);
@@ -272,115 +642,7 @@ public class suspendGPRS {
 	}
 
 
-	public void Process_SyncFile(String sSFStatus) throws SQLException,
-			Exception {
-		logger.info("Process_SyncFile...");
-		
-		String sMNOSubCode="950";
-		
-		// 格式為YYYYMMDDXXX
-		sDATE = dFormat1.format(new Date());
-		c910SEQ = sDATE + sCount;
-		cFileName = "S2TDI" + c910SEQ + "."+sMNOSubCode;
-		cFileID = "";
-		Temprs = null;
-		sSql = "select S2T_SQ_FILE_CNTRL.NEXTVAL as ab from dual";
-		//Temprs = conn.createStatement().executeQuery(sSql);
-		Statement st = conn.createStatement();
-		Temprs = st.executeQuery(sSql);
-		while (Temprs.next()) {
-			cFileID = Temprs.getString("ab");
-		}
-		st.close();
-		//dReqDate 要求時間，訂為即時
-		dReqDate = dFormat1.format(new Date());
-		sSql = "INSERT INTO S2T_TB_TYPEB_WO_SYNC_FILE "
-				+ "(FILE_ID,FILE_NAME,FILE_SEND_DATE,FILE_SEQ,CMCC_BRANCH_ID,FILE_CREATE_DATE,STATUS) "
-				+ "VALUES "
-				+ "(" + cFileID + ",'"
-				+ cFileName + "','" + dReqDate.substring(0, 8) + "','"
-				+ c910SEQ.substring(8, 11) + "','"+sMNOSubCode+"',sysdate,'" + sSFStatus
-				+ "')";
-		logger.debug("Process_SyncFile:" + sSql);
-		//conn.createStatement().executeUpdate(sSql);
-		Statement st2 = conn.createStatement();
-		st2.executeUpdate(sSql);
-		st2.close();
-	}
-
-
-	public void Process_SyncFileDtl(String sSFDStatus) throws SQLException,
-			IOException {
-		logger.info("Process_SyncFileDtl...");
-		Sdate = dFormat2.format(new Date());
-
-		cWorkOrderNBR = "";
-		//Temprs = conn.createStatement().executeQuery("select S2T_SQ_WORK_ORDER.nextval as ab from dual");
-		
-		Statement st = conn.createStatement();
-		Temprs = st.executeQuery("select S2T_SQ_WORK_ORDER.nextval as ab from dual");
-		
-		while (Temprs.next()) {
-			cWorkOrderNBR = Temprs.getString("ab");
-		}
-		st.close();
-		
-		Temprs = null;
-		cServiceOrderNBR = "";
-		//Temprs = conn.createStatement().executeQuery("select S2T_SQ_SERVICE_ORDER.nextval as ab from dual");
-		Statement st2 = conn.createStatement();
-		Temprs = st2.executeQuery("select S2T_SQ_SERVICE_ORDER.nextval as ab from dual");
-		
-		while (Temprs.next()) {
-			cServiceOrderNBR = Temprs.getString("ab");
-		}
-		st2.close();
-		sSql = "INSERT INTO S2T_TB_TYPB_WO_SYNC_FILE_DTL (WORK_ORDER_NBR,"
-				+ "WORK_TYPE, FILE_ID, SEQ_NO, CMCC_OPERATIONDATE, ORIGINAL_CMCC_IMSI,"
-				+ "ORIGINAL_CMCC_MSISDN, S2T_IMSI, S2T_MSISDN, FORWARD_TO_HOME_NO, "
-				+ "FORWARD_TO_S2T_NO_1, IMSI_FLAG, STATUS, SERVICE_ORDER_NBR, SUBSCR_ID)"
-				+ " VALUES ("+ cWorkOrderNBR+ ",'"+ cReqStatus+ "',"+ cFileID+ ",'"+ c910SEQ
-				+ "',to_date('"+ Sdate+ "','MM/dd/yyyy HH24:mi:ss'),'"+ sHOMEIMSI+ "','+"+ PARTNERMSISDN
-				+ "','"+ cS2TIMSI+ "','"+ cS2TMSISDN+ "','+"+ PARTNERMSISDN+ "','"+ PARTNERMSISDN+ "', '2', '"
-				+ sSFDStatus+ "','"+ cServiceOrderNBR+ "','"+ cTicketNumber+ "')";
-		logger.debug("Process_SyncFileDtl:" + sSql);
-		//conn.createStatement().executeUpdate(sSql);
-		Statement st3 = conn.createStatement();
-		st3.executeUpdate(sSql);
-		st3.close();
-	}
-
-	public void Process_ServiceOrder() throws SQLException, IOException {
-		logger.info("Process_ServiceOrder...");
-		sSql = "INSERT INTO S2T_TB_SERVICE_ORDER (SERVICE_ORDER_NBR, "
-				+ "WORK_TYPE, S2T_MSISDN, SOURCE_TYPE, SOURCE_ID, STATUS, "
-				+ "CREATE_DATE) " + "VALUES ('" + cServiceOrderNBR + "','"
-				+ cReqStatus + "','" + cS2TMSISDN + "'," + "'B_TYPE',"
-				+ cWorkOrderNBR + ", '', sysdate)";
-
-		logger.info("Process_ServiceOrder[1]:" + sSql);
-
-		//conn.createStatement().executeUpdate(sSql);
-		
-		Statement st = conn.createStatement();
-		st.executeUpdate(sSql);
-		st.close();
-		
-		Temprs = null;
-
-		sSql = "Select MNO_NAME from S2T_TB_MNO_COMPANY "
-				+ "Where MNO_SUB_CODE='" + sMNOSubCode + "'";
-
-		logger.debug("Process_ServiceOrder[2]:" + sSql);
-		//Temprs = conn.createStatement().executeQuery(sSql);
-		Statement st2 = conn.createStatement();
-		Temprs =st2.executeQuery(sSql);
-		
-		while (Temprs.next()) {
-			sMNOName = Temprs.getString("MNO_NAME");
-		}
-		st2.close();
-	}
+	
 
 
 	public void Process_WorkSubcode_05_17(String S2TImsiB, String TWNImsiB,
@@ -526,39 +788,14 @@ public class suspendGPRS {
 		 st8.close();
 
 		// 不需要更新provLog
-		/*
+		
 		 * sSql="update PROVLOG " + "set STEP='"+sStepNo+"' "+
 		 * " where LOGID="+sCMHKLOGID;
 		 * conn.createStatement().executeUpdate(sSql);
-		 */
+		 
 	}
 
-	public void Process_ServiceOrderItem() throws SQLException, IOException {
-		logger.info("Process_ServiceOrderItem...");
-		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM (SERVICE_ORDER_NBR,"
-				+ "STEP_NO, SUB_CODE, IDENTIFIER, STATUS, SEND_DATE) "
-				+ "Values (" + cServiceOrderNBR + "," + sStepNo + ",'"
-				+ sSubCode + "',"
-				+ " S2T_SQ_SERVICE_ORDER_ITEM.nextval, 'N', sysdate)";
-		logger.debug("Process_ServiceOrderItem:" + sSql);
-		//conn.createStatement().executeUpdate(sSql);
-		Statement st=conn.createStatement();
-		st.executeUpdate(sSql);
-		st.close();
-	}
-
-	public void Process_ServiceOrderItemDtl() throws SQLException, IOException {
-		logger.info("Process_ServiceOrderItemDtl...");
-		sSql = "Insert into S2T_TB_SERVICE_ORDER_ITEM_DTL "
-				+ "(SERVICE_ORDER_NBR, STEP_NO, TYPE_CODE, DATA_TYPE, VALUE) "
-				+ "VALUES (" + cServiceOrderNBR + "," + sStepNo + ","
-				+ sTypeCode + "," + sDataType + ",'" + sValue + "')";
-		logger.debug("Process_ServiceOrderItemDtl:" + sSql);
-		//conn.createStatement().executeUpdate(sSql);
-		Statement st = conn.createStatement();
-		st.executeUpdate(sSql);
-		st.close();
-	}
+	
 
 	public void Process_DefValue() throws SQLException, IOException {
 		logger.info("Process_DefValue...");
@@ -601,28 +838,28 @@ public class suspendGPRS {
 				sValue = cS2TMSISDN;
 			} else if ("S2T_IMSI".equals(TeRtA.getString("MAP_VALUE"))) {
 				sValue = cS2TIMSI;
-				/*
+				
 				 * } else if
 				 * ("TWNLD_MSISDN".equals(TeRtA.getString("MAP_VALUE"))) {
 				 * sValue = cTWNLDMSISDN;
-				 */
-				/*
+				 
+				
 				 * } else if ("TWNLD_IMSI".equals(TeRtA.getString("MAP_VALUE")))
 				 * { sValue = cTWNLDIMSI;
-				 */
-				/*
+				 
+				
 				 * } else if
 				 * ("S2T_MSISDN_OLD".equals(TeRtA.getString("MAP_VALUE"))) {
 				 * sValue = cMSISDNOLD;
-				 */
-				/*
+				 
+				
 				 * } else if ("M_205_OT".equals(TeRtA.getString("MAP_VALUE"))) {
 				 * sValue = cM205OT;
-				 */
-				/*
+				 
+				
 				 * } else if ("M_VLN".equals(TeRtA.getString("MAP_VALUE"))) {
 				 * sValue = cMVLN;
-				 */
+				 
 			} else if ("M_GPRS".equals(TeRtA.getString("MAP_VALUE"))) {
 				sValue = cGPRSStatus;
 			} else if ("M_CTYPE".equals(TeRtA.getString("MAP_VALUE"))) {
@@ -664,7 +901,7 @@ public class suspendGPRS {
 	}
 
 
-/*	public void Query_PreProcessResult(String rcode)
+	public void Query_PreProcessResult(String rcode)
 			throws SQLException, InterruptedException, Exception {
 		logger.info("Query_PreProcessResult...");
 		cRCode = "";
@@ -697,7 +934,7 @@ public class suspendGPRS {
 		conn.commit();
 
 		desc = Load_ResultDescription(rcode);
-	}*/
+	}
 
 	public String Load_ResultDescription(String sDecs) throws SQLException {
 		logger.info("Load_ResultDescription...");
@@ -809,7 +1046,7 @@ public class suspendGPRS {
 	public void setPriceplanID(String priceplanID) {
 		this.priceplanID = priceplanID;
 	}
-
+*/
 	 
 	 
 }

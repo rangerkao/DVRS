@@ -62,7 +62,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -100,7 +100,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -143,7 +143,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -186,7 +186,7 @@ public class SMSDao extends BaseDao{
 					st.close();
 				if(pst!=null)
 					pst.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -252,7 +252,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -260,15 +260,9 @@ public class SMSDao extends BaseDao{
 	}
 	
 	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
-		imsitoServiceID = CacheAction.getImsitoServiceID();
-		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
 		
-		String serviceid = imsitoServiceID.get(imsi);
+		String serviceid = getServiceidByIMSI(imsi);
+		
 		sql=
 				"INSERT INTO HUR_GPRS_THRESHOLD (SERVICEID,THRESHOLD,CREATE_DATE) "
 				+ "VALUES(?,?,sysdate)";
@@ -285,8 +279,52 @@ public class SMSDao extends BaseDao{
 			try {
 				if(pst!=null)
 					pst.close();
-				closeConnection();
+				
 			} catch (Exception e) {
+			}
+		}
+		return result;
+	}
+	public String getServiceidByIMSI(String imsi){
+		String result = null;
+
+		imsitoServiceID = CacheAction.getImsitoServiceID();
+		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		if(imsitoServiceID.size()==0){
+			CacheAction.reloadServiceIDwithIMSIMappingCache();
+			imsitoServiceID = CacheAction.getImsitoServiceID();
+			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
+		}
+		
+		result = imsitoServiceID.get(imsi);
+		
+		if(result!=null)
+			return result;
+			
+		sql=
+				"select A.SERVICEID "
+				+ "from IMSI A "
+				+ "WHERE A.imsi = '"+imsi+"'";
+		
+		
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			System.out.println("Execute SQL :"+sql);
+			rs = st.executeQuery(sql);
+			
+			while(rs.next()){
+				result= rs.getString("IMSI");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				st.close();
+				rs.close();
+			} catch (SQLException e) {
 			}
 		}
 		return result;
@@ -317,7 +355,7 @@ public class SMSDao extends BaseDao{
 			try {
 				if(pst!=null)
 					pst.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -346,7 +384,7 @@ public class SMSDao extends BaseDao{
 			try {
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
@@ -378,7 +416,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 			} catch (Exception e) {
 			}
-			closeConnection();
+			
 		}
 
 		return result;
@@ -409,14 +447,84 @@ public class SMSDao extends BaseDao{
 			try {
 				if(pst!=null)
 					pst.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}
 		return map;
 	}
-	
 	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
+		Map<String,String> map =new HashMap<String,String>();
+		String TWNmsisdn = null;
+		
+		//��k1
+		sql=
+				"SELECT A.SERVICEID, B.SERVICECODE, A.FOLLOWMENUMBER, B.DATEACTIVATED, B.STATUS "
+				+ "FROM FOLLOWMEDATA A, SERVICE B "
+				+ "WHERE A.SERVICEID=B.SERVICEID "
+				+ "AND B.SERVICECODE=?";
+		
+		PreparedStatement pst = conn.prepareStatement(sql);
+		
+		pst.setString(1, msisdn);
+		ResultSet rs = pst.executeQuery();
+		while(rs.next()){
+			TWNmsisdn=rs.getString("FOLLOWMENUMBER");
+		}
+		
+		if(rs!=null)rs.close();
+		if(pst!=null)pst.close();
+
+		//��k2
+		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
+			sql=
+					"SELECT A.SERVICEID, B.SERVICECODE, A.VALUE, B.DATEACTIVATED, B.STATUS "
+					+ "FROM NEWSERVICEORDERPARAMETERVALUE A, SERVICE B "
+					+ "WHERE A.SERVICEID=B.SERVICEID AND A.PARAMETERVALUEID=3792 "
+					+ "AND B.SERVICECODE=?";
+			
+			PreparedStatement pst2 = conn2.prepareStatement(sql);
+			
+			pst2.setString(1, msisdn);
+			ResultSet rs2 = pst2.executeQuery();
+			while(rs2.next()){
+				TWNmsisdn=rs2.getString("VALUE");
+			}
+			
+			if(pst2!=null) pst2.close();	
+			if(rs2!=null) rs2.close();
+		}
+		
+		//��k3
+		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
+			sql=
+					"SELECT A.ORDERID, A.OLDVALUE, A.NEWVALUE, A.COMPLETEDATE, C.SERVICEID, C.SERVICECODE, C.STATUS "
+					+ "FROM SERVICEPARAMVALUECHANGEORDER A, SERVICEORDER B, SERVICE C "
+					+ "WHERE A.ORDERID=B.ORDERID AND B.SERVICEID=C.SERVICEID "
+					+ "AND A.PARAMETERVALUEID=3792 AND C.SUBSIDIARYID=59 "
+					+ "AND A.OLDVALUE<>A.NEWVALUE "
+					+ "AND C.SERVICECODE=? "
+					+ "ORDER BY A.ORDERID DESC";
+			
+			PreparedStatement pst2 = conn2.prepareStatement(sql);
+			
+			pst2.setString(1, msisdn);
+			ResultSet rs2 = pst2.executeQuery();
+			while(rs2.next()){
+				TWNmsisdn=rs2.getString("NEWVALUE");
+			}
+			
+			if(pst2!=null) pst2.close();	
+			if(rs2!=null) rs2.close();
+		}		
+		
+		
+		map.put("msisdn", TWNmsisdn);
+		
+		return map;
+	}
+	
+	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException{
 		Map<String,String> map =new HashMap<String,String>();
 		String TWNmsisdn = null;
 		
@@ -481,7 +589,7 @@ public class SMSDao extends BaseDao{
 			if(rs2!=null) rs2.close();
 		}		
 		
-		closeConnection();
+		
 		map.put("msisdn", TWNmsisdn);
 		
 		return map;
@@ -507,7 +615,7 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
-		closeConnection();
+		
 		
 		map.put("msisdn", msisdn);
 		map.put("pricaplainid", pricaplainid);
@@ -639,7 +747,7 @@ public class SMSDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-			closeConnection();
+			
 		return result;
 	}
 	
@@ -665,7 +773,7 @@ public class SMSDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-			closeConnection();
+			
 
 		return result;
 	}
@@ -685,7 +793,7 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();	
-		closeConnection();
+		
 		
 		return result;
 	}
@@ -706,7 +814,7 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();
-		closeConnection();
+		
 
 		return result;
 	}
@@ -723,7 +831,7 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();
-		closeConnection();
+		
 			
 		return result;
 	}
@@ -749,7 +857,7 @@ public class SMSDao extends BaseDao{
 					rs.close();
 				if(st!=null)
 					st.close();
-				closeConnection();
+				
 			} catch (Exception e) {
 			}
 		}

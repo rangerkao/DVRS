@@ -19,26 +19,36 @@ public class CurrentControl extends BaseControl {
 
 	
 	public List<CurrentMonth> queryCurrentMonth() throws SQLException{
-		return currentDao.queryCurrentMonth();
+		
+		List<CurrentMonth> r = currentDao.queryCurrentMonth();
+		currentDao.closeConnection();
+		return r;
 	}
 	
 	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
-		System.out.println("ctr queryCurrentMonth..."+","+new Date());
+		List<CurrentMonth> r = null;
 		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to))&&("".equals(suspend)||suspend==null))
-			return currentDao.queryCurrentMonth();
-		
-		return currentDao.queryCurrentMonth(imsi,from,to,suspend);
+			r = currentDao.queryCurrentMonth();
+		else
+			r = currentDao.queryCurrentMonth(imsi,from,to,suspend);
+		currentDao.closeConnection();
+		return r;
 	}
 	
 	public List<CurrentDay> queryCurrentDay() throws SQLException{
-		return currentDao.queryCurrentDay();
+		List<CurrentDay> r = currentDao.queryCurrentDay();
+		currentDao.closeConnection();
+		return r;
 	}
 	
 	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException{
+		List<CurrentDay> r = null;
 		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to)))
-			return currentDao.queryCurrentDay();
-		
-		return currentDao.queryCurrentDay(imsi,from,to);
+			r = currentDao.queryCurrentDay();
+		else
+			r = currentDao.queryCurrentDay(imsi,from,to);
+		currentDao.closeConnection();
+		return r;
 	}
 	
 }

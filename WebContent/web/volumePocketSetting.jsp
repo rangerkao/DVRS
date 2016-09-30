@@ -84,7 +84,7 @@
 	           {name:"結束時間",col:"endDate",_width:"5%"},
 	           {name:"客戶姓名",col:"customerName",_width:"10%"},
 	           {name:"進線者姓名",col:"callerName",_width:"10%"},
-	           {name:"身份證字號",col:"id",_width:"10%"},//擺客戶的
+	           //{name:"身份證字號",col:"id",_width:"10%"},//擺客戶的
 	           {name:"手機型號",col:"phoneType",_width:"10%"},
 	           {name:"Email",col:"email",_width:"10%"},
 	           {name:"已警示",col:"alerted",_width:"5%"},

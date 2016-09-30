@@ -47,7 +47,7 @@ public class DataRateDao extends BaseDao {
 				}
 				st.close();
 				rs.close();	
-				closeConnection();
+				
 			return list;
 			
 		}

@@ -333,6 +333,26 @@ public class SMSAction extends BaseAction {
 		return SUCCESS;
 	}
 	
+	public String queryS2TMSISDN(){ 
+		try {
+			Map<String,String> map =new HashMap<String,String>();
+			map=smsControl.queryS2TMSISDN(msisdn);
+			result=beanToJSONObject(map);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "LimitSetting", "queryS2TMSISDN","", SUCCESS);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
+		return SUCCESS;
+	}
+	
 	public String querySMSContent(){
 		try {
 			List<SMSContent> scl=smsControl.querySMSContent(SMSid);
@@ -409,7 +429,7 @@ public class SMSAction extends BaseAction {
 			m.put(key, ob.getString(key));
 		}
 		try {
-			smsControl.sendSMS(msisdn, m);
+			smsControl.sendGPRSSMS(msisdn, m);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "send GPRS SMS", "send",msisdn+":"+COMTENT, SUCCESS);
 		} catch (IOException e) {
 			e.printStackTrace();

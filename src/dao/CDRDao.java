@@ -39,14 +39,14 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnection();
+			
 		return list;
 		
 	}
 	
 	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException{
 		
-		System.out.println("¬d¸ßCDR´Á¶¡±q"+from+"¨ì"+to);
+		System.out.println("ï¿½dï¿½ï¿½CDRï¿½ï¿½ï¿½ï¿½ï¿½q"+from+"ï¿½ï¿½"+to);
 		sql=
 				"SELECT A.USAGEID,A.IMSI,A.CALLTIME,A.MCCMNC,A.SGSNADDRESS,A.DATAVOLUME,A.FILEID "
 				+ "FROM HUR_DATA_USAGE A "
@@ -74,7 +74,7 @@ public class CDRDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
-			closeConnection();
+			
 		return list;
 	}
 }

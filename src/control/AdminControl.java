@@ -16,19 +16,27 @@ public class AdminControl extends BaseControl{
 	private AdminDao adminDao=new AdminDao();
 	
 	public List<Admin> queryAdminList() throws SQLException{
-		return adminDao.queryAdminList();
+		List<Admin> r = adminDao.queryAdminList();
+		adminDao.closeConnection();
+		return r;
 	}
 	
 	public int addAdmin(Admin admin) throws SQLException{
-		return adminDao.insert(admin);
+		int r = adminDao.insert(admin);
+		adminDao.closeConnection();
+		return r;
 	}
 	
 	public int modAdmin(Admin admin) throws SQLException{
-		return adminDao.update(admin);
+		int r = adminDao.update(admin);
+		adminDao.closeConnection();
+		return r;
 	}
 
 	public int delAdmin(Admin admin) throws SQLException{
-		return adminDao.delete(admin);
+		int r = adminDao.delete(admin);
+		adminDao.closeConnection();
+		return r;
 	}
 
 }

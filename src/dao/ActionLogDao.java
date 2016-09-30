@@ -111,7 +111,7 @@ public class ActionLogDao extends BaseDao{
 			aResult= pst.executeUpdate();
 			
 			pst.close();
-			closeConnection();
+			
 			
 		 return aResult;
 	}

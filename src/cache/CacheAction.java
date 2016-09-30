@@ -34,16 +34,19 @@ public class CacheAction extends BaseAction {
 	public static Properties props =null;
 	static Logger logger ;
 
-	//IMSI SERVICEID ¹ïÀ³ªí
+	//IMSI SERVICEID ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	static Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
 	static Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
-	//Instance ¤Æ DB³sµ²
-	//instance ·|³y¦¨µ{¦¡µLªk«ùÄò¹B§@
+	//Instance ï¿½ï¿½ DBï¿½sï¿½ï¿½
+	//instance ï¿½|ï¿½yï¿½ï¿½ï¿½{ï¿½ï¿½ï¿½Lï¿½kï¿½ï¿½ï¿½ï¿½Bï¿½@
 	static Connection conn = null;
 	static Connection conn2 = null;
 	
-	//Batch thread ®É¶¡
+	static long connTime = 0;
+	static long conn2Time = 0;
+	
+	//Batch thread ï¿½É¶ï¿½
 	int ThreadPeriod = 24;
 	static boolean batchExcute = false;
 	
@@ -68,13 +71,16 @@ public class CacheAction extends BaseAction {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		connBatchClass cb =new connBatchClass();
+		cb.start();
 	}
 	
 	public CacheAction() throws Exception{
 		super();
 	}
 	
-	//---------------«Ø¥ß  Properties---------------------
+	//---------------ï¿½Ø¥ï¿½  Properties---------------------
 	private static void loadProperties() throws FileNotFoundException, IOException {	
 		String path=classPath+ "/program/Log4j.properties";
 		props =new Properties();
@@ -103,28 +109,55 @@ public class CacheAction extends BaseAction {
 		return SUCCESS;
 	}
 	
-	//---------------«Ø¥ßDB ³sµ² conn1 ¥D¸ê®Æ®w¡Bconn2 Mboss----
+	//---------------ï¿½Ø¥ï¿½DB ï¿½sï¿½ï¿½ conn1 ï¿½Dï¿½ï¿½Æ®wï¿½Bconn2 Mboss----
 	public static Connection getConnect1() throws Exception{
-		return connectDB();
+		connTime = System.currentTimeMillis();
+		if(conn==null)
+			connectDB();
+		/*if(System.currentTimeMillis() - connTime>1000*60*10){
+			try {
+				conn.close();
+			} catch (Exception e) {
+
+			}
+			connectDB();
+		}else{
+			connTime = System.currentTimeMillis();
+		}*/
+	
+		return conn;
 	}
 	
 	public static Connection getConnect2() throws Exception{
-		return connectDB2();
+		conn2Time = System.currentTimeMillis();
+		if(conn2==null)
+			connectDB2();
+		/*if(System.currentTimeMillis() - conn2Time>1000*60*10){
+			try {
+				conn2.close();
+			} catch (Exception e) {
+
+			}
+			connectDB2();
+		}else{
+			conn2Time = System.currentTimeMillis();
+		}*/
+	
+		return conn2;
 	}
 	
 	protected static Connection connectDB() throws Exception{
-		Connection conn = null;
+		connTime = System.currentTimeMillis();
+		System.out.println("Create connect1!");
+		//Connection conn = null;
 		System.out.println(classPath);
 		String url=props.getProperty("Oracle.URL");
-		System.out.println(url);
-		url=url.replace("{{Host}}", props.getProperty("Oracle.Host"));
-		System.out.println(url);
-		url=url.replace("{{Port}}", props.getProperty("Oracle.Port"));
-		System.out.println(url);
-		url=url.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""));
-		System.out.println(url);
-		url=url.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));
-		System.out.println(url);		
+		
+		url=url
+				.replace("{{Host}}", props.getProperty("Oracle.Host"))
+				.replace("{{Port}}", props.getProperty("Oracle.Port"))
+				.replace("{{ServiceName}}", (props.getProperty("Oracle.ServiceName")!=null?props.getProperty("Oracle.ServiceName"):""))
+				.replace("{{SID}}", (props.getProperty("Oracle.SID")!=null?props.getProperty("Oracle.SID"):""));		
 		
 		conn=connDB(props.getProperty("Oracle.DriverClass"), url, 
 				props.getProperty("Oracle.UserName"), 
@@ -136,7 +169,9 @@ public class CacheAction extends BaseAction {
 		return conn;
 	}
 	protected static Connection connectDB2() throws Exception {
-		Connection conn2=null;
+		conn2Time = System.currentTimeMillis();
+		System.out.println("Create connect2!");
+		//Connection conn2=null;
 		String url=props.getProperty("mBOSS.URL")
 				.replace("{{Host}}", props.getProperty("mBOSS.Host"))
 				.replace("{{Port}}", props.getProperty("mBOSS.Port"))
@@ -151,16 +186,115 @@ public class CacheAction extends BaseAction {
 			}
 		return conn2;
 	}
+	
+	
+	static boolean statementResult = false;
+	public static class statementClass extends Thread{
+
+		Connection conn;
+		
+		statementClass(Connection conn){
+			this.conn = conn;
+		}
+		
+		@Override
+		public void run(){
+			statementResult = false;
+			Statement st = null;
+			try {
+				st = conn.createStatement();
+				//st.execute("select 'A' from dual");
+				statementResult = true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally{
+				try {
+					if(st!=null) st.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
+	}
+	
+	
+	static boolean connBatch = true;
+	public static class connBatchClass extends Thread{
+		
+		@Override
+		public void run(){
+			while(connBatch){
+				if(System.currentTimeMillis() - connTime>1000*60*10){
+					try {
+						conn.close();
+					} catch (Exception e) {
+
+					}
+					conn = null;
+				}
+				
+				
+				if(System.currentTimeMillis() - conn2Time>1000*60*10){
+					try {
+						conn2.close();
+					} catch (Exception e) {
+
+					}
+					conn2 = null;
+				}
+				
+				try {
+					Thread.sleep(1000*60);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * ä»¥ThreadæŽ§åˆ¶é€£æŽ¥Connçš„é€Ÿåº¦
+	 * @author ranger.kao
+	 *
+	 */
+	static Connection subConn;
+	public static class connClass extends Thread{
+		
+		String DriverClass,URL,UserName,PassWord;
+		
+		connClass(String DriverClass, String URL,
+			String UserName, String PassWord){
+			this.DriverClass = DriverClass;
+			this.URL = URL;
+			this.UserName = UserName;
+			this.PassWord = PassWord;
+		}
+		
+		@Override
+		public void run(){
+			try {
+				Class.forName(DriverClass);
+				DriverManager.setLoginTimeout(20);
+				subConn = DriverManager.getConnection(URL, UserName, PassWord);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public static Connection connDB(String DriverClass, String URL,
 			String UserName, String PassWord) throws ClassNotFoundException, SQLException {
 		Connection conn = null;
 
 			Class.forName(DriverClass);
 			conn = DriverManager.getConnection(URL, UserName, PassWord);
+		
 		return conn;
 	}
 	
-	public Connection connDB(String DriverClass,
+	/*public Connection connDB(String DriverClass,
 			String DBType,String ip,String port,String DBNameorSID,String charset,
 			String UserName,String PassWord) throws ClassNotFoundException, SQLException{
 
@@ -173,9 +307,9 @@ public class CacheAction extends BaseAction {
 					.replace("{{charset}}", (charset!=null?"?charset="+charset:""));
 			
 		return connDB(DriverClass, url, UserName, PassWord);
-	}
+	}*/
 	/**
-	 * «Ø¥ß³s½u
+	 * ï¿½Ø¥ß³sï¿½u
 	 * @throws Exception 
 	 */
 	
@@ -184,7 +318,7 @@ public class CacheAction extends BaseAction {
 		conn2=getConnect2();
 	}
 	/**
-	 * Ãö³¬³s½u
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½u
 	 */
 	protected static void closeConnect() {
 		if (conn != null) {
@@ -211,7 +345,7 @@ public class CacheAction extends BaseAction {
 		}
 	}
 	
-	//-------------²M°£Cache---------------------
+	//-------------ï¿½Mï¿½ï¿½Cache---------------------
 	
 	public String flushCache(){
 		flushServiceIDwithIMSIMappingCache();
@@ -226,7 +360,7 @@ public class CacheAction extends BaseAction {
 		return SUCCESS;
 	}
 	
-	//-------------­«¸üCache--------------------
+	//-------------ï¿½ï¿½ï¿½ï¿½Cache--------------------
 	
 	public String reloadCache(){
 		reloadServiceIDwithIMSIMappingCache();
@@ -255,13 +389,13 @@ public class CacheAction extends BaseAction {
 			result = s.toString();
 			sendMail("k1988242001@gmail.com","DVRS Cache Reload Error!","DVRS Cache Reload Error! At "+new Date()+"\n"+s);
 		}finally{
-			closeConnect();
+			//closeConnect();
 		}
 		System.out.println("reload End!");
 		return SUCCESS;
 	}
 	
-	//----------------±Ò°ÊBatch reload------------------
+	//----------------ï¿½Ò°ï¿½Batch reload------------------
 	public String batchReloadCache(){
 		if(!batchExcute){
 			Thread reloadThread = new BatchThread(ThreadPeriod);
@@ -287,7 +421,7 @@ public class CacheAction extends BaseAction {
         		timer.schedule(new taskClass(), 0);
         	}else{
         		Calendar calendar = Calendar.getInstance();
-        		//±Ò°Ê®É¶¡¬°¤U¦¸ªº0ÂI
+        		//ï¿½Ò°Ê®É¶ï¿½ï¿½ï¿½ï¿½Uï¿½ï¿½ï¿½ï¿½0ï¿½I
         		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)+1,0,0,0);
         		timer.schedule(new taskClass(), calendar.getTime(), ThreadPeriod*60*60*1000);
         	}
@@ -303,7 +437,7 @@ public class CacheAction extends BaseAction {
 	
 	
 	/**
-	 * µo°eError mail
+	 * ï¿½oï¿½eError mail
 	 * 
 	 * @param content
 	 */
@@ -355,11 +489,7 @@ public class CacheAction extends BaseAction {
 						+ "     	  GROUP BY IMSI )B "
 						+ " WHERE A.IMSI=B.IMSI AND A.COMPLETEDATE =B.COMPLETEDATE ";
 		
-	    
-		Connection subConn2 = getConnect2();
-
-		Statement st = subConn2.createStatement();
-		
+		Statement st = getConnect2().createStatement();
 		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
@@ -390,8 +520,8 @@ public class CacheAction extends BaseAction {
 				+ "					WHERE A.ORDERID =B.ORDERID AND   B.FIELDID=3713) "
 				+ "			GROUP BY SERVICEID )B "
 				+ "		WHERE A.SERVICEID=B.SERVICEID AND A.COMPLETEDATE =B.COMPLETEDATE ";
-		Connection subConn2 = getConnect2();
-		Statement st = subConn2.createStatement();
+
+		Statement st = getConnect2().createStatement();
 		
 		ResultSet rs=st.executeQuery(sql);
 	

@@ -16,11 +16,15 @@ public class HistoryControl extends BaseControl {
 	HistoryDao hisatoryDao = new HistoryDao();
 	
 	public List<Map<String,String>> queryCardChangeHistory(String imsi) throws SQLException {
-		return hisatoryDao.queryCardChangeHistory(imsi);
+		List<Map<String,String>> r = hisatoryDao.queryCardChangeHistory(imsi);
+		hisatoryDao.closeConnection();
+		return r;
 	}
 	
 	public List<Map<String,String>> queryNumberChangeHistory(String imsi) throws SQLException{
-		return hisatoryDao.queryNumberChangeHistory(imsi);
+		List<Map<String,String>> r = hisatoryDao.queryNumberChangeHistory(imsi);
+		hisatoryDao.closeConnection();
+		return r;
 	}
 
 }

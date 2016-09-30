@@ -28,6 +28,7 @@ public class LoginControl extends BaseControl{
 				User user=new User(admin.getAccount(),admin.getRole());
 				session.put("s2tUser", user);
 			}
+			adminDao.closeConnection();
 		return msg;
 	}
 

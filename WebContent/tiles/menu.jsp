@@ -191,14 +191,14 @@ var count=logOutTime/checkPeriod;
 		    });
 	}
 	
-function tqueryTWNMSISDN(){
+function tqueryTWNMSISDN(tText){
 		
-		if($("#tText").val()==null || $("#tText").val()=="" ||$("#tText").val()=="請輸入"){
+		if(!tText||tText==""||tText=="請輸入"){
 			alert('查詢門號時不可為空');
 			return
 		}
 		
-		if(!volidateNum($("#tText").val())){
+		if(!volidateNum(tText)){
 			alert('門號輸入格式錯誤');
 			return
 		}
@@ -206,24 +206,22 @@ function tqueryTWNMSISDN(){
 		$.ajax({
 		      url: '<s:url action="queryTWNMSISDN"/>',
 		      data: {
-		    	  "msisdn":$("#tText").val(),
+		    	  "msisdn":tText,
 		      },//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
 		      success: function(json) {  
-		    	  
-		    	  //jQuery.parseJSON,JSON.parse(json)
-		    	  //alert(json);
 		    	  var v=JSON.parse(json);
-		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
-		    		 alert("查無門號");
-		    	  }else{
-		    		  $("#tLabel").val(v.msisdn);
-		    	  }
 		    	  
-		    	  var error = list['error'];
-		    	  if(error!=null)
-		    		  alert(error);
+		    	  if(v && v['error']){
+		    		  alert(v['error']);
+		    	  }else{
+			    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+			    		 alert("查無門號");
+			    	  }else{
+			    		  $("#tLabel").val(v.msisdn);
+			    	  }
+		    	  }
 	    	  },
 		      error: function(json) {
 		    	  alert('something bad happened'); 
@@ -237,6 +235,51 @@ function tqueryTWNMSISDN(){
 	          }
 		    });
 	}
+	
+function tqueryS2TMSISDN(tText){
+	
+	if(!tText||tText==""||tText=="請輸入"){
+		alert('查詢門號時不可為空');
+		return
+	}
+	
+	if(!volidateNum(tText)){
+		alert('門號輸入格式錯誤');
+		return
+	}
+
+	$.ajax({
+	      url: '<s:url action="queryS2TMSISDN"/>',
+	      data: {
+	    	  "msisdn":tText,
+	      },//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  var v=JSON.parse(json);
+	    	  
+	    	  if(v && v['error']){
+	    		  alert(v['error']);
+	    	  }else{
+		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+		    		 alert("查無門號");
+		    	  }else{
+		    		  $("#tLabel").val(v.msisdn);
+		    	  }
+	    	  }
+    	  },
+	      error: function(json) {
+	    	  alert('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    			//disableButton();
+    		  $("#tLabel").val("");
+          },
+          complete:function(){
+        	  //enableButton();
+          }
+	    });
+}
 	
 	
 </script>
@@ -258,15 +301,16 @@ function tqueryTWNMSISDN(){
 							onfocus="if (this.value == '請輸入') {this.value = ''; this.style.color='#333333'}" 
 							onblur="if (this.value == '') {this.value = '請輸入'; this.style.color='#AAAAAA'}"  >
 			</div>
-			<div class="dropdown col-xs-12">
-				<button class="btn btn-primary btn-xs col-xs-12 dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+			<div class="dropdown col-xs-12" >
+				<button class="btn btn-primary btn-xs col-xs-12 dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true" style="z-index: 1;">
 				    選擇查詢項目
 				<span class="caret"></span>
 				</button>
-				<ul class="dropdown-menu dropdown-menu-center" role="menu" aria-labelledby="dropdownMenu1">
+				<ul class="dropdown-menu dropdown-menu-center" role="menu" aria-labelledby="dropdownMenu1" style="left: 35px;height: 50px;padding-top: 0px;">
 					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryMSISDN()" value="IMSI查詢門號"></li>
 					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryIMSI()" value="門號查詢IMSI"></li>
-					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN()" value="中華門號查詢香港主號"></li>
+					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryS2TMSISDN($('#tText').val())" value="中華門號查詢香港主號"></li>
+					<li role="presentation"><input 	type="button" class="btn btn-primary btn-xs col-xs-12" onclick="tqueryTWNMSISDN($('#tText').val())" value="香港主號查詢中華門號"></li>
 				</ul>
 			</div>
 			<div class="col-xs-12">

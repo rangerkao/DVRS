@@ -57,7 +57,7 @@ public class QosDao extends BaseDao {
 			}
 			st.close();
 			rs.close();
-			closeConnection();
+			
 		return list;
 		
 	}
@@ -110,7 +110,7 @@ public class QosDao extends BaseDao {
 			}
 			st.close();
 			rs.close();
-			closeConnection();
+			
 			return list;
 			
 		}

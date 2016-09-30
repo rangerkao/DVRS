@@ -53,7 +53,7 @@ public class HistoryDao extends BaseDao {
 		}
 		rs.close();
 		st.close();
-		closeConnection();
+		
 		return result;
 	}
 	
@@ -96,7 +96,7 @@ public class HistoryDao extends BaseDao {
 		}
 		rs.close();
 		st.close();
-		closeConnection();
+		
 		return result;
 	}
 	

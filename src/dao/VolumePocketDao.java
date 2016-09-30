@@ -68,7 +68,7 @@ public class VolumePocketDao extends BaseDao {
 				+ "A.START_DATE,A.END_DATE,"
 				+ "TO_CHAR(A.CREATE_TIME,'yyyy/MM/dd hh24:mi:ss') CREATE_TIME,TO_CHAR(A.CANCEL_TIME,'yyyy/MM/dd hh24:mi:ss') CANCEL_TIME "
 				+ "from HUR_VOLUME_POCKET A,FOLLOWMEDATA B "
-				+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 "
+				+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 AND B.FOLLOWMENUMBER like '886%' "
 				+ "ORDER BY A.START_DATE DESC ";
 		
 		
@@ -77,6 +77,15 @@ public class VolumePocketDao extends BaseDao {
 		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
+			String id = convertString(rs.getString("ID"),"ISO-8859-1","Big5");
+			String cusName = convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5");
+			String calName = convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5");
+			if(!id.matches("^\\d+$")){
+				cusName = markName(cusName);
+				calName = markName(calName);
+			}
+			
+			
 			VolumePocket v = new VolumePocket();
 			v.setPid(rs.getString("PID"));
 			
@@ -88,11 +97,11 @@ public class VolumePocketDao extends BaseDao {
 			v.setCreateTime(rs.getString("CREATE_TIME"));
 			v.setCancelTime(nvl(rs.getString("CANCEL_TIME"),""));
 			
-			v.setId(nvl(rs.getString("ID"),""));
-			v.setPhoneType(nvl(rs.getString("PHONE_TYPE"),""));
-			v.setCallerName(convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5"));
-			v.setCustomerName(convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5"));
-			v.setEmail(nvl(rs.getString("EMAIL"),""));
+			//v.setId(convertString(rs.getString("ID"),"ISO-8859-1","Big5"));
+			v.setPhoneType(convertString(rs.getString("PHONE_TYPE"),"ISO-8859-1","Big5"));
+			v.setCallerName(calName);
+			v.setCustomerName(cusName);
+			v.setEmail(convertString(rs.getString("EMAIL"),"ISO-8859-1","Big5"));
 			
 			v.setChtMsisdn(rs.getString("CHTMSISDN"));
 			
@@ -120,6 +129,15 @@ public class VolumePocketDao extends BaseDao {
 		ResultSet rs=st.executeQuery(sql);
 		
 		while(rs.next()){
+			
+			String id = convertString(rs.getString("ID"),"ISO-8859-1","Big5");
+			String cusName = convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5");
+			String calName = convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5");
+			if(!id.matches("^\\d+$")){
+				cusName = markName(cusName);
+				calName = markName(calName);
+			}
+			
 			VolumePocket v = new VolumePocket();
 			v.setPid(rs.getString("PID"));
 			
@@ -131,11 +149,11 @@ public class VolumePocketDao extends BaseDao {
 			v.setCreateTime(rs.getString("CREATE_TIME"));
 			v.setCancelTime(nvl(rs.getString("CANCEL_TIME"),""));
 			
-			v.setId(nvl(rs.getString("ID"),""));
-			v.setPhoneType(nvl(rs.getString("PHONE_TYPE"),""));
-			v.setCallerName(convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5"));
-			v.setCustomerName(convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5"));
-			v.setEmail(nvl(rs.getString("EMAIL"),""));
+			//v.setId(convertString(rs.getString("ID"),"ISO-8859-1","Big5"));
+			v.setPhoneType(convertString(rs.getString("PHONE_TYPE"),"ISO-8859-1","Big5"));
+			v.setCallerName(calName);
+			v.setCustomerName(cusName);
+			v.setEmail(convertString(rs.getString("EMAIL"),"ISO-8859-1","Big5"));
 			
 			v.setChtMsisdn(rs.getString("CHTMSISDN"));
 			v.setReason(convertString(rs.getString("CANCEL_REASON"),"ISO-8859-1","Big5"));
@@ -145,6 +163,18 @@ public class VolumePocketDao extends BaseDao {
 		st.close();
 		rs.close();
 		return result;
+	}
+	
+	private String markName(String name){
+		String s = "";
+		if(name!=null && name.length()>0){
+			s = name.substring(0,1);
+			for(int i=1 ; i<name.length();i++){
+				s+="*";
+			}
+		}
+			
+		return s;
 	}
 	
 	public List<VolumePocket> inserVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException{
@@ -161,10 +191,18 @@ public class VolumePocketDao extends BaseDao {
 			v.setPid(rs.getString("PID"));
 		}
 		
+		/*sql=
+				"INSERT into HUR_VOLUME_POCKET(PID,SERVICEID,START_DATE,END_DATE,CREATE_TIME,ID,CALLER_NAME,CUSTOMER_NAME,PHONE_TYPE,EMAIL,TYPE,IMSI) "
+				+ "VALUES('"+v.getPid()+"','"+v.getServiceid()+"','"+v.getStartDate()+"','"+v.getEndDate()+"',sysdate,'"
+						+ ""+v.getId()+"','"+convertString(v.getCallerName(),"Big5","ISO-8859-1")+"','"+convertString(v.getCustomerName(),"Big5","ISO-8859-1")+"','"+convertString(v.getPhoneType(),"Big5","ISO-8859-1")+"','"+v.getEmail()+"',0,'"+v.getIMSI()+"')";
+	*/	
+		
 		sql=
 				"INSERT into HUR_VOLUME_POCKET(PID,SERVICEID,START_DATE,END_DATE,CREATE_TIME,ID,CALLER_NAME,CUSTOMER_NAME,PHONE_TYPE,EMAIL,TYPE,IMSI) "
 				+ "VALUES('"+v.getPid()+"','"+v.getServiceid()+"','"+v.getStartDate()+"','"+v.getEndDate()+"',sysdate,'"
-						+ ""+v.getId()+"','"+convertString(v.getCallerName(),"Big5","ISO-8859-1")+"','"+convertString(v.getCustomerName(),"Big5","ISO-8859-1")+"','"+v.getPhoneType()+"','"+v.getEmail()+"',0,'"+v.getIMSI()+"')";
+						+ ""+v.getId()+"','"+v.getCallerName()+"','"+v.getCustomerName()+"','"+v.getPhoneType()+"','"+v.getEmail()+"',0,'"+v.getIMSI()+"')";
+		
+		sql = convertString(sql,"Big5","ISO-8859-1");
 		
 		
 		System.out.println("Execute SQL :"+sql);

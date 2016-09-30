@@ -27,7 +27,7 @@ public class AdminDao extends BaseDao {
 		pst.setString(4, admin.getRole());
 		result=pst.executeUpdate();
 		pst.close();
-		closeConnection();
+		
 
 		
 		return result;
@@ -48,7 +48,7 @@ public class AdminDao extends BaseDao {
 		
 		result=pst.executeUpdate();
 		pst.close();
-		closeConnection();
+		
 
 		return result;
 	}
@@ -64,12 +64,12 @@ public class AdminDao extends BaseDao {
 		pst.setString(1, admin.getAccount());
 		result=pst.executeUpdate();
 		pst.close();
-		closeConnection();
+		
 
 		return result;
 	}
 	
-	//¬d¸ß¦Cªí
+	//ï¿½dï¿½ß¦Cï¿½ï¿½
 	public List<Admin> queryAdminList() throws SQLException{
 		sql=
 				"SELECT A.ID,A.ACCOUNT,A.PASSWORD,A.ROLE "
@@ -90,7 +90,7 @@ public class AdminDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
-		closeConnection();
+		
 
 		return list;
 		
@@ -119,7 +119,7 @@ public class AdminDao extends BaseDao {
 		}
 		pst.close();
 		rs.close();
-		closeConnection();
+		
 
 		return admin;
 	}

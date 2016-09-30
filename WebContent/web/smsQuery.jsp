@@ -72,9 +72,86 @@ function query(){
           },
           complete:function(){
         	  enableButton();
-        	  //pagination();
-        	  queryList();
+        	  pagination();
+        	  //queryList();
+        	  queryMSISDN1($("#MSISDN").val());
         	  dateChange=false;
+          }
+	    });
+}
+var TWNMSISDN;
+var S2TMSISDN;
+
+function queryMSISDN1(tText){
+	$.ajax({
+	      url: '<s:url action="queryTWNMSISDN"/>',
+	      data: {
+	    	  "msisdn":tText,
+	      },//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  var v=JSON.parse(json);
+	    	  
+	    	  if(v && v['error']){
+	    		  alert(list['error']);
+	    	  }else{
+		    	  if(json=="" || v.msisdn==null || v.msisdn==""){
+		    		  queryMSISDN2(tText);
+		    	  }else{
+		    		  S2TMSISDN = tText;
+		    		  TWNMSISDN = v.msisdn;
+		    		  queryList();
+		    	  }
+	    	  }
+    	  },
+	      error: function(json) {
+	    	  alert('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    			//disableButton();
+    		  $("#tLabel").val("");
+          },
+          complete:function(){
+        	  //enableButton();
+        	  
+          }
+	    });
+}
+
+function queryMSISDN2(tText){
+	console.log(TWNMSISDN+":"+S2TMSISDN);
+	$.ajax({
+	      url: '<s:url action="queryS2TMSISDN"/>',
+	      data: {
+	    	  "msisdn":tText,
+	      },//parameters go here in object literal form
+	      type: 'POST',
+	      datatype: 'json',
+	      success: function(json) {  
+	    	  var v=JSON.parse(json);
+	    	  
+	    	  if(v && v['error']){
+	    		  alert(list['error']);
+	    	  }else{
+	    		  if(json=="" || v.msisdn==null || v.msisdn==""){
+	    			  
+		    	  }else{
+		    		  S2TMSISDN = v.msisdn;
+		    		  TWNMSISDN = tText;
+		    		  queryList();
+		    	  }
+	    	  }
+    	  },
+	      error: function(json) {
+	    	  alert('something bad happened'); 
+	      },
+    	  beforeSend:function(){
+    			//disableButton();
+    		  $("#tLabel").val("");
+          },
+          complete:function(){
+        	  //enableButton();  
           }
 	    });
 }
@@ -104,6 +181,8 @@ function clearDate(){
 }
 
 function queryList(){
+	
+	console.log(TWNMSISDN+":"+S2TMSISDN);
 	var   reg=$("#MSISDN").val();
 	reg="^"+reg+"$"
 	reg=reg.replace("*","\\d+");
@@ -111,12 +190,14 @@ function queryList(){
 	
 	dataList.splice(0,dataList.length);
 	 $.each(smsList,function(i,ListItem){
-		 if(reg.test(ListItem.sendNumber)||($("#MSISDN").val()==null||$("#MSISDN").val()=="")){
+		 if(reg.test(ListItem.sendNumber)||TWNMSISDN == ListItem.sendNumber||S2TMSISDN == ListItem.sendNumber||($("#MSISDN").val()==null||$("#MSISDN").val()=="")){
 			 dataList.push(ListItem);
 		 }
 	}); 
 	pagination();
+	enableButton();
 }
+//
 
 </script>
 </head>

@@ -131,6 +131,7 @@
         <action name="queryIMSI" method="queryIMSI" class="action.SMSAction"/>
         <action name="queryMSISDN" method="queryMSISDN" class="action.SMSAction"/>
         <action name="queryTWNMSISDN" method="queryTWNMSISDN" class="action.SMSAction"/>
+        <action name="queryS2TMSISDN" method="queryS2TMSISDN" class="action.SMSAction"/>
          <action name="sendSMS" method="sendSMS" class="action.SMSAction"/>
     <!-- ActionLogQuery -->
         <action name="queryActionLog" method="queryActionLog" class="action.ActionLogAction"/>

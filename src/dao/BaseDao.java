@@ -30,14 +30,16 @@ public class BaseDao {
 		return sCharset==null? new String(msg.getBytes(),dCharset):new String(msg.getBytes(sCharset),dCharset);
 	}
 	
-	protected void createConnection() throws Exception{
+	public void createConnection() throws Exception{
+		
+		
 		conn=cache.CacheAction.getConnect1();
 		conn2=cache.CacheAction.getConnect2();
-		System.out.print("Create connect!");
+		
 	}
 	public void closeConnection() throws SQLException{
-		conn.close();
+		/*conn.close();
 		conn2.close();
-		System.out.print("Close connect!");
+		System.out.println("Close connect!");*/
 	}	
 }

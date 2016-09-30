@@ -31,72 +31,172 @@ public class SMSControl extends BaseControl{
 	public SMSControl() throws Exception {
 		super();
 	}
+	public void closeConnection() throws SQLException{
+		smsDao.closeConnection();
+	}
 	
 	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
-		return smsDao.querySMSLog();
+		List<SMSLog> r = smsDao.querySMSLog();
+		closeConnection();
+		return r;
 	}
 	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
+		List<SMSLog> r = null;
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate))&&(msisdn==null||"".equals(msisdn)) )
-			return querySMSLog();
-		
-		return smsDao.querySMSLog(fromDate,toDate,msisdn);
+			r = querySMSLog();
+		else
+			r = smsDao.querySMSLog(fromDate,toDate,msisdn);
+		closeConnection();
+		return r;
 	}
 	public List<SMSSetting> querySMSSetting() throws SQLException{
-		return smsDao.querySMSSetting();
+		List<SMSSetting> r = smsDao.querySMSSetting();
+		closeConnection();
+		return r;
 	}
 	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
-		return smsDao.updateSMSSetting(list);
+		List<SMSSetting> r = smsDao.updateSMSSetting(list);
+		closeConnection();
+		return r;
 	}
 	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
-		return smsDao.queryAlertLimit();
+		List<GPRSThreshold> r = smsDao.queryAlertLimit();
+		closeConnection();
+		return r;
 	}
 	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws Exception{
 		
-		int result = smsDao.insertAlertLimit(imsi,limit);
+		int r = smsDao.insertAlertLimit(imsi,limit);
+		String cPhone = queryCustmerServicePhone(imsi);
+		
 		if(sendSMS){
-			sendSMS("6",msisdn,imsi,"VIP",null,null);
+			sendSMS("6",msisdn,imsi,"VIP",new String[]{"{{customerService}}"},new String[]{cPhone});
 		}
-		return result;
+		closeConnection();
+		return r;
 	}
 	public int updateAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
-		/*if(sendSMS){
-			String content=smsDao.getSMSContent(100);
-			if(content!=null && !"".equals(content)){
-				if(msisdn==null ||"".equals(msisdn)){
-					logger.error("Can't send SMS without msisdn number!");
-				}else{
-					setSMSPostParam(content,msisdn);
-				}
-					
-			}
-		}*/
-		return smsDao.updateAlertLimit(imsi, limit);
+		int r = smsDao.updateAlertLimit(imsi, limit);
+		closeConnection();
+		return r;
 	}
 	public int deleteAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
-		/*if(sendSMS){
-			String content=smsDao.getSMSContent(100);
-			if(content!=null && !"".equals(content)){
-				if(msisdn==null ||"".equals(msisdn)){
-					logger.error("Can't send SMS without msisdn number!");
-				}else{
-					setSMSPostParam(content,msisdn);
-				}
-					
-			}
-		}*/
-		return smsDao.deleteAlertLimit(msisdn);
+		int r = smsDao.deleteAlertLimit(msisdn);
+		closeConnection();
+		return r;
 	}
 	public String checkAlertExisted(String msisdn) throws SQLException{
-		return smsDao.checkAlertExisted(msisdn);
+		String r = smsDao.checkAlertExisted(msisdn);
+		closeConnection();
+		return r;
 	}
 	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
-		return smsDao.queryIMSI(msisdn);
+		Map<String,String> r = smsDao.queryIMSI(msisdn);
+		closeConnection();
+		return r;
 	}
 	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
-		return smsDao.queryMSISDN(imsi);
+		Map<String,String> r = smsDao.queryMSISDN(imsi);
+		closeConnection();
+		return r;
 	}
 	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
-		return smsDao.queryTWNMSISDN(msisdn);
+		Map<String,String> r = smsDao.queryTWNMSISDN(msisdn);
+		closeConnection();
+		return r;
+	}
+	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException{
+		Map<String,String> r = smsDao.queryS2TMSISDN(msisdn);
+		closeConnection();
+		return r;
+	}
+
+	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
+		List<SMSContent> r = smsDao.querySMSContent();
+		closeConnection();
+		return r;
+	}
+	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
+		List<SMSContent> r = null;
+		if(id==null ||"".equals(id))
+			r = smsDao.querySMSContent();
+		else
+			r = smsDao.querySMSContent(id);
+		closeConnection();
+		return r;
+	}
+	
+	public int insertSMSContent(SMSContent sc) throws Exception{
+		int r = smsDao.insertSMSContent(sc);
+		closeConnection();
+		return r;
+	}
+	public int updateSMSContent(SMSContent sc) throws Exception{
+		int r = smsDao.updateSMSContent(sc);
+		closeConnection();
+		return r;
+	}
+	public int deleteSMSContent(SMSContent sc) throws Exception{
+		int r = smsDao.deleteSMSContent(sc);
+		closeConnection();
+		return r;
+	}
+	
+	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
+		Map<String,String> r = smsDao.queryGPRSContent();
+		closeConnection();
+		return r;
+	}
+	
+	public String sendGPRSSMS(String msisdn,Map<String,String> content) throws IOException, SQLException{
+		String res;
+
+			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn);
+			System.out.println("send A result = "+res);
+			smsDao.logSendSMS(msisdn, new String(content.get("A").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn);
+			System.out.println("send B result = "+res);
+			smsDao.logSendSMS(msisdn, new String(content.get("B").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn);
+			System.out.println("send C result = "+res);
+			smsDao.logSendSMS(msisdn, new String(content.get("C").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
+
+		closeConnection();
+		return "success";
+	}
+	
+	private String queryCustmerServicePhone(String imsi) throws SQLException{
+		String cphone=null;
+		String VLN=smsDao.queryVLR(imsi);
+		
+		if(VLN!=null && !"".equals(VLN)){
+			Map<String,String> tadigMap = smsDao.queryTADIG();
+			
+			if(tadigMap.size()>0){
+				String tadig=null;
+				for(int i=VLN.length();i>0;i--){
+					tadig=tadigMap.get(VLN.substring(0,i));
+					if(tadig!=null &&!"".equals(tadig)){
+						break;
+					}
+				}
+				if(tadig!=null &&!"".equals(tadig)){
+					String mccmnc=smsDao.queryMccmnc(tadig);
+					if(mccmnc!=null &&!"".equals(mccmnc)){
+						cphone=smsDao.queryCustomerServicePhone(mccmnc);
+					}
+				}
+			}
+		}
+		return cphone;
 	}
 	
 	public void sendSMS(String smsId,String msisdn,String imsi,String SMStype,String[] paramName,String[] paramValue) throws Exception{
@@ -203,83 +303,5 @@ public class SMSControl extends BaseControl{
  
 		//print result
 		return(response.toString());
-	}
-	private String queryCustmerServicePhone(String imsi) throws SQLException{
-		String cphone=null;
-		String VLN=smsDao.queryVLR(imsi);
-		
-		if(VLN!=null && !"".equals(VLN)){
-			Map<String,String> tadigMap = smsDao.queryTADIG();
-			
-			if(tadigMap.size()>0){
-				String tadig=null;
-				for(int i=VLN.length();i>0;i--){
-					tadig=tadigMap.get(VLN.substring(0,i));
-					if(tadig!=null &&!"".equals(tadig)){
-						break;
-					}
-				}
-				if(tadig!=null &&!"".equals(tadig)){
-					String mccmnc=smsDao.queryMccmnc(tadig);
-					if(mccmnc!=null &&!"".equals(mccmnc)){
-						cphone=smsDao.queryCustomerServicePhone(mccmnc);
-					}
-				}
-			}
-		}
-		return cphone;
-	}
-	
-	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
-		return smsDao.querySMSContent();
-	}
-	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
-		if(id==null ||"".equals(id))
-			return smsDao.querySMSContent();
-		return smsDao.querySMSContent(id);
-	}
-	
-	public int insertSMSContent(SMSContent sc) throws Exception{
-		return smsDao.insertSMSContent(sc);
-	}
-	public int updateSMSContent(SMSContent sc) throws Exception{
-		return smsDao.updateSMSContent(sc);
-	}
-	public int deleteSMSContent(SMSContent sc) throws Exception{
-		return smsDao.deleteSMSContent(sc);
-	}
-	
-	public String sendSMS(String msisdn,Map<String,String> content) throws IOException, SQLException{
-		
-
-		String res;
-		try {
-			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn);
-			System.out.println("send A result = "+res);
-			smsDao.logSendSMS(msisdn, new String(content.get("A").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-			}
-			res = setSMSPostParam(new String(content.get("B").getBytes("BIG5"),"ISO8859-1"),msisdn);
-			System.out.println("send B result = "+res);
-			smsDao.logSendSMS(msisdn, new String(content.get("B").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-			}
-			res = setSMSPostParam(new String(content.get("C").getBytes("BIG5"),"ISO8859-1"),msisdn);
-			System.out.println("send C result = "+res);
-			smsDao.logSendSMS(msisdn, new String(content.get("C").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
-		} finally{
-			smsDao.closeConnection();
-		}
-
-		//smsDao.logSendSMS(msisdn, content, res);
-		return "success";
-	}
-	
-	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
-		return smsDao.queryGPRSContent();
 	}
 }

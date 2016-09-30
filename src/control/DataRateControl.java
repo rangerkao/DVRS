@@ -17,7 +17,9 @@ public class DataRateControl extends BaseControl{
 	}
 
 	public List<DataRate> queryDataRateList() throws SQLException{
-		return dataRateDao.queryDataRateList();
+		List<DataRate> r = dataRateDao.queryDataRateList();
+		dataRateDao.closeConnection();
+		return r;
 	}
 
 }
