@@ -5,7 +5,6 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
 });
@@ -93,15 +92,7 @@ var reportName="換號歷史";
 			<font size="2" color="red">(查詢門號時可使用"*"取代某區段號碼進行模糊查詢)</font>
 			<label id="Qmsg" style="height: 30px;">&nbsp;</label>
 		</div>
-		<div class="col-xs-12"> 
-			<button type="button" name="Previous"  class="pagination btn btn-warning"><span class="glyphicon glyphicon-chevron-left"></span> Previous</button>
-			<label id="nowPage"></label>
-			<button type="button" name="Next" class="pagination btn btn-warning"> <span class="glyphicon glyphicon-chevron-right"></span> Next</button>
-			<label id="totalPage" style="margin-right: 10px"></label>
-			<label>每頁筆數</label>
-			<input id="rown" type="text" value="10" width="5px">
-			<input type="button" onclick="pagination()" class="btn btn-primary btn-sm" style="margin: 20px"  value="重新分頁">
-		</div>
+		<div class="col-xs-12" id="page_action"> </div>	
 
 		<div class="col-xs-12"> 
 			<div id="page_contain"></div>

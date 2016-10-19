@@ -19,7 +19,7 @@ public class DataRateDao extends BaseDao {
 		public List<DataRate> queryDataRateList() throws SQLException{
 			sql=
 					"SELECT A.PRICEPLANID, C.NAME PRICEPLANNAME,A.MCCMNC,B.COUNTRY, B.NETWORK, "
-					+ "A.RATE, A.CHARGEUNIT, A.CURRENCY, A.DAYCAP "
+					+ "A.RATE, A.CHARGEUNIT, A.CURRENCY, A.DAYCAP,A.START_TIME,A.END_TIME "
 					+ "FROM HUR_DATA_RATE A, HUR_MCCMNC B, PRICEPLAN C "
 					+ "WHERE A.PRICEPLANID=C.PRICEPLANID AND A.MCCMNC=B.MCCMNC "
 					+ "AND A.PRICEPLANID=139 "
@@ -43,6 +43,8 @@ public class DataRateDao extends BaseDao {
 					datarate.setChargeunit(rs.getLong("CHARGEUNIT"));
 					datarate.setCurrency(rs.getString("CURRENCY"));
 					datarate.setDayCap(rs.getDouble("DAYCAP"));
+					datarate.setStartDate(rs.getString("START_TIME"));
+					datarate.setEndDate(rs.getString("END_TIME"));
 					list.add(datarate);
 				}
 				st.close();

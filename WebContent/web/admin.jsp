@@ -6,7 +6,6 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
-<script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript">
 var dataList;
 var adminList;

@@ -249,10 +249,6 @@ public class DVRSmain extends TimerTask{
 				l3.add(m);
 				m2.put(rs.getString("MCC"),l3);
 				volumePocketMap.put(rs.getString("SERVICEID"), m2);
-				
-				//20160913 add
-				result = setVolumeList();
-				
 			}
 			
 			result = true;
@@ -269,6 +265,8 @@ public class DVRSmain extends TimerTask{
 			}
 		}
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
+		//20160913 add
+		result = setVolumeList();
 		return result;
 	}
 	
@@ -3562,7 +3560,6 @@ public class DVRSmain extends TimerTask{
 				boolean needSuspend=false;
 				Double alertBracket=0D;
 				
-				
 				int msgSettingID=0;
 				
 				//20141118 修改 約定客戶訂為每5000提醒一次不斷網，規則客制訂為0進行5000持續累積
@@ -3630,10 +3627,12 @@ public class DVRSmain extends TimerTask{
 						contentid = null;
 						String vipSMS = null;
 						//抓取不同幣別VIP簡訊
-						if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+						if("NTD".equals(pricePlanIdtoCurrency.get(priceplanid))){
 							vipSMS = getSystemConfigParam(priceplanid,"NTD_VIP_MSG_ID");
-						if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid)))
+						}
+						if("HKD".equals(pricePlanIdtoCurrency.get(priceplanid))){
 							vipSMS = getSystemConfigParam(priceplanid,"HKD_VIP_MSG_ID");
+						}
 						
 						//取不到任何上限值 跳過
 						if(vipSMS == null){
@@ -3662,7 +3661,9 @@ public class DVRSmain extends TimerTask{
 					}
 					
 					//smsCount += sendSMS(serviceid,contentid,alertBracket,phone,currency);
-					smsCount += sendSMS(serviceid,contentid,phone,new String[]{"{{bracket}}","{{customerService}}"},new String[]{alertBracket.toString(),queryCustomerServicePhone(serviceid)});
+					smsCount += sendSMS(serviceid,contentid,phone,
+							new String[]{"{{bracket}}","{{customerService}}"},
+							new String[]{currency+FormatNumString(alertBracket,"#,##0.00").toString(),queryCustomerServicePhone(serviceid)});
 					currentMap.get(sYearmonth).get(serviceid).put("LAST_ALERN_THRESHOLD", alertBracket.toString());				
 					currentMap.get(sYearmonth).get(serviceid).put("SMS_TIMES", String.valueOf((smsTimes+1)));
 					
@@ -4020,7 +4021,7 @@ public class DVRSmain extends TimerTask{
 				String alerted ="0";
 				Double DEFAULT_DAY_THRESHOLD = null;
 				String[]  contentid = null;
-				
+				String currency = "";
 				
 				
 				//抓取不同幣別日上限
@@ -4029,6 +4030,7 @@ public class DVRSmain extends TimerTask{
 					String contentids = getSystemConfigParam(pricePlanID,"NTD_DAY_LIMIT_MSG_ID");
 					if(contentids != null )
 						contentid = contentids.split(",");
+					currency = "NTD";
 				}
 				if("HKD".equals(pricePlanIdtoCurrency.get(pricePlanID))){
 					DEFAULT_DAY_THRESHOLD = getSystemConfigDoubleParam(pricePlanID,"HKD_DAY_LIMIT");
@@ -4062,10 +4064,11 @@ public class DVRSmain extends TimerTask{
 				if(daycharge>=DEFAULT_DAY_THRESHOLD && "0".equalsIgnoreCase(alerted)){
 					//為了每日警示內容中帶入月累計費用才需要
 					Double charge=parseDouble((String) currentMap.get(sYearmonth).get(serviceid).get("CHARGE"));
-
 					
 					//smsCount+=sendSMS(serviceid,contentid,charge,phone,pricePlanIdtoCurrency.get(pricePlanID));	
-					smsCount+=sendSMS(serviceid,contentid,phone,new String[]{"{{bracket}}","{{customerService}}"},new String[]{charge.toString(),queryCustomerServicePhone(serviceid)});
+					smsCount+=sendSMS(serviceid,contentid,phone,
+							new String[]{"{{bracket}}","{{customerService}}"},
+							new String[]{currency+FormatNumString(charge,"#,##0.00"),queryCustomerServicePhone(serviceid)});
 					//回寫註記，因為有區分Mccmnc，全部紀錄避免之後取不到
 					for(String nccNet : currentDayMap.get(sYearmonthday).get(serviceid).keySet()){
 						currentDayMap.get(sYearmonthday).get(serviceid).get(nccNet).put("ALERT", "1");
@@ -4274,7 +4277,9 @@ public class DVRSmain extends TimerTask{
 								continue;
 							}
 							//發送簡訊
-							count += sendSMS(serviceid,msgID.split(","),phone,new String[]{"{{date_end}}"},new String[]{endDate.substring(4,6)+"/"+endDate.substring(6,8)});	
+							count += sendSMS(serviceid,msgID.split(","),
+									phone,new String[]{"{{date_end}}"},
+									new String[]{endDate.substring(4,6)+"/"+endDate.substring(6,8)});	
 							//更新Volume已警示部分
 							Map<String,String> mm = new HashMap<String,String>();
 							mm.put("PID", pid);
@@ -4990,7 +4995,7 @@ public class DVRSmain extends TimerTask{
 			
 			sql = "";
 			//20141118 add 傳回suspend排程的 service order nbr
-			Map<String,String> orderNBR = sus.doChangeGPRSStatus(imsi, msisdn, GPRSStatus, null);
+			Map<String,String> orderNBR = sus.doChangeGPRSStatus(imsi, msisdn, GPRSStatus, "CHT-GPRS");
 			
 			serviceOrderNBR.add(orderNBR);
 			sql=

@@ -61,11 +61,16 @@ public class resumeFunction {
 		connectDB();
 		connectDB2();
 		
-		setDayDate();
-		setMsisdnMap();
-		setIMSItoServiceIDMap();
+		if(
+			setDayDate()&&
+			setMsisdnMap()&&
+			setIMSItoServiceIDMap()&&
+			true){
+			
+			checkResume();
+		}
 		
-		checkResume();
+		
 		
 	}
 	
@@ -417,7 +422,8 @@ public class resumeFunction {
 		}
 		//mailReceiver=props.getProperty("mail.Receiver");
 		logger.info("Send resumeReport result.");
-		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
+		//sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com,Yvonne.lin@sim2travel.com");
+		sendMail("DVRS Resume Report.",resumeReport,"DVRS Alert","k1988242001@gmail.com");
 		
 	}
 	
@@ -527,7 +533,7 @@ public class resumeFunction {
 			
 			sql = "";
 			//20141118 add 傳回suspend排程的 service order nbr
-			Map<String,String> orderNBR = sus.doChangeGPRSStatus(imsi, msisdn,GPRSStatus,null);
+			Map<String,String> orderNBR = sus.doChangeGPRSStatus(imsi, msisdn,GPRSStatus,"CHT-GPRS");
 			serviceOrderNBR.add(orderNBR);
 			sql=
 					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "

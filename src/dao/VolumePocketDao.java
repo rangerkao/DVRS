@@ -81,8 +81,8 @@ public class VolumePocketDao extends BaseDao {
 			String cusName = convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5");
 			String calName = convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5");
 			if(!id.matches("^\\d+$")){
-				cusName = markName(cusName);
-				calName = markName(calName);
+				//cusName = markName(cusName);
+				//calName = markName(calName);
 			}
 			
 			
@@ -134,8 +134,8 @@ public class VolumePocketDao extends BaseDao {
 			String cusName = convertString(rs.getString("CUSTOMER_NAME"),"ISO-8859-1","Big5");
 			String calName = convertString(rs.getString("CALLER_NAME"),"ISO-8859-1","Big5");
 			if(!id.matches("^\\d+$")){
-				cusName = markName(cusName);
-				calName = markName(calName);
+				//cusName = markName(cusName);
+				//calName = markName(calName);
 			}
 			
 			VolumePocket v = new VolumePocket();
