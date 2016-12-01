@@ -5,6 +5,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <title>Insert title here</title>
 <style type="text/css">
 #menu{
@@ -314,7 +316,7 @@ function tqueryS2TMSISDN(tText){
 				</ul>
 			</div>
 			<div class="col-xs-12">
-				<input 	type="text" id="tLabel" class="col-xs-12" disabled="disabled">
+				<input 	type="text" id="tLabel" class="col-xs-12"  readonly="readonly">
 			</div>
 		</div>
 		
