@@ -174,7 +174,7 @@ public class SMSControl extends BaseControl{
 	}
 	
 	private String queryCustmerServicePhone(String imsi) throws SQLException{
-		String cphone=null;
+		String cphone="";
 		String VLN=smsDao.queryVLR(imsi);
 		
 		if(VLN!=null && !"".equals(VLN)){
