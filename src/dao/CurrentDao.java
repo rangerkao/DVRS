@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,16 +32,12 @@ public class CurrentDao extends BaseDao {
 	Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
 	Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
+	Map<String,String> serviceIDtoICCID = new HashMap<String,String>();
 	
-	public List<CurrentMonth> queryCurrentMonth() throws SQLException{
-		
-		imsitoServiceID = CacheAction.getImsitoServiceID();
+	public List<CurrentMonth> queryCurrentMonth() throws SQLException, ClassNotFoundException{
+
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
 		
 		sql=
 				"SELECT A.MONTH,A.SERVICEID,A.CHARGE,A.VOLUME,A.SMS_TIMES,A.LAST_ALERN_THRESHOLD,A.LAST_ALERN_VOLUME,A.EVER_SUSPEND,A.LAST_FILEID "
@@ -50,49 +47,48 @@ public class CurrentDao extends BaseDao {
 		
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
 		
+		Connection conn =  getConn1();
+		Statement st = conn.createStatement();
 		
-			Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		
+		while(rs.next()){
 			
-			ResultSet rs=st.executeQuery(sql);
+			String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+			if(imsi==null || "".equals(imsi))
+				imsi=rs.getString("SERVICEID");
 			
-			while(rs.next()){
-				
-				String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
-				if(imsi==null || "".equals(imsi))
-					imsi=rs.getString("SERVICEID");
-				
-				CurrentMonth c = new CurrentMonth();
-				c.setMonth(rs.getString("MONTH"));
-				c.setImsi(imsi);
-				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
-				c.setVolume(rs.getDouble("VOLUME"));
-				c.setSmsTimes(rs.getInt("SMS_TIMES"));
-				c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
-				c.setLastAlertVolume(rs.getDouble("LAST_ALERN_VOLUME"));
-				c.setEverSuspend(("0".equals(rs.getString("EVER_SUSPEND"))?false:true));
-				c.setLastFileId(rs.getInt("LAST_FILEID"));
-				c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
-				c.setUpdateDate(rs.getString("UPDATE_DATE"));
-				c.setCreateDate(rs.getString("CREATE_DATE"));
-				
-				list.add(c);
-			}
-			rs.close();
-			st.close();
+			CurrentMonth c = new CurrentMonth();
+			c.setMonth(rs.getString("MONTH"));
+			c.setImsi(imsi);
+			c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+			c.setVolume(rs.getDouble("VOLUME"));
+			c.setSmsTimes(rs.getInt("SMS_TIMES"));
+			c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
+			c.setLastAlertVolume(rs.getDouble("LAST_ALERN_VOLUME"));
+			c.setEverSuspend(("0".equals(rs.getString("EVER_SUSPEND"))?false:true));
+			c.setLastFileId(rs.getInt("LAST_FILEID"));
+			c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
+			c.setUpdateDate(rs.getString("UPDATE_DATE"));
+			c.setCreateDate(rs.getString("CREATE_DATE"));
+			
+			c.setICCID(serviceIDtoICCID.get(rs.getString("SERVICEID")));
+			list.add(c);
+		}
+		rs.close();
+		st.close();
+		conn.close();
 			
 		return list;
 		
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException, ClassNotFoundException{
 		System.out.println("dao queryCurrentMonth..."+","+new Date());
-		imsitoServiceID = CacheAction.getImsitoServiceID();
+		
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
+		
 		
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
 		Set<String> filterServiceID = new HashSet<String>();
@@ -129,54 +125,53 @@ public class CurrentDao extends BaseDao {
 				+ (sServiceID!=null && !"".equals(sServiceID)? "AND A.SERVICEID in "+sServiceID+" ":"")
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 
-		
-			Statement pst = conn.createStatement();
-			ResultSet rs=pst.executeQuery(sql);
-			System.out.println("query execute : "+new Date()+sql);
+		Connection conn =  getConn1();
+		Statement pst = conn.createStatement();
+		ResultSet rs=pst.executeQuery(sql);
+		System.out.println("query execute : "+new Date()+sql);
 
-			while(rs.next()){
-				
-				String serviceid = rs.getString("SERVICEID");
-				
-				/*if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
-					continue;*/
-				
-				String rimsi = serviceIDtoIMSI.get(serviceid);
-				if(rimsi==null || "".equals(rimsi))
-					rimsi=rs.getString("SERVICEID");
-				
-				CurrentMonth c = new CurrentMonth();
-				c.setMonth(rs.getString("MONTH"));
-				c.setImsi(rimsi);
-				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
-				c.setVolume(rs.getDouble("VOLUME"));
-				c.setSmsTimes(rs.getInt("SMS_TIMES"));
-				c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
-				c.setLastAlertVolume(rs.getDouble("LAST_ALERN_VOLUME"));
-				c.setEverSuspend(("0".equals(rs.getString("EVER_SUSPEND"))?false:true));
-				c.setLastFileId(rs.getInt("LAST_FILEID"));
-				c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
-				c.setUpdateDate(rs.getString("UPDATE_DATE"));
-				c.setCreateDate(rs.getString("CREATE_DATE"));
-				
-				list.add(c);
-			}
-			System.out.println("query parse end!"+new Date());
-			rs.close();
-			pst.close();
+		while(rs.next()){
+			
+			String serviceid = rs.getString("SERVICEID");
+			
+			/*if(!"^$".equals(imsi) && (serviceid ==null || !filterServiceID.contains(serviceid)))
+				continue;*/
+			
+			String rimsi = serviceIDtoIMSI.get(serviceid);
+			if(rimsi==null || "".equals(rimsi))
+				rimsi=rs.getString("SERVICEID");
+			
+			CurrentMonth c = new CurrentMonth();
+			c.setMonth(rs.getString("MONTH"));
+			c.setImsi(rimsi);
+			c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+			c.setVolume(rs.getDouble("VOLUME"));
+			c.setSmsTimes(rs.getInt("SMS_TIMES"));
+			c.setLastAlertThreshold(rs.getDouble("LAST_ALERN_THRESHOLD"));
+			c.setLastAlertVolume(rs.getDouble("LAST_ALERN_VOLUME"));
+			c.setEverSuspend(("0".equals(rs.getString("EVER_SUSPEND"))?false:true));
+			c.setLastFileId(rs.getInt("LAST_FILEID"));
+			c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
+			c.setUpdateDate(rs.getString("UPDATE_DATE"));
+			c.setCreateDate(rs.getString("CREATE_DATE"));
+			
+			c.setICCID(serviceIDtoICCID.get(rs.getString("SERVICEID")));
+			
+			list.add(c);
+		}
+		System.out.println("query parse end!"+new Date());
+		rs.close();
+		pst.close();
+		conn.close();
 			
 		return list;
 		
 	}
 	
-	public List<CurrentDay> queryCurrentDay() throws SQLException{
-		imsitoServiceID = CacheAction.getImsitoServiceID();
+	public List<CurrentDay> queryCurrentDay() throws SQLException, ClassNotFoundException{
+		
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
 		
 		sql=
 				/*"SELECT A.DAY,B.NETWORK||'('||B.COUNTRY||')' MCCMNC,A.SERVICEID,A.CHARGE,A.VOLUME,A.ALERT,A.LAST_FILEID  "
@@ -194,44 +189,41 @@ public class CurrentDao extends BaseDao {
 		
 		List<CurrentDay> list = new ArrayList<CurrentDay>();
 		
+		Connection conn =  getConn1();
+		Statement st = conn.createStatement();
 		
-			Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		
+		while(rs.next()){
+			String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
+			if(imsi==null || "".equals(imsi))
+				imsi=rs.getString("SERVICEID");
+			CurrentDay c = new CurrentDay();
+			c.setDay(rs.getString("DAY"));
+			c.setMccmnc(rs.getString("MCCMNC"));
+			c.setImsi(imsi);
+			c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
+			c.setVolume(rs.getDouble("VOLUME"));
+			c.setAlert(("0".equals(rs.getString("ALERT"))?false:true));
+			c.setLastFileId(rs.getInt("LAST_FILEID"));
+			c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
+			c.setUpdateDate(rs.getString("UPDATE_DATE"));
+			c.setCreateDate(rs.getString("CREATE_DATE"));
 			
-			ResultSet rs=st.executeQuery(sql);
-			
-			while(rs.next()){
-				String imsi = serviceIDtoIMSI.get(rs.getString("SERVICEID"));
-				if(imsi==null || "".equals(imsi))
-					imsi=rs.getString("SERVICEID");
-				CurrentDay c = new CurrentDay();
-				c.setDay(rs.getString("DAY"));
-				c.setMccmnc(rs.getString("MCCMNC"));
-				c.setImsi(imsi);
-				c.setCharge(FormatDouble(rs.getDouble("CHARGE"), "0.0000"));
-				c.setVolume(rs.getDouble("VOLUME"));
-				c.setAlert(("0".equals(rs.getString("ALERT"))?false:true));
-				c.setLastFileId(rs.getInt("LAST_FILEID"));
-				c.setLastDataTime(rs.getString("LAST_DATA_TIME"));
-				c.setUpdateDate(rs.getString("UPDATE_DATE"));
-				c.setCreateDate(rs.getString("CREATE_DATE"));
-				
-				list.add(c);
-			}
-			rs.close();
-			st.close();
+			list.add(c);
+		}
+		rs.close();
+		st.close();
+		conn.close();
 			
 		return list;
 		
 	}
 	
-	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException{
-		imsitoServiceID = CacheAction.getImsitoServiceID();
+	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException, ClassNotFoundException{
+		
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
 		
 		List<CurrentDay> list = new ArrayList<CurrentDay>();
 		Set<String> filterServiceID = new HashSet<String>();
@@ -266,7 +258,7 @@ public class CurrentDao extends BaseDao {
 				+ "ORDER BY A.LAST_DATA_TIME DESC ";
 		
 			System.out.println("Sql:"+sql);
-		
+			Connection conn =  getConn1();
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 
@@ -297,6 +289,7 @@ public class CurrentDao extends BaseDao {
 			}
 			rs.close();
 			st.close();
+			conn.close();
 			
 		return list;
 		

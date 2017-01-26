@@ -13,23 +13,21 @@ public class VolumePocketControl extends BaseControl {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	protected void closeConnection() throws SQLException{
-		volumePocketDao.closeConnection();
-	}
+	
 	
 	VolumePocketDao volumePocketDao = new VolumePocketDao();
 	SMSControl sMSControl = new SMSControl();
 	
-	public List<VolumePocket> queryVolumePocketList() throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> queryVolumePocketList() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<VolumePocket> r = volumePocketDao.queryVolumePocketList();
-		closeConnection();
+		
 		return r;
 	}
 	
 	public List<VolumePocket> queryVolumePocketList(String chtMsisdn) throws Exception{
 		
 		List<VolumePocket> r = volumePocketDao.queryVolumePocketList(chtMsisdn);
-		closeConnection();
+		
 		return r;
 	}
 	
@@ -40,7 +38,7 @@ public class VolumePocketControl extends BaseControl {
 			r = "請確認此客戶是否為環球卡用戶";
 		else
 			r = "此客戶為環球卡用戶" ;
-		closeConnection();
+		
 		return r;
 	}
 	
@@ -48,12 +46,12 @@ public class VolumePocketControl extends BaseControl {
 		String serviceid = volumePocketDao.queryServiceidByTwnMsisdn(v.getChtMsisdn());
 		
 		if(serviceid == null){
-			closeConnection();
+			
 			throw new Exception("請確認此客戶是否為環球卡用戶");
 		}
 		
 		if(!volumePocketDao.ckeckVolumePocket(v)){
-			closeConnection();
+			
 			throw new Exception("The date range error.");
 		}
 			
@@ -64,14 +62,11 @@ public class VolumePocketControl extends BaseControl {
 		sMSControl.sendSMS("703", v.getChtMsisdn(), null, "VP",
 				new String[]{"{{date_start}}","{{date_end}}"},
 				new String[]{v.getStartDate().substring(4,6)+"/"+v.getStartDate().substring(6,8),v.getEndDate().substring(4,6)+"/"+v.getEndDate().substring(6,8)});
-		sMSControl.closeConnection();
-		closeConnection();
 		return r;
 	}
 	
-	public boolean ckeckVolumePocket(VolumePocket v) throws SQLException{
+	public boolean ckeckVolumePocket(VolumePocket v) throws SQLException, ClassNotFoundException{
 		boolean r = volumePocketDao.ckeckVolumePocket(v);
-		closeConnection();
 		return r;
 	}
 	
@@ -80,14 +75,12 @@ public class VolumePocketControl extends BaseControl {
 		sMSControl.sendSMS("707", v.getChtMsisdn(), null, "VP",
 				new String[]{"{{date_start}}","{{date_end}}"},
 				new String[]{v.getStartDate().substring(4,6)+"/"+v.getStartDate().substring(6,8),v.getEndDate().substring(4,6)+"/"+v.getEndDate().substring(6,8)});
-		sMSControl.closeConnection();
-		closeConnection();
 		return r;
 	}
 	
 	public List<VolumePocket> updateVolumePocket(VolumePocket v) throws Exception{
 		if(!volumePocketDao.ckeckVolumePocket(v)){
-			closeConnection();
+			
 			throw new Exception("The date range error.");
 		}
 		
@@ -95,8 +88,7 @@ public class VolumePocketControl extends BaseControl {
 		sMSControl.sendSMS("704", v.getChtMsisdn(), null, "VP",
 				new String[]{"{{date_start}}","{{date_end}}"},
 				new String[]{v.getStartDate().substring(4,6)+"/"+v.getStartDate().substring(6,8),v.getEndDate().substring(4,6)+"/"+v.getEndDate().substring(6,8)});
-		sMSControl.closeConnection();
-		closeConnection();
+
 		return r;
 	}
 }

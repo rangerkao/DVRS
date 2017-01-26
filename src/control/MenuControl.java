@@ -42,8 +42,8 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","cardChangeHistoryLink","換卡記錄查詢"));
 		l3.add(new Link("searchList","numberChangeHistoryLink","換號記錄查詢查詢"));
 		
-		
-		l3.add(new Link("elseList","volumePocketSettingLink","美國流量包設定"));
+		//20170126del
+		//l3.add(new Link("elseList","volumePocketSettingLink","美國流量包設定"));
 		l3.add(new Link("elseList","queryQosLink","Qos供裝查詢頁面"));
 		l3.add(new Link("elseList","sendSMSLink","數據開通簡訊發送"));
 		//l3.add(new Link("elseList","logoutLink","登出"));

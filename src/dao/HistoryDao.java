@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,7 +15,7 @@ public class HistoryDao extends BaseDao {
 		super();
 	}
 
-	public List<Map<String,String>> queryCardChangeHistory(String imsi) throws SQLException{
+	public List<Map<String,String>> queryCardChangeHistory(String imsi) throws SQLException, ClassNotFoundException{
 		List<Map<String,String>> result = new ArrayList<Map<String,String>>();
 		
 		if(imsi!=null &&!"".equals(imsi)){
@@ -31,6 +32,7 @@ public class HistoryDao extends BaseDao {
 				+ (imsi!=null &&!"".equals(imsi) ? "AND (A.OLDVALUE LIKE '"+imsi+"' OR A.NEWVALUE LIKE '"+imsi+"' ) " :"")
 				+ "ORDER BY A.COMPLETEDATE DESC ";
 		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		
 		ResultSet rs = st.executeQuery(sql);		
@@ -53,11 +55,12 @@ public class HistoryDao extends BaseDao {
 		}
 		rs.close();
 		st.close();
+		conn.close();
 		
 		return result;
 	}
 	
-	public List<Map<String,String>> queryNumberChangeHistory(String imsi) throws SQLException{
+	public List<Map<String,String>> queryNumberChangeHistory(String imsi) throws SQLException, ClassNotFoundException{
 		List<Map<String,String>> result = new ArrayList<Map<String,String>>();
 		
 		if(imsi!=null &&!"".equals(imsi)){
@@ -72,6 +75,7 @@ public class HistoryDao extends BaseDao {
 				+ (imsi!=null &&!"".equals(imsi) ? "AND (A.OLDVALUE LIKE '"+imsi+"' OR A.NEWVALUE LIKE '"+imsi+"' ) " :"")
 				+ "ORDER BY A.ORDERID DESC ";
 		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		
 		ResultSet rs = st.executeQuery(sql);
@@ -96,7 +100,7 @@ public class HistoryDao extends BaseDao {
 		}
 		rs.close();
 		st.close();
-		
+		conn.close();
 		return result;
 	}
 	

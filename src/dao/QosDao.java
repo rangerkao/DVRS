@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,55 +16,56 @@ public class QosDao extends BaseDao {
 	}
 
 	//�d�ߦC��
-	public List<QosBean> queryQosList() throws SQLException{
+	public List<QosBean> queryQosList() throws SQLException, ClassNotFoundException{
 		sql=
 				"SELECT A.PROVISIONID,A.IMSI,A.MSISDN,A.PLAN,A.ACTION,A.RESPONSE_CODE,A.RESULT_CODE,to_char(A.CERATE_TIME,'yyyyMMdd hh24:mi:ss') ctime "
 				+ "FROM QOS_PROVISION_LOG A "
 				+ "ORDER BY A.CERATE_TIME DESC";
 
 		List<QosBean> list=new ArrayList<QosBean>();
-		
-			Statement st = conn.createStatement();
-			ResultSet rs=st.executeQuery(sql);
-			System.out.println("Execute SQL :"+sql);
-			while(rs.next()){
-				QosBean qosdata =new QosBean();
-				String rc = rs.getString("RESULT_CODE");
-				if(rc!=null ){
-					if(rc.contains("RETURN_CODE=0")){
-						rc="成功";
-					}
-				}else{
-					rc="";
+		Connection conn =  getConn1();
+		Statement st = conn.createStatement();
+		ResultSet rs=st.executeQuery(sql);
+		System.out.println("Execute SQL :"+sql);
+		while(rs.next()){
+			QosBean qosdata =new QosBean();
+			String rc = rs.getString("RESULT_CODE");
+			if(rc!=null ){
+				if(rc.contains("RETURN_CODE=0")){
+					rc="成功";
 				}
-				
-				String rc2 = rs.getString("RESPONSE_CODE");
-				if(rc2!=null ){
-					if(rc2.contains("200")){
-						rc2="正常";
-					}
-				}else{
-					rc2="";
-				}
-				qosdata.setProvisionID(rs.getInt("PROVISIONID"));
-				qosdata.setImsi(rs.getString("IMSI"));
-				qosdata.setMsisdn(rs.getString("MSISDN"));
-				qosdata.setPlan(rs.getString("PLAN"));
-				qosdata.setAction(rs.getString("ACTION"));
-				qosdata.setResultCode(rc);
-				qosdata.setReturnCode(rc2);
-				qosdata.setCreateTime(rs.getString("ctime"));
-				list.add(qosdata);
+			}else{
+				rc="";
 			}
-			st.close();
-			rs.close();
+			
+			String rc2 = rs.getString("RESPONSE_CODE");
+			if(rc2!=null ){
+				if(rc2.contains("200")){
+					rc2="正常";
+				}
+			}else{
+				rc2="";
+			}
+			qosdata.setProvisionID(rs.getInt("PROVISIONID"));
+			qosdata.setImsi(rs.getString("IMSI"));
+			qosdata.setMsisdn(rs.getString("MSISDN"));
+			qosdata.setPlan(rs.getString("PLAN"));
+			qosdata.setAction(rs.getString("ACTION"));
+			qosdata.setResultCode(rc);
+			qosdata.setReturnCode(rc2);
+			qosdata.setCreateTime(rs.getString("ctime"));
+			list.add(qosdata);
+		}
+		st.close();
+		rs.close();
+		conn.close();
 			
 		return list;
 		
 	}
 	
 	//�d�ߦC��
-		public List<QosBean> queryQosList(String imsi,String msisdn) throws SQLException{
+		public List<QosBean> queryQosList(String imsi,String msisdn) throws SQLException, ClassNotFoundException{
 			sql=
 					"SELECT A.PROVISIONID,A.IMSI,A.MSISDN,A.PLAN,A.ACTION,A.RESPONSE_CODE,A.RESULT_CODE,to_char(A.CERATE_TIME,'yyyyMMdd hh24:mi:ss') ctime "
 					+ "FROM QOS_PROVISION_LOG A "
@@ -73,7 +75,7 @@ public class QosDao extends BaseDao {
 					+ " ORDER BY A.CERATE_TIME DESC";;
 
 			List<QosBean> list=new ArrayList<QosBean>();
-			
+			Connection conn =  getConn1();
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 			System.out.println("Execute SQL :"+sql);
@@ -110,6 +112,7 @@ public class QosDao extends BaseDao {
 			}
 			st.close();
 			rs.close();
+			conn.close();
 			
 			return list;
 			

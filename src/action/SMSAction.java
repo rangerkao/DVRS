@@ -467,6 +467,11 @@ public class SMSAction extends BaseAction {
 			StringWriter s = new StringWriter();
 			e.printStackTrace(new PrintWriter(s));
 			result = makeResult(null, s.toString());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
 		}
 		return SUCCESS;
 	}

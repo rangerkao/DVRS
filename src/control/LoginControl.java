@@ -16,7 +16,7 @@ public class LoginControl extends BaseControl{
 	}
 
 
-	public String loginC(Map session,String account,String password) throws SQLException{
+	public String loginC(Map session,String account,String password) throws SQLException, ClassNotFoundException{
 		String msg="";
 			Admin admin = adminDao.queryAdminByAccount(account);
 			if(admin==null || admin.getPassword()==null || "".equals(admin.getPassword())){
@@ -28,7 +28,6 @@ public class LoginControl extends BaseControl{
 				User user=new User(admin.getAccount(),admin.getRole());
 				session.put("s2tUser", user);
 			}
-			adminDao.closeConnection();
 		return msg;
 	}
 

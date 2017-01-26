@@ -47,11 +47,12 @@ public class AdminAction extends BaseAction{
 	
 	public String queryAdmin() throws SQLException{
 		
-		List<Admin> adminList=new ArrayList<Admin>();
-		adminList=adminControl.queryAdminList();
-
-		result=makeResult(adminList, null);
+		
 		try {
+			List<Admin> adminList=new ArrayList<Admin>();
+			adminList=adminControl.queryAdminList();
+
+			result=makeResult(adminList, null);
 			actionLogControl.loggerAction(super.getUser().getAccount(), "Admin", "query","", SUCCESS);
 		} catch (Exception e) {
 			e.printStackTrace();

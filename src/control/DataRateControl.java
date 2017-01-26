@@ -16,9 +16,8 @@ public class DataRateControl extends BaseControl{
 		super();
 	}
 
-	public List<DataRate> queryDataRateList() throws SQLException{
+	public List<DataRate> queryDataRateList() throws SQLException, ClassNotFoundException{
 		List<DataRate> r = dataRateDao.queryDataRateList();
-		dataRateDao.closeConnection();
 		return r;
 	}
 

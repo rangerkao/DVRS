@@ -15,21 +15,21 @@ public class CDRControl extends BaseControl {
 		super();
 	}
 
-	public List<CDR> queryCDR() throws SQLException, ParseException{
+	public List<CDR> queryCDR() throws SQLException, ParseException, ClassNotFoundException{
 		
 		List<CDR> r = cdrDao.queryCDR();
-		cdrDao.closeConnection();
+		
 		return r;
 	}
 	
-	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException{
+	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException, ClassNotFoundException{
 		
 		List<CDR> r = null;
 		if(from==null && to==null && IMSI ==null){
 			r = queryCDR();
 		}else
 			r = cdrDao.queryCDR(from,to,IMSI);
-		cdrDao.closeConnection();
+		
 		return r;
 	}
 }

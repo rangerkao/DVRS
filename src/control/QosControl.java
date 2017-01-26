@@ -15,13 +15,12 @@ public class QosControl extends BaseControl {
 	
 	QosDao qosDao = new QosDao();
 	
-	public List<QosBean> queryQos(String imsi,String msisdn) throws SQLException{
+	public List<QosBean> queryQos(String imsi,String msisdn) throws SQLException, ClassNotFoundException{
 		List<QosBean> r = null;
 		if((imsi==null||"".equals(imsi)) && (msisdn==null||"".equals(msisdn)))
 			r = qosDao.queryQosList();
 		else
 			r = qosDao.queryQosList(imsi, msisdn);
-		qosDao.closeConnection();
 		return r;
 	}
 

@@ -32,36 +32,36 @@ public class SMSControl extends BaseControl{
 		super();
 	}
 	public void closeConnection() throws SQLException{
-		smsDao.closeConnection();
+		
 	}
 	
-	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
+	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSLog> r = smsDao.querySMSLog();
-		closeConnection();
+		
 		return r;
 	}
-	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSLog> r = null;
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate))&&(msisdn==null||"".equals(msisdn)) )
 			r = querySMSLog();
 		else
 			r = smsDao.querySMSLog(fromDate,toDate,msisdn);
-		closeConnection();
+		
 		return r;
 	}
-	public List<SMSSetting> querySMSSetting() throws SQLException{
+	public List<SMSSetting> querySMSSetting() throws SQLException, ClassNotFoundException{
 		List<SMSSetting> r = smsDao.querySMSSetting();
-		closeConnection();
+		
 		return r;
 	}
-	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
+	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException, ClassNotFoundException{
 		List<SMSSetting> r = smsDao.updateSMSSetting(list);
-		closeConnection();
+		
 		return r;
 	}
-	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException, ClassNotFoundException{
 		List<GPRSThreshold> r = smsDao.queryAlertLimit();
-		closeConnection();
+		
 		return r;
 	}
 	public int insertAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws Exception{
@@ -72,83 +72,83 @@ public class SMSControl extends BaseControl{
 		if(sendSMS){
 			sendSMS("6",msisdn,imsi,"VIP",new String[]{"{{customerService}}"},new String[]{cPhone});
 		}
-		closeConnection();
+		
 		return r;
 	}
-	public int updateAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
+	public int updateAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException, ClassNotFoundException{
 		int r = smsDao.updateAlertLimit(imsi, limit);
-		closeConnection();
+		
 		return r;
 	}
-	public int deleteAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException{
+	public int deleteAlertLimit(String imsi,Double limit,Boolean sendSMS,String msisdn) throws SQLException, IOException, ClassNotFoundException{
 		int r = smsDao.deleteAlertLimit(msisdn);
-		closeConnection();
+		
 		return r;
 	}
-	public String checkAlertExisted(String msisdn) throws SQLException{
+	public String checkAlertExisted(String msisdn) throws SQLException, ClassNotFoundException{
 		String r = smsDao.checkAlertExisted(msisdn);
-		closeConnection();
+		
 		return r;
 	}
-	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
+	public Map<String,String> queryIMSI(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> r = smsDao.queryIMSI(msisdn);
-		closeConnection();
+		
 		return r;
 	}
-	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
+	public Map<String,String> queryMSISDN(String imsi) throws SQLException, ClassNotFoundException{
 		Map<String,String> r = smsDao.queryMSISDN(imsi);
-		closeConnection();
+		
 		return r;
 	}
-	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
+	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> r = smsDao.queryTWNMSISDN(msisdn);
-		closeConnection();
+		
 		return r;
 	}
-	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException{
+	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> r = smsDao.queryS2TMSISDN(msisdn);
-		closeConnection();
+		
 		return r;
 	}
 
-	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
+	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSContent> r = smsDao.querySMSContent();
-		closeConnection();
+		
 		return r;
 	}
-	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
+	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSContent> r = null;
 		if(id==null ||"".equals(id))
 			r = smsDao.querySMSContent();
 		else
 			r = smsDao.querySMSContent(id);
-		closeConnection();
+		
 		return r;
 	}
 	
 	public int insertSMSContent(SMSContent sc) throws Exception{
 		int r = smsDao.insertSMSContent(sc);
-		closeConnection();
+		
 		return r;
 	}
 	public int updateSMSContent(SMSContent sc) throws Exception{
 		int r = smsDao.updateSMSContent(sc);
-		closeConnection();
+		
 		return r;
 	}
 	public int deleteSMSContent(SMSContent sc) throws Exception{
 		int r = smsDao.deleteSMSContent(sc);
-		closeConnection();
+		
 		return r;
 	}
 	
-	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
+	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		Map<String,String> r = smsDao.queryGPRSContent();
-		closeConnection();
+		
 		return r;
 	}
 	
-	public String sendGPRSSMS(String msisdn,Map<String,String> content) throws IOException, SQLException{
+	public String sendGPRSSMS(String msisdn,Map<String,String> content) throws IOException, SQLException, ClassNotFoundException{
 		String res;
 
 			res = setSMSPostParam(new String(content.get("A").getBytes("BIG5"),"ISO8859-1"),msisdn);
@@ -169,11 +169,11 @@ public class SMSControl extends BaseControl{
 			System.out.println("send C result = "+res);
 			smsDao.logSendSMS(msisdn, new String(content.get("C").getBytes("BIG5"),"ISO8859-1"), res,"GPRS_ON");
 
-		closeConnection();
+		
 		return "success";
 	}
 	
-	private String queryCustmerServicePhone(String imsi) throws SQLException{
+	private String queryCustmerServicePhone(String imsi) throws SQLException, ClassNotFoundException{
 		String cphone="";
 		String VLN=smsDao.queryVLR(imsi);
 		

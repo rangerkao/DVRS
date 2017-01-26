@@ -15,27 +15,27 @@ public class AdminControl extends BaseControl{
 
 	private AdminDao adminDao=new AdminDao();
 	
-	public List<Admin> queryAdminList() throws SQLException{
+	public List<Admin> queryAdminList() throws SQLException, ClassNotFoundException{
 		List<Admin> r = adminDao.queryAdminList();
-		adminDao.closeConnection();
+		
 		return r;
 	}
 	
-	public int addAdmin(Admin admin) throws SQLException{
+	public int addAdmin(Admin admin) throws SQLException, ClassNotFoundException{
 		int r = adminDao.insert(admin);
-		adminDao.closeConnection();
+		
 		return r;
 	}
 	
-	public int modAdmin(Admin admin) throws SQLException{
+	public int modAdmin(Admin admin) throws SQLException, ClassNotFoundException{
 		int r = adminDao.update(admin);
-		adminDao.closeConnection();
+		
 		return r;
 	}
 
-	public int delAdmin(Admin admin) throws SQLException{
+	public int delAdmin(Admin admin) throws SQLException, ClassNotFoundException{
 		int r = adminDao.delete(admin);
-		adminDao.closeConnection();
+		
 		return r;
 	}
 

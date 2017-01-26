@@ -21,21 +21,21 @@ public class ActionLogControl extends BaseControl {
 	
 	
 	
-	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException{
+	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException,ClassNotFoundException{
 		List<ActionLog> r = actionLogDao.queryActionLog(fromDate, toDate);
-		actionLogDao.closeConnection();
+		
 		return r;
 	}
 	
-	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException{
+	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException,ClassNotFoundException{
 		List<ActionLog> r = actionLogDao.queryActionLog();
-		actionLogDao.closeConnection();
+		
 		return r;
 	}
 	
 	public int loggerAction(String userid,String page,String action,String parameter,String result) throws Exception{
 		int r = actionLogDao.loggerAction(userid, page, action, parameter, result);
-		actionLogDao.closeConnection();
+		
 		return r;
 	}
 }

@@ -1,6 +1,7 @@
 package dao;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class ActionLogDao extends BaseDao{
 		super();
 	}
 
-	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException{
+	public List<ActionLog> queryActionLog(Date fromDate,Date toDate) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		
 		if((fromDate==null||"".equals(fromDate))&&(toDate==null||"".equals(toDate)))
 			return queryActionLog();
@@ -30,6 +31,7 @@ public class ActionLogDao extends BaseDao{
 				+ "WHERE A.CREATE_DATE >= ?  AND A.CREATE_DATE <= ? +1 "
 				+ "ORDER BY A.CREATE_DATE DESC";
 		
+			Connection conn =  getConn1();
 			PreparedStatement pst = conn.prepareStatement(sql);
 			pst.setDate(1, convertJaveUtilDate_To_JavaSqlDate(fromDate) );
 			pst.setDate(2, convertJaveUtilDate_To_JavaSqlDate(toDate));
@@ -53,6 +55,7 @@ public class ActionLogDao extends BaseDao{
 			
 			rs.close();
 			pst.close();
+			conn.close();
 		return list;
 
 	}
@@ -62,13 +65,14 @@ public class ActionLogDao extends BaseDao{
 		return new java.sql.Date(date.getTime());
 	}
 	
-	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException{
+	public List<ActionLog> queryActionLog() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<ActionLog> list =new ArrayList<ActionLog>();
 		sql=
 				"SELECT A.ID,A.USERID,A.PAGE,A.ACTION,A.PARAMETER,to_char(A.create_date,'yyyy/MM/dd HH:mi:ss') CREATEDATE,A.RESULT "
 				+ "FROM HUR_ACTION_LOG A "
 				+ "ORDER BY A.CREATE_DATE DESC ";
 		
+			Connection conn =  getConn1();
 			Statement st = conn.createStatement();
 			ResultSet rs=st.executeQuery(sql);
 			
@@ -91,6 +95,7 @@ public class ActionLogDao extends BaseDao{
 			
 			rs.close();
 			st.close();
+			conn.close();
 		return list;
 	}
 	
@@ -102,16 +107,17 @@ public class ActionLogDao extends BaseDao{
 				+ "VALUES(HUR_MANERGE_ID.NEXTVAL,?,?,?,?,?,SYSDATE)";
 		
 		int aResult=0;
-			PreparedStatement pst = conn.prepareStatement(sql);
-			pst.setString(1, userid);
-			pst.setString(2, page);
-			pst.setString(3, action);
-			pst.setString(4, (parameter!=null? new String(parameter.getBytes("BIG5"),"ISO8859-1"):""));
-			pst.setString(5, result);
-			aResult= pst.executeUpdate();
-			
-			pst.close();
-			
+		Connection conn =  getConn1();
+		PreparedStatement pst = conn.prepareStatement(sql);
+		pst.setString(1, userid);
+		pst.setString(2, page);
+		pst.setString(3, action);
+		pst.setString(4, (parameter!=null? new String(parameter.getBytes("BIG5"),"ISO8859-1"):""));
+		pst.setString(5, result);
+		aResult= pst.executeUpdate();
+		
+		pst.close();
+		conn.close();
 			
 		 return aResult;
 	}

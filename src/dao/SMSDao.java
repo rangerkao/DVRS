@@ -1,6 +1,7 @@
 package dao;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ public class SMSDao extends BaseDao{
 	Map<String,String> serviceIDtoIMSI = new HashMap<String,String>();
 	Map<String,String> imsitoServiceID = new HashMap<String,String>();
 	
-	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException{
+	public List<SMSLog> querySMSLog(String fromDate,String toDate,String msisdn) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
@@ -42,7 +43,9 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		try {
+			
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
 			while(rs.next()){
@@ -65,12 +68,13 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return list;
 
 	}
 	
-	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException{
+	public List<SMSLog> querySMSLog() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSLog> list =new ArrayList<SMSLog>();
 		sql=
 				"SELECT A.ID,A.MSG,A.RESULT,A.SEND_NUMBER,to_char(A.SEND_DATE,'yyyy/MM/dd HH24:mi:ss') SEND_DATE,to_char(A.CREATE_DATE,'yyyy/MM/dd HH24:mi:ss') CREATE_DATE "
@@ -80,6 +84,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
@@ -103,11 +108,12 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return list;
 	}
 	
-	public List<SMSSetting> querySMSSetting() throws SQLException{
+	public List<SMSSetting> querySMSSetting() throws SQLException, ClassNotFoundException{
 		List<SMSSetting> list =new ArrayList<SMSSetting>();
 		sql=
 				"SELECT A.ID,A.BRACKET*100 BRACKET,A.MEGID,A.SUSPEND,PRICEPLANID "
@@ -119,6 +125,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
@@ -146,11 +153,12 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return list;
 	}
 	
-	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException{
+	public List<SMSSetting> updateSMSSetting(List<SMSSetting> list) throws SQLException, ClassNotFoundException{
 		//�����Ҧ����
 		sql=
 				"TRUNCATE  TABLE  HUR_SMS_SETTING";
@@ -159,6 +167,7 @@ public class SMSDao extends BaseDao{
 						+ "VALUES(?,?,?,?,?)";*/
 		PreparedStatement pst = null;
 		Statement st = null;
+		Connection conn =  getConn1();
 		try {
 			st = conn.createStatement();
 			st.execute(sql);
@@ -189,18 +198,15 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return list;
 	}
 	
-	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException{
+	public List<GPRSThreshold> queryAlertLimit() throws SQLException, ParseException, ClassNotFoundException{
 		imsitoServiceID = CacheAction.getImsitoServiceID();
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+		
 		List<GPRSThreshold> list =new ArrayList<GPRSThreshold>();
 		sql=
 				"SELECT A.SERVICEID,A.THRESHOLD,TO_CHAR(C.DATECREATED,'yyyy/MM/dd HH24:mi:ss') DATECREATED, "
@@ -219,6 +225,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		try {
 			st = conn.createStatement();
@@ -255,11 +262,12 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return list;
 	}
 	
-	public int insertAlertLimit(String imsi,Double limit) throws SQLException{
+	public int insertAlertLimit(String imsi,Double limit) throws SQLException, ClassNotFoundException{
 		
 		String serviceid = getServiceidByIMSI(imsi);
 		
@@ -268,6 +276,7 @@ public class SMSDao extends BaseDao{
 				+ "VALUES(?,?,sysdate)";
 		
 		PreparedStatement pst = null;
+		Connection conn =  getConn1();
 		int result;
 		try {
 			pst = conn.prepareStatement(sql);
@@ -282,20 +291,16 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return result;
 	}
-	public String getServiceidByIMSI(String imsi){
+	public String getServiceidByIMSI(String imsi) throws ClassNotFoundException, SQLException{
 		String result = null;
 
 		imsitoServiceID = CacheAction.getImsitoServiceID();
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
-		
+	
 		result = imsitoServiceID.get(imsi);
 		
 		if(result!=null)
@@ -309,6 +314,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		try {
 			st = conn.createStatement();
 			System.out.println("Execute SQL :"+sql);
@@ -326,18 +332,15 @@ public class SMSDao extends BaseDao{
 				rs.close();
 			} catch (SQLException e) {
 			}
+			conn.close();
 		}
 		return result;
 	}
 	
-	public int updateAlertLimit(String imsi,Double limit) throws SQLException{
+	public int updateAlertLimit(String imsi,Double limit) throws SQLException, ClassNotFoundException{
 		imsitoServiceID = CacheAction.getImsitoServiceID();
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		if(imsitoServiceID.size()==0){
-			CacheAction.reloadServiceIDwithIMSIMappingCache();
-			imsitoServiceID = CacheAction.getImsitoServiceID();
-			serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
-		}
+	
 		String serviceid = imsitoServiceID.get(imsi);		
 		sql=
 				"UPDATE HUR_GPRS_THRESHOLD A "
@@ -346,6 +349,7 @@ public class SMSDao extends BaseDao{
 		
 		PreparedStatement pst = null;
 		int result;
+		Connection conn =  getConn1();
 		try {
 			pst = conn.prepareStatement(sql);
 			pst.setDouble(1, limit);
@@ -358,12 +362,13 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return result;
 	}
 	
 	//public int deleteAlertLimit(String imsi,Double limit) throws SQLException{
-	public int deleteAlertLimit(String msisdn) throws SQLException{
+	public int deleteAlertLimit(String msisdn) throws SQLException, ClassNotFoundException{
 		sql=
 				/*"DELETE HUR_GPRS_THRESHOLD A "
 				+ "WHERE A.SERVICEID=? ";*/
@@ -375,6 +380,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		int result;
+		Connection conn =  getConn1();
 		try {
 
 			st=conn.createStatement();
@@ -387,11 +393,12 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return result;
 	}
 	
-	public String checkAlertExisted(String msisdn) throws SQLException{
+	public String checkAlertExisted(String msisdn) throws SQLException, ClassNotFoundException{
 		String result = null;
 		
 		sql = "SELECT count(1) AB "
@@ -399,7 +406,7 @@ public class SMSDao extends BaseDao{
 				+ "WHERE A.serviceid = b.serviceid  AND A.CANCEL_DATE IS NULL and B.servicecode(+) = '"+msisdn+"' ";
 		Statement st = null;
 		ResultSet rs = null;
-		
+		Connection conn =  getConn1();
 		try{
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
@@ -416,13 +423,13 @@ public class SMSDao extends BaseDao{
 					rs.close();
 			} catch (Exception e) {
 			}
-			
+			conn.close();
 		}
 
 		return result;
 	}
 	
-	public Map<String,String> queryIMSI(String msisdn) throws SQLException{
+	public Map<String,String> queryIMSI(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> map =new HashMap<String,String>();
 		String imsi = null;
 		String pricaplainid = null;
@@ -432,6 +439,7 @@ public class SMSDao extends BaseDao{
 				+ "WHERE B.SERVICEID = C.SERVICEID "
 				+ "AND C.SERVICECODE = ?";
 		PreparedStatement pst = null;
+		Connection conn =  getConn1();
 		try {
 			 pst = conn.prepareStatement(sql);
 			
@@ -450,10 +458,11 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return map;
 	}
-	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException{
+	public Map<String,String> queryTWNMSISDN(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> map =new HashMap<String,String>();
 		String TWNmsisdn = null;
 		
@@ -463,7 +472,7 @@ public class SMSDao extends BaseDao{
 				+ "FROM FOLLOWMEDATA A, SERVICE B "
 				+ "WHERE A.SERVICEID=B.SERVICEID "
 				+ "AND B.SERVICECODE=?";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, msisdn);
@@ -474,6 +483,7 @@ public class SMSDao extends BaseDao{
 		
 		if(rs!=null)rs.close();
 		if(pst!=null)pst.close();
+		conn.close();
 
 		//��k2
 		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
@@ -482,7 +492,7 @@ public class SMSDao extends BaseDao{
 					+ "FROM NEWSERVICEORDERPARAMETERVALUE A, SERVICE B "
 					+ "WHERE A.SERVICEID=B.SERVICEID AND A.PARAMETERVALUEID=3792 "
 					+ "AND B.SERVICECODE=?";
-			
+			Connection conn2 =  getConn2();
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
@@ -493,6 +503,7 @@ public class SMSDao extends BaseDao{
 			
 			if(pst2!=null) pst2.close();	
 			if(rs2!=null) rs2.close();
+			conn2.close();
 		}
 		
 		//��k3
@@ -505,7 +516,7 @@ public class SMSDao extends BaseDao{
 					+ "AND A.OLDVALUE<>A.NEWVALUE "
 					+ "AND C.SERVICECODE=? "
 					+ "ORDER BY A.ORDERID DESC";
-			
+			Connection conn2 =  getConn2();
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
@@ -516,6 +527,7 @@ public class SMSDao extends BaseDao{
 			
 			if(pst2!=null) pst2.close();	
 			if(rs2!=null) rs2.close();
+			conn2.close();
 		}		
 		
 		
@@ -524,7 +536,7 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
-	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException{
+	public Map<String,String> queryS2TMSISDN(String msisdn) throws SQLException, ClassNotFoundException{
 		Map<String,String> map =new HashMap<String,String>();
 		String TWNmsisdn = null;
 		
@@ -534,7 +546,7 @@ public class SMSDao extends BaseDao{
 				+ "FROM FOLLOWMEDATA A, SERVICE B "
 				+ "WHERE A.SERVICEID=B.SERVICEID "
 				+ "AND A.FOLLOWMENUMBER=?";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, msisdn);
@@ -545,6 +557,7 @@ public class SMSDao extends BaseDao{
 		
 		if(rs!=null)rs.close();
 		if(pst!=null)pst.close();
+		conn.close();
 
 		//��k2
 		if(TWNmsisdn==null || "".equals(TWNmsisdn)){
@@ -553,7 +566,7 @@ public class SMSDao extends BaseDao{
 					+ "FROM NEWSERVICEORDERPARAMETERVALUE A, SERVICE B "
 					+ "WHERE A.SERVICEID=B.SERVICEID AND A.PARAMETERVALUEID=3792 "
 					+ "AND VALUE=?";
-			
+			Connection conn2 =  getConn2();
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
@@ -564,6 +577,7 @@ public class SMSDao extends BaseDao{
 			
 			if(pst2!=null) pst2.close();	
 			if(rs2!=null) rs2.close();
+			conn2.close();
 		}
 		
 		//��k3
@@ -576,7 +590,7 @@ public class SMSDao extends BaseDao{
 					+ "AND A.OLDVALUE<>A.NEWVALUE "
 					+ "AND A.NEWVALUE=? "
 					+ "ORDER BY A.ORDERID DESC";
-			
+			Connection conn2 =  getConn2();
 			PreparedStatement pst2 = conn2.prepareStatement(sql);
 			
 			pst2.setString(1, msisdn);
@@ -587,6 +601,7 @@ public class SMSDao extends BaseDao{
 			
 			if(pst2!=null) pst2.close();	
 			if(rs2!=null) rs2.close();
+			conn2.close();
 		}		
 		
 		
@@ -595,7 +610,7 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
-	public Map<String,String> queryMSISDN(String imsi) throws SQLException{
+	public Map<String,String> queryMSISDN(String imsi) throws SQLException, ClassNotFoundException{
 		Map<String,String> map =new HashMap<String,String>();
 		String msisdn = null;
 		String pricaplainid = null;
@@ -604,7 +619,7 @@ public class SMSDao extends BaseDao{
 				+ "FROM IMSI B,SERVICE C "
 				+ "WHERE B.SERVICEID = C.SERVICEID "
 				+ "AND B.IMSI = ?";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, imsi);
@@ -615,7 +630,7 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		pst.close();
-		
+		conn.close();
 		
 		map.put("msisdn", msisdn);
 		map.put("pricaplainid", pricaplainid);
@@ -623,12 +638,12 @@ public class SMSDao extends BaseDao{
 		return map;
 	}
 	
-	public String getSMSContent(String smsId) throws SQLException{
+	public String getSMSContent(String smsId) throws SQLException, ClassNotFoundException{
 		
 		String result=null;
 		
 		sql="SELECT A.CONTENT FROM HUR_SMS_CONTENT A WHERE A.ID='"+smsId+"' ";
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 
 		System.out.println("Execute SQL :"+sql);
@@ -639,15 +654,17 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		st.close();
+		conn.close();
 		return result;
 	}
 	
-	public void logSendSMS(String phone,String msgid,String res,String type) throws SQLException{
+	public void logSendSMS(String phone,String msgid,String res,String type) throws SQLException, ClassNotFoundException{
 		sql="INSERT INTO HUR_SMS_LOG"
 				+ "(ID,SEND_NUMBER,MSG,SEND_DATE,RESULT,CREATE_DATE,TYPE) "
 				+ "VALUES(DVRS_SMS_ID.NEXTVAL,?,?,to_date(?,'yyyyMMddhh24miss'),?,SYSDATE,'"+type+"')";
 		
 		PreparedStatement pst = null;
+		Connection conn =  getConn1();
 		try {
 			pst = conn.prepareStatement(sql);
 			pst.setString(1, phone);
@@ -657,6 +674,7 @@ public class SMSDao extends BaseDao{
 			pst.executeUpdate();
 		}finally{
 			pst.close();
+			conn.close();
 		}			
 	}
 	public java.sql.Date convertJaveUtilDate_To_JavaSqlDate(java.util.Date date) {
@@ -664,10 +682,11 @@ public class SMSDao extends BaseDao{
 		return new java.sql.Date(date.getTime());
 	}
 	
-	public String queryVLR(String imsi) throws SQLException{
+	public String queryVLR(String imsi) throws SQLException, ClassNotFoundException{
 		String VLN=null;
 		
 		sql="SELECT VLR_NUMBER FROM UTCN.BASICPROFILE WHERE IMSI='"+imsi+"'";
+		Connection conn2 =  getConn2();
 		Statement st =conn2.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -676,14 +695,16 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		st.close();
+		conn2.close();
 		return VLN;
 	}
 	
-	public Map<String,String> queryTADIG() throws SQLException{
+	public Map<String,String> queryTADIG() throws SQLException, ClassNotFoundException{
 		Map<String,String> map = new HashMap<String,String>();
 		
 		sql=" SELECT B.REALMNAME TADIG, A.CHARGEAREACODE VLR FROM CHARGEAREACONFIG A, REALM B "
 				+ "WHERE A.AREAREFERENCE=B.AREAREFERENCE ";
+		Connection conn2 =  getConn2();
 		Statement st =conn2.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -692,12 +713,14 @@ public class SMSDao extends BaseDao{
 		}
 		rs.close();
 		st.close();
+		conn2.close();
 		return map;
 	}
-	public String queryMccmnc(String tadig) throws SQLException{
+	public String queryMccmnc(String tadig) throws SQLException, ClassNotFoundException{
 		String mccmnc=null;
 				
 		sql=" SELECT MCCMNC FROM HUR_MCCMNC WHERE TADIG='"+tadig+"'";
+		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 
@@ -707,14 +730,16 @@ public class SMSDao extends BaseDao{
 				
 		rs.close();
 		st.close();
+		conn.close();
 
 		return mccmnc;		
 	}
 	
-	public String queryCustomerServicePhone(String mccmnc) throws SQLException{
+	public String queryCustomerServicePhone(String mccmnc) throws SQLException, ClassNotFoundException{
 		String cPhone=null;
 		String subcode=mccmnc.substring(0,3);
 		sql=" SELECT PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
+		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -723,16 +748,17 @@ public class SMSDao extends BaseDao{
 		}		
 		rs.close();
 		st.close();
+		conn.close();
 		return cPhone;		
 	}
 
-	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException{
+	public List<SMSContent> querySMSContent() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSContent> result = new ArrayList<SMSContent>();
 		sql=
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
 				+ "ORDER BY A.ID ";
-		
+		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
@@ -747,18 +773,18 @@ public class SMSDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-			
+			conn.close();
 		return result;
 	}
 	
-	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException{
+	public List<SMSContent> querySMSContent(String id) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<SMSContent> result = new ArrayList<SMSContent>();
 		sql=
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
 				+ "WHERE A.ID IN ("+id+") "
 				+ "ORDER BY A.ID ";
-		
+		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 			while(rs.next()){
@@ -773,7 +799,7 @@ public class SMSDao extends BaseDao{
 			
 			rs.close();
 			st.close();
-			
+			conn.close();
 
 		return result;
 	}
@@ -783,7 +809,7 @@ public class SMSDao extends BaseDao{
 		sql=
 				"INSERT INTO HUR_SMS_CONTENT (ID,CONTENT,CHARSET,DESCRIPTION) "
 				+ "VALUES(?,?,?,?)";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst =conn.prepareStatement(sql);			
 		pst.setInt(1, sc.getId());
 		pst.setString(2, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
@@ -793,7 +819,7 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();	
-		
+		conn.close();
 		
 		return result;
 	}
@@ -803,7 +829,7 @@ public class SMSDao extends BaseDao{
 				"UPDATE  HUR_SMS_CONTENT A "
 				+ "SET A.CONTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
 				+ "WHERE A.ID=?";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setString(1, (sc.getComtent()!=null ? new String(sc.getComtent().getBytes("BIG5"),"ISO8859-1"):""));
@@ -814,7 +840,7 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();
-		
+		conn.close();
 
 		return result;
 	}
@@ -823,7 +849,7 @@ public class SMSDao extends BaseDao{
 		sql=
 				"DELETE HUR_SMS_CONTENT A "
 				+ "WHERE A.ID=?";
-		
+		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
 		pst.setInt(1, sc.getId());
@@ -831,12 +857,12 @@ public class SMSDao extends BaseDao{
 		result=pst.executeUpdate();
 		
 		pst.close();
-		
+		conn.close();
 			
 		return result;
 	}
 	
-	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException{
+	public Map<String,String> queryGPRSContent() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		Map<String,String> m = new HashMap<String,String>();
 		sql=
 				"SELECT case A.id when 201 then 'A' when 202 then 'B' when 203 then 'CA' when 204 then 'CI' END ID,A.CONTENT "
@@ -845,6 +871,7 @@ public class SMSDao extends BaseDao{
 		
 		Statement st = null;
 		ResultSet rs = null;
+		Connection conn =  getConn1();
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
@@ -860,6 +887,7 @@ public class SMSDao extends BaseDao{
 				
 			} catch (Exception e) {
 			}
+			conn.close();
 		}
 		return m;
 	}	

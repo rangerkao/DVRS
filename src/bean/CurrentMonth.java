@@ -15,6 +15,8 @@ public class CurrentMonth {
 	Double lastAlertThreshold;
 	Double lastAlertVolume;
 	
+	String ICCID;
+	
 	public CurrentMonth(){
 		
 	}
@@ -133,6 +135,15 @@ public class CurrentMonth {
 	public void setLastAlertVolume(Double lastAlertVolume) {
 		this.lastAlertVolume = lastAlertVolume;
 	}
+
+	public String getICCID() {
+		return ICCID;
+	}
+
+	public void setICCID(String iCCID) {
+		ICCID = iCCID;
+	}
+	
 	
 	
 }

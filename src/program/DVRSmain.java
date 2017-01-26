@@ -1029,7 +1029,7 @@ public class DVRSmain extends TimerTask{
 				map.put("SMS_TIMES", rs.getString("SMS_TIMES"));
 				map.put("LAST_DATA_TIME", rs.getString("LAST_DATA_TIME"));
 				map.put("CHARGE", rs.getString("CHARGE"));
-				map.put("VOLUME", rs.getString("VOLUME"));
+				map.put("VOLUME", rs.getString("VOLUME")==null?"0":rs.getString("VOLUME"));
 				map.put("EVER_SUSPEND", rs.getString("EVER_SUSPEND"));
 				map.put("LAST_ALERN_THRESHOLD", rs.getString("LAST_ALERN_THRESHOLD"));
 				map.put("LAST_ALERN_VOLUME", rs.getString("LAST_ALERN_VOLUME"));
@@ -2541,7 +2541,7 @@ public class DVRSmain extends TimerTask{
 			setQosData();
 
 			//批次Query 避免ram空間不足
-			for(int i=1;(i-1)*dataThreshold+1<=count ;i++){
+			for(int i=1;(i-1)*dataThreshold+1<=count && i<=5;i++){
 				sql=
 						"SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
 						+ "FROM ( SELECT USAGEID,IMSI,MCCMNC,DATAVOLUME,FILEID,CALLTIME,SGSNADDRESS "
@@ -4388,8 +4388,8 @@ public class DVRSmain extends TimerTask{
 				logger.debug("updateVolumePocket SQL : "+sql); 
 				st.executeUpdate(sql);
 			}
-			
-			
+			//20170104 add 新增玩後清空此List
+			updateVolumePocketMap.clear();
 			result = true;
 		} catch (SQLException e) {
 			ErrorHandle("At updateVolumePocket occur SQLException!",e);
@@ -4414,7 +4414,7 @@ public class DVRSmain extends TimerTask{
 	static int pid = 0;
 	public String getVolumePocketPID(){
 
-		if(pid == 0){
+		/*if(pid == 0){
 			sql = "select nvl(MAX(PID),0)+1 PID from HUR_VOLUME_POCKET ";
 			Statement st = null;
 			ResultSet rs = null;
@@ -4441,6 +4441,31 @@ public class DVRSmain extends TimerTask{
 			}
 		}else{
 			pid++;
+		}*/
+		
+		sql = "select HUR_VOLUME_POCKET_SEQ.nextval PID  from dual ";
+		Statement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.createStatement();
+			logger.debug("select pid : "+sql); 
+			rs=st.executeQuery(sql);
+			while(rs.next()){
+				pid = rs.getInt("PID");
+			}
+		} catch (SQLException e) {
+			ErrorHandle("At updateVolumePocket occur SQLException!");
+		} catch (Exception e) {
+			ErrorHandle("At updateVolumePocket occur Exception!");
+		}finally{
+			
+			try {
+				if(st!=null)
+					st.close();
+				if(rs!=null)
+					rs.close();
+			} catch (SQLException e) {
+			}
 		}
 		
 		return String.valueOf(pid);
@@ -5632,12 +5657,14 @@ public class DVRSmain extends TimerTask{
 		
 		IniProgram();
 		
+		
 		if(TEST_MODE){
 			DVRSmain rf =new DVRSmain();
 			while(true){
 				rf.process();
+				logger.info("ready next");
 				try {
-					Thread.sleep(10*60*1000);
+					Thread.sleep(5*60*1000);
 				} catch (InterruptedException e) {
 				}
 			}
@@ -5647,7 +5674,10 @@ public class DVRSmain extends TimerTask{
 		
 		/*DVRSmain rf =new DVRSmain();
 		rf.connectDB();
-		rf.sendVolumeReport();
+		rf.setCurrentMap();
+		rf.setCurrentMapDay();
+		rf.setVolumeList();
+		System.out.println(volumeList.get("47984"));
 		conn.close();*/
 	}
 }

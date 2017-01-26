@@ -18,36 +18,36 @@ public class CurrentControl extends BaseControl {
 	}
 
 	
-	public List<CurrentMonth> queryCurrentMonth() throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth() throws SQLException, ClassNotFoundException{
 		
 		List<CurrentMonth> r = currentDao.queryCurrentMonth();
-		currentDao.closeConnection();
+		
 		return r;
 	}
 	
-	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException{
+	public List<CurrentMonth> queryCurrentMonth(String imsi,String from,String to,String suspend) throws SQLException, ClassNotFoundException{
 		List<CurrentMonth> r = null;
 		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to))&&("".equals(suspend)||suspend==null))
 			r = currentDao.queryCurrentMonth();
 		else
 			r = currentDao.queryCurrentMonth(imsi,from,to,suspend);
-		currentDao.closeConnection();
+		
 		return r;
 	}
 	
-	public List<CurrentDay> queryCurrentDay() throws SQLException{
+	public List<CurrentDay> queryCurrentDay() throws SQLException, ClassNotFoundException{
 		List<CurrentDay> r = currentDao.queryCurrentDay();
-		currentDao.closeConnection();
+		
 		return r;
 	}
 	
-	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException{
+	public List<CurrentDay> queryCurrentDay(String imsi,String from,String to) throws SQLException, ClassNotFoundException{
 		List<CurrentDay> r = null;
 		if((imsi==null || "".equals(imsi))&&(from==null || "".equals(from))&&(to==null || "".equals(to)))
 			r = currentDao.queryCurrentDay();
 		else
 			r = currentDao.queryCurrentDay(imsi,from,to);
-		currentDao.closeConnection();
+		
 		return r;
 	}
 	

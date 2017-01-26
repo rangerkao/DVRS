@@ -9,11 +9,9 @@ public class BaseDao {
 
 	protected String sql="";
 	protected static Properties props =null;
-	protected Connection conn=null;
-	protected Connection conn2=null;
 
 	public BaseDao() throws Exception{
-		createConnection();
+
 	}
 	
 	public String nvl(String msg,String s){
@@ -30,16 +28,12 @@ public class BaseDao {
 		return sCharset==null? new String(msg.getBytes(),dCharset):new String(msg.getBytes(sCharset),dCharset);
 	}
 	
-	public void createConnection() throws Exception{
-		
-		
-		conn=cache.CacheAction.getConnect1();
-		conn2=cache.CacheAction.getConnect2();
-		
+	public Connection getConn1() throws ClassNotFoundException, SQLException {
+		return cache.CacheAction.getConn1();
 	}
-	public void closeConnection() throws SQLException{
-		/*conn.close();
-		conn2.close();
-		System.out.println("Close connect!");*/
-	}	
+	
+	public Connection getConn2() throws ClassNotFoundException, SQLException {
+		return cache.CacheAction.getConn2();
+	}
+
 }

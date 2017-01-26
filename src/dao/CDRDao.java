@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,36 +16,37 @@ public class CDRDao extends BaseDao {
 		super();
 	}
 
-	public List<CDR> queryCDR() throws SQLException, ParseException{
+	public List<CDR> queryCDR() throws SQLException, ParseException, ClassNotFoundException{
 		sql=
 				"SELECT A.USAGEID,A.IMSI,A.CALLTIME,A.MCCMNC,A.SGSNADDRESS,A.DATAVOLUME,A.FILEID "
 				+ "FROM HUR_DATA_USAGE A "
 				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
+		Connection conn =  getConn1();
+		Statement st = conn.createStatement();
 		
-			Statement st = conn.createStatement();
-			
-			ResultSet rs=st.executeQuery(sql);
-			
-			while(rs.next()){
-				CDR c = new CDR();
-				c.setUsageId(rs.getString("USAGEID"));
-				c.setImsi(rs.getString("IMSI"));
-				c.setCalltime(rs.getString("CALLTIME"));
-				c.setMccmnc(rs.getString("MCCMNC"));
-				c.setSgsnAddress(rs.getString("SGSNADDRESS"));
-				c.setDataVolume(rs.getDouble("DATAVOLUME"));
-				c.setFileId(rs.getString("FILEID"));
-				list.add(c);
-			}
-			rs.close();
-			st.close();
+		ResultSet rs=st.executeQuery(sql);
+		
+		while(rs.next()){
+			CDR c = new CDR();
+			c.setUsageId(rs.getString("USAGEID"));
+			c.setImsi(rs.getString("IMSI"));
+			c.setCalltime(rs.getString("CALLTIME"));
+			c.setMccmnc(rs.getString("MCCMNC"));
+			c.setSgsnAddress(rs.getString("SGSNADDRESS"));
+			c.setDataVolume(rs.getDouble("DATAVOLUME"));
+			c.setFileId(rs.getString("FILEID"));
+			list.add(c);
+		}
+		rs.close();
+		st.close();
+		conn.close();
 			
 		return list;
 		
 	}
 	
-	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException{
+	public List<CDR> queryCDR(String from,String to,String IMSI) throws SQLException, ParseException, ClassNotFoundException{
 		
 		System.out.println("�d��CDR�����q"+from+"��"+to);
 		sql=
@@ -56,24 +58,25 @@ public class CDRDao extends BaseDao {
 				+ (IMSI!=null && !"".equals(IMSI)?"AND A.IMSI like '"+IMSI.replace("*", "%")+"' ":"")
 				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
+		Connection conn =  getConn1();
+		Statement st = conn.createStatement();
+		System.out.println(sql);
+		ResultSet rs=st.executeQuery(sql);
 		
-			Statement st = conn.createStatement();
-			System.out.println(sql);
-			ResultSet rs=st.executeQuery(sql);
-			
-			while(rs.next()){
-				CDR c = new CDR();
-				c.setUsageId(rs.getString("USAGEID"));
-				c.setImsi(rs.getString("IMSI"));
-				c.setCalltime(rs.getString("CALLTIME"));
-				c.setMccmnc(rs.getString("MCCMNC"));
-				c.setSgsnAddress(rs.getString("SGSNADDRESS"));
-				c.setDataVolume(rs.getDouble("DATAVOLUME"));
-				c.setFileId(rs.getString("FILEID"));
-				list.add(c);
-			}
-			rs.close();
-			st.close();
+		while(rs.next()){
+			CDR c = new CDR();
+			c.setUsageId(rs.getString("USAGEID"));
+			c.setImsi(rs.getString("IMSI"));
+			c.setCalltime(rs.getString("CALLTIME"));
+			c.setMccmnc(rs.getString("MCCMNC"));
+			c.setSgsnAddress(rs.getString("SGSNADDRESS"));
+			c.setDataVolume(rs.getDouble("DATAVOLUME"));
+			c.setFileId(rs.getString("FILEID"));
+			list.add(c);
+		}
+		rs.close();
+		st.close();
+		conn.close();
 			
 		return list;
 	}

@@ -74,7 +74,7 @@ public class LinkAction extends BaseAction{
 		Map session = ac.getSession();
 		
 		logoutControl.execute(session);
-		setTag("您已登出");
+		setTag("Logout Success!");
 		return LOGIN;         
 	}
 //*****************************************

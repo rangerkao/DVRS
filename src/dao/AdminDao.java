@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,12 +15,13 @@ public class AdminDao extends BaseDao {
 	public AdminDao() throws Exception {
 		super();
 	}
-	public int insert(Admin admin) throws SQLException{
+	public int insert(Admin admin) throws SQLException, ClassNotFoundException{
 		sql=
 				"INSERT INTO HUR_ADMIN(ID,ACCOUNT,PASSWORD,ROLE,CREATE_DATE)"
 				+ "VALUES(?,?,?,?,sysdate)";
 		int result=0;
 		PreparedStatement pst;
+		Connection conn =  getConn1();
 		pst = conn.prepareStatement(sql);
 		pst.setString(1, admin.getUserid());
 		pst.setString(2, admin.getAccount());
@@ -27,19 +29,19 @@ public class AdminDao extends BaseDao {
 		pst.setString(4, admin.getRole());
 		result=pst.executeUpdate();
 		pst.close();
-		
+		conn.close();
 
 		
 		return result;
 	}
-	public int update(Admin admin) throws SQLException{
+	public int update(Admin admin) throws SQLException, ClassNotFoundException{
 		sql=
 				"UPDATE HUR_ADMIN "
 				+ "SET ID=?,PASSWORD=?,ROLE=?,UPDATE_DATE=sysdate "
 				+ "WHERE ACCOUNT=?";
 		int result=0;
 		PreparedStatement pst;
-
+		Connection conn =  getConn1();
 		pst = conn.prepareStatement(sql);
 		pst.setString(1, admin.getUserid());
 		pst.setString(2, admin.getPassword());
@@ -48,35 +50,35 @@ public class AdminDao extends BaseDao {
 		
 		result=pst.executeUpdate();
 		pst.close();
-		
+		conn.close();
 
 		return result;
 	}
 	
-	public int delete(Admin admin) throws SQLException{
+	public int delete(Admin admin) throws SQLException, ClassNotFoundException{
 		sql=
 				"DELETE HUR_ADMIN "
 				+ "WHERE ACCOUNT=?";
 		int result=0;
 		PreparedStatement pst;
-
+		Connection conn =  getConn1();
 		pst = conn.prepareStatement(sql);
 		pst.setString(1, admin.getAccount());
 		result=pst.executeUpdate();
 		pst.close();
-		
+		conn.close();
 
 		return result;
 	}
 	
 	//�d�ߦC��
-	public List<Admin> queryAdminList() throws SQLException{
+	public List<Admin> queryAdminList() throws SQLException, ClassNotFoundException{
 		sql=
 				"SELECT A.ID,A.ACCOUNT,A.PASSWORD,A.ROLE "
 				+ "FROM HUR_ADMIN A ";
 		List<Admin> list=new ArrayList<Admin>();
 		
-
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);
 		
@@ -90,13 +92,13 @@ public class AdminDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
-		
+		conn.close();
 
 		return list;
 		
 	}
 	
-	public Admin queryAdminByAccount(String account) throws SQLException{
+	public Admin queryAdminByAccount(String account) throws SQLException, ClassNotFoundException{
 		Admin admin =null;
 		sql=
 				"SELECT A.ID,A.ACCOUNT,A.PASSWORD,A.ROLE "
@@ -104,7 +106,7 @@ public class AdminDao extends BaseDao {
 				+ "WHERE A.ACCOUNT=? ";
 		
 		PreparedStatement pst;
-
+		Connection conn =  getConn1();
 		pst = conn.prepareStatement(sql);
 		pst.setString(1, account);
 		
@@ -119,7 +121,7 @@ public class AdminDao extends BaseDao {
 		}
 		pst.close();
 		rs.close();
-		
+		conn.close();
 
 		return admin;
 	}

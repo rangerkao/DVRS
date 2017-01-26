@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,7 +17,7 @@ public class DataRateDao extends BaseDao {
 	}
 
 		//查詢列表
-		public List<DataRate> queryDataRateList() throws SQLException{
+		public List<DataRate> queryDataRateList() throws SQLException, ClassNotFoundException{
 			sql=
 					"SELECT A.PRICEPLANID, C.NAME PRICEPLANNAME,A.MCCMNC,B.COUNTRY, B.NETWORK, "
 					+ "A.RATE, A.CHARGEUNIT, A.CURRENCY, A.DAYCAP,A.START_TIME,A.END_TIME "
@@ -28,27 +29,28 @@ public class DataRateDao extends BaseDao {
 					/*"SELECT A.PRICEPLANID,A.MCCMNC,A.RATE,A.CHARGEUNIT,A.CURRENCY "
 					+ "FROM HUR_DATA_RATE A";*/
 			List<DataRate> list=new ArrayList<DataRate>();
+			Connection conn =  getConn1();
+			Statement st = conn.createStatement();
+			ResultSet rs=st.executeQuery(sql);
 			
-				Statement st = conn.createStatement();
-				ResultSet rs=st.executeQuery(sql);
-				
-				while(rs.next()){
-					DataRate datarate =new DataRate();
-					datarate.setPricePlanId(rs.getLong("PRICEPLANID"));
-					datarate.setPricePlanName(rs.getString("PRICEPLANNAME")+("(環球卡)"));
-					datarate.setMccmnc(rs.getString("MCCMNC"));
-					datarate.setCountry(rs.getString("COUNTRY"));
-					datarate.setNetWork(rs.getString("NETWORK"));
-					datarate.setRate(rs.getDouble("RATE"));
-					datarate.setChargeunit(rs.getLong("CHARGEUNIT"));
-					datarate.setCurrency(rs.getString("CURRENCY"));
-					datarate.setDayCap(rs.getDouble("DAYCAP"));
-					datarate.setStartDate(rs.getString("START_TIME"));
-					datarate.setEndDate(rs.getString("END_TIME"));
-					list.add(datarate);
-				}
-				st.close();
-				rs.close();	
+			while(rs.next()){
+				DataRate datarate =new DataRate();
+				datarate.setPricePlanId(rs.getLong("PRICEPLANID"));
+				datarate.setPricePlanName(rs.getString("PRICEPLANNAME")+("(環球卡)"));
+				datarate.setMccmnc(rs.getString("MCCMNC"));
+				datarate.setCountry(rs.getString("COUNTRY"));
+				datarate.setNetWork(rs.getString("NETWORK"));
+				datarate.setRate(rs.getDouble("RATE"));
+				datarate.setChargeunit(rs.getLong("CHARGEUNIT"));
+				datarate.setCurrency(rs.getString("CURRENCY"));
+				datarate.setDayCap(rs.getDouble("DAYCAP"));
+				datarate.setStartDate(rs.getString("START_TIME"));
+				datarate.setEndDate(rs.getString("END_TIME"));
+				list.add(datarate);
+			}
+			st.close();
+			rs.close();	
+			conn.close();
 				
 			return list;
 			

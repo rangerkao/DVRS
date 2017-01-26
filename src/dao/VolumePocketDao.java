@@ -1,6 +1,7 @@
 package dao;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,7 +18,7 @@ public class VolumePocketDao extends BaseDao {
 	}
 
 	
-	public String queryServiceidByTwnMsisdn(String chtMsisdn) throws SQLException{
+	public String queryServiceidByTwnMsisdn(String chtMsisdn) throws SQLException, ClassNotFoundException{
 		String result = null;
 		
 		sql=
@@ -25,7 +26,7 @@ public class VolumePocketDao extends BaseDao {
 				+ "from FOLLOWMEDATA A "
 				+ "WHERE A.FOLLOWMENUMBER = '"+chtMsisdn+"'";
 		
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		ResultSet rs=st.executeQuery(sql);
@@ -35,10 +36,11 @@ public class VolumePocketDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
+		conn.close();
 		return result;
 	}
 	
-	public String queryIMSIByServiceID(String ServiceID) throws SQLException{
+	public String queryIMSIByServiceID(String ServiceID) throws SQLException, ClassNotFoundException{
 		String result = null;
 		
 		sql=
@@ -46,7 +48,7 @@ public class VolumePocketDao extends BaseDao {
 				+ "from IMSI A "
 				+ "WHERE A.SERVICEID = '"+ServiceID+"'";
 		
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		ResultSet rs=st.executeQuery(sql);
@@ -56,11 +58,12 @@ public class VolumePocketDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
+		conn.close();
 		return result;
 	}
 	
 	
-	public List<VolumePocket> queryVolumePocketList() throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> queryVolumePocketList() throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<VolumePocket> result = new ArrayList<VolumePocket>();
 		
 		sql=
@@ -71,7 +74,7 @@ public class VolumePocketDao extends BaseDao {
 				+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 AND B.FOLLOWMENUMBER like '886%' "
 				+ "ORDER BY A.START_DATE DESC ";
 		
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		ResultSet rs=st.executeQuery(sql);
@@ -110,10 +113,11 @@ public class VolumePocketDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
+		conn.close();
 		return result;
 	}
 	
-	public List<VolumePocket> queryVolumePocketList(String chtMsisdn) throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> queryVolumePocketList(String chtMsisdn) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		List<VolumePocket> result = new ArrayList<VolumePocket>();
 		
 		sql=
@@ -123,7 +127,7 @@ public class VolumePocketDao extends BaseDao {
 						+ "from HUR_VOLUME_POCKET A,FOLLOWMEDATA B "
 						+ "WHERE A.SERVICEID = B.SERVICEID AND A.TYPE=0 AND B.FOLLOWMENUMBER='"+chtMsisdn+"' "
 						+ "ORDER BY A.START_DATE DESC";		
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		ResultSet rs=st.executeQuery(sql);
@@ -162,6 +166,7 @@ public class VolumePocketDao extends BaseDao {
 		}
 		st.close();
 		rs.close();
+		conn.close();
 		return result;
 	}
 	
@@ -177,12 +182,14 @@ public class VolumePocketDao extends BaseDao {
 		return s;
 	}
 	
-	public List<VolumePocket> inserVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> inserVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		
-		sql = 
+		/*sql = 
 				"SELECT NVL(MAX(PID),0)+1 PID "
-				+ "FROM HUR_VOLUME_POCKET ";
+				+ "FROM HUR_VOLUME_POCKET ";*/
 		
+		sql = "select HUR_VOLUME_POCKET_SEQ.nextval PID  from dual ";
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		
 		ResultSet rs = st.executeQuery(sql);
@@ -210,11 +217,11 @@ public class VolumePocketDao extends BaseDao {
 
 		rs.close();
 		st.close();
-
+		conn.close();
 		return queryVolumePocketList(v.getChtMsisdn());
 	}
 	
-	public boolean ckeckVolumePocket(VolumePocket v) throws SQLException{
+	public boolean ckeckVolumePocket(VolumePocket v) throws SQLException, ClassNotFoundException{
 		boolean result = false;
 		sql=
 				"SELECT count(1) c "
@@ -226,7 +233,7 @@ public class VolumePocketDao extends BaseDao {
 		if(v.getPid()!=null){
 			sql += "AND PID != '"+v.getPid()+"' ";
 		}
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		ResultSet rs = st.executeQuery(sql);
@@ -239,37 +246,40 @@ public class VolumePocketDao extends BaseDao {
 		
 		rs.close();
 		st.close();
+		conn.close();
 		
 		return result;
 	}
 	
-	public List<VolumePocket> updateVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> updateVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		
 		sql=	
 				"UPDATE HUR_VOLUME_POCKET SET START_DATE='"+v.getStartDate()+"',END_DATE='"+v.getEndDate()+"' "
 				//暫時只允許修改日期
 						//+ ",ID='"+v.getId()+"',NAME='"+v.getName()+"',PHONE_TYPE='"+v.getPhoneType()+"',EMAIL='"+v.getEmail()+"' "
 						+ "WHERE PID = '"+v.getPid()+"' ";
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		st.executeUpdate(sql);
 
 		st.close();
+		conn.close();
 
 		return queryVolumePocketList(v.getChtMsisdn());
 	}
 	
-	public List<VolumePocket> cancelVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException{
+	public List<VolumePocket> cancelVolumePocket(VolumePocket v) throws SQLException, UnsupportedEncodingException, ClassNotFoundException{
 		
 		sql=
 				"UPDATE HUR_VOLUME_POCKET A SET A.CANCEL_TIME = sysdate,A.CANCEL_REASON='"+convertString(v.getReason(),"BIG5","ISO-8859-1")+"' WHERE A.PID = '"+v.getPid()+"' ";
-		
+		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
 		System.out.println("Execute SQL :"+sql);
 		st.executeUpdate(sql);
 
 		st.close();
+		conn.close();
 
 		return queryVolumePocketList(v.getChtMsisdn());
 	}

@@ -79,6 +79,11 @@ function setDateMonth(){
 	    	  //alert(json);
 	    	  var list=$.parseJSON(json);
 	    	  currentList=list['data'];
+
+	    	  $.each(currentList, function( index, value ) {
+	    		  currentList[index]['imsi']=currentList[index]['imsi']+'<br><font size ="1" color="red" >('+currentList[index]['ICCID']+')</font>';
+	    		});
+	    	  
 	    	  if(currentList!=null)
 	    		  dataList=currentList.slice(0);
 	    	  
