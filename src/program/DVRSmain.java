@@ -4274,7 +4274,7 @@ public class DVRSmain extends TimerTask{
 							mm.put("ALERTED", ""+alerted);
 							updateVolumePocketMap.add(mm);
 						}
-					}else if(type==1){//數據預付包
+					}else if(type==1){//數據預付包，JOY
 						if(v>=pocketLimit&& alerted < 100){
 							
 							alerted = 100;
@@ -4294,7 +4294,7 @@ public class DVRSmain extends TimerTask{
 										ErrorHandle("At checkVolumePocket, The serviceid:"+serviceid+" can't find msisdn!");
 										continue;
 									}
-									//退租並recycle
+									//進行降速
 									String imsi = msisdnMap.get(serviceid).get("IMSI");
 									if(imsi==null ||"".equals(imsi)){
 										sql="";

@@ -88,7 +88,7 @@ public class CurrentDao extends BaseDao {
 		
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
-		
+		imsitoServiceID = CacheAction.getImsitoServiceID();
 		
 		List<CurrentMonth> list = new ArrayList<CurrentMonth>();
 		Set<String> filterServiceID = new HashSet<String>();
@@ -224,6 +224,7 @@ public class CurrentDao extends BaseDao {
 		
 		serviceIDtoIMSI = CacheAction.getServiceIDtoIMSI();
 		serviceIDtoICCID = CacheAction.getServiceIDtoICCID();
+		imsitoServiceID = CacheAction.getImsitoServiceID();
 		
 		List<CurrentDay> list = new ArrayList<CurrentDay>();
 		Set<String> filterServiceID = new HashSet<String>();

@@ -292,8 +292,8 @@ public class CacheAction extends BaseAction {
 	public String reloadCache(){
 		
 		try {
-			readCache();
 			setCache();
+			readCache();
 			sendMail("k1988242001@gmail.com","DVRS Cache Reload!","DVRS Cache Reload! At "+new Date());
 		} catch (Exception e) {
 			StringWriter s = new StringWriter();
