@@ -7,6 +7,12 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+<!-- IE可能不見得有效 -->
+<META HTTP-EQUIV="EXPIRES" CONTENT="0">
+<!-- 設定成馬上就過期 -->
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<!-- 與第一行是同樣的作用 -->
 <title>Insert title here</title>
 </head>
 <body>

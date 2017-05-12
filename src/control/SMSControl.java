@@ -191,7 +191,7 @@ public class SMSControl extends BaseControl{
 				if(tadig!=null &&!"".equals(tadig)){
 					String mccmnc=smsDao.queryMccmnc(tadig);
 					if(mccmnc!=null &&!"".equals(mccmnc)){
-						cphone=smsDao.queryCustomerServicePhone(mccmnc);
+						cphone=smsDao.queryCustomerServicePhone(mccmnc,true);
 					}
 				}
 			}

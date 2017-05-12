@@ -113,6 +113,7 @@
 		      data: {"input":msisdn},//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
+		      cache: false,
 		      success: function(json) {  
 		    	  var list=$.parseJSON(json);
 		    	  if(list['error']){
@@ -151,6 +152,7 @@
 		      data: {"input":msisdn},//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
+		      cache: false,
 		      success: function(json) {  
 		    	  var list=$.parseJSON(json);
 		    	  if(list['error']){
@@ -209,6 +211,7 @@
 		      data: {"input":JSON.stringify(cusInfo)},//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
+		      cache: false,
 		      success: function(json){
 		    	  var list=$.parseJSON(json);
 		    	  if(list['error']){
@@ -302,6 +305,7 @@
 			      data: {"input":JSON.stringify(cusInfo)},//parameters go here in object literal form
 			      type: 'POST',
 			      datatype: 'json',
+			      cache: false,
 			      success: function(json){
 			    	  var list=$.parseJSON(json);
 			    	  if(list['error']){
@@ -382,6 +386,7 @@
 			      data: {"input":JSON.stringify(cusInfo)},//parameters go here in object literal form
 			      type: 'POST',
 			      datatype: 'json',
+			      cache: false,
 			      success: function(json){
 			    	  var list=$.parseJSON(json);
 			    	  if(list['error']){

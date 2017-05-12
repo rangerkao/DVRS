@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//WebContent/tiles/base.jsp=UTF-8
 encoding//src/action/AdminAction.java=UTF-8
 encoding//src/action/LoginAction.java=UTF-8
 encoding//src/control/MenuControl.java=UTF-8

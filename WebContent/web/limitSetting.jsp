@@ -28,6 +28,7 @@ function query(){
 	      data: {},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
@@ -93,6 +94,7 @@ function updateLimit(mod,txt){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  console.log(json);
 	    	  var list=$.parseJSON(json);
@@ -154,22 +156,24 @@ function queryIMSI(mod,txt){
 		      },//parameters go here in object literal form
 		      type: 'POST',
 		      datatype: 'json',
+		      cache: false,
 		      success: function(json) {  
 		    	  
 		    	  //jQuery.parseJSON,JSON.parse(json)
 		    	  //alert(json);
 		    	  
 		    	  var v=JSON.parse(json);
-		    	  if(json=="" || v.imsi==null || v.imsi==""){
-		    		  alert("此門號無對應IMSI，操作失敗");
-		    		  enableButton();
+		    	  if(v['error']){
+		    		  alert(v['error']) ;
 		    	  }else{
-		    		  $("#IMSI").val(v.imsi);
-		    		  checkByMsisdn(mod,txt);
+		    		  if(json=="" || v.imsi==null || v.imsi==""){
+			    		  alert("此門號無對應IMSI，操作失敗");
+			    		  enableButton();
+			    	  }else{
+			    		  $("#IMSI").val(v.imsi);
+			    		  checkByMsisdn(mod,txt);
+			    	  }
 		    	  }
-		    	  
-		    	  if(v['error'])
-			    		alert(v['error']) ;
 	    	  },
 		      error: function(json) {
 		    	  $("#Qmsg").html('something bad happened'); 
@@ -197,6 +201,7 @@ function checkByMsisdn(mod,txt){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  
 	    	  //jQuery.parseJSON,JSON.parse(json)

@@ -31,6 +31,7 @@ function startsend(){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  var list=$.parseJSON(json);
 	    	  var error = list['error'];
@@ -62,6 +63,7 @@ function querySMSContent(){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  var list=$.parseJSON(json);
 	    	  var error = list['error'];

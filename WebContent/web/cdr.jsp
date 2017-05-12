@@ -53,6 +53,7 @@ var cdrList;
   	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      	success: function(json) {  
 				$("#Qmsg").html("Success");
 				//jQuery.parseJSON,JSON.parse(json)

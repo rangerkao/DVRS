@@ -20,7 +20,7 @@ public class CDRDao extends BaseDao {
 		sql=
 				"SELECT A.USAGEID,A.IMSI,A.CALLTIME,A.MCCMNC,A.SGSNADDRESS,A.DATAVOLUME,A.FILEID "
 				+ "FROM HUR_DATA_USAGE A "
-				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
+				+ "ORDER BY A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
 		Connection conn =  getConn1();
 		Statement st = conn.createStatement();
@@ -56,7 +56,7 @@ public class CDRDao extends BaseDao {
 				+ (from!=null &&!"".equals(from)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')>=to_date('"+from+"','yyyy-mm-dd') ":"")  
 				+ (to!=null &&!"".equals(to)?"AND to_date(A.CALLTIME,'yyyy/MM/dd hh24:mi;ss')<=to_date('"+to+"','yyyy-mm-dd')+1 ":"")
 				+ (IMSI!=null && !"".equals(IMSI)?"AND A.IMSI like '"+IMSI.replace("*", "%")+"' ":"")
-				+ "ORDER BY A.FILEID,A.CALLTIME DESC";
+				+ "ORDER BY A.CALLTIME DESC";
 		List<CDR> list = new ArrayList<CDR>();
 		Connection conn =  getConn1();
 		Statement st = conn.createStatement();

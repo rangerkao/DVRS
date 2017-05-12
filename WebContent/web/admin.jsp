@@ -21,6 +21,7 @@ var adminList;
 			      data: {}, //parameters go here in object literal form
 			      type: 'POST',
 			      datatype: 'json',
+			      cache: false,
 			      success: function(json) {  
 			    	  $("#Qmsg").html("Success");
 			    	  //jQuery.parseJSON,JSON.parse(json)
@@ -85,6 +86,7 @@ var adminList;
 					    	  "mod":mod}, //parameters go here in object literal form
 				      type: 'POST',
 				      datatype: 'json',
+				      cache: false,
 				      success: function(json) { 
 				    	  	//alert(json);  
 				    	  	if(json=='success'){

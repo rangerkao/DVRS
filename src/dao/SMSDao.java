@@ -321,7 +321,7 @@ public class SMSDao extends BaseDao{
 			rs = st.executeQuery(sql);
 			
 			while(rs.next()){
-				result= rs.getString("IMSI");
+				result= rs.getString("SERVICEID");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -735,10 +735,10 @@ public class SMSDao extends BaseDao{
 		return mccmnc;		
 	}
 	
-	public String queryCustomerServicePhone(String mccmnc) throws SQLException, ClassNotFoundException{
+	public String queryCustomerServicePhone(String mccmnc,Boolean processor) throws SQLException, ClassNotFoundException{
 		String cPhone=null;
 		String subcode=mccmnc.substring(0,3);
-		sql=" SELECT PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
+		sql=" SELECT "+(processor?"CHT_PHONE":"S2T_PHONE")+" PHONE FROM HUR_CUSTOMER_SERVICE_PHONE A WHERE A.CODE ='"+subcode+"'";
 		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
 		ResultSet rs=st.executeQuery(sql);

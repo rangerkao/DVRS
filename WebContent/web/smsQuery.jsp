@@ -45,6 +45,7 @@ function query(){
 	    	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
@@ -87,6 +88,7 @@ function queryMSISDN1(tText){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  var v=JSON.parse(json);
 	    	  
@@ -125,6 +127,7 @@ function queryMSISDN2(tText){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  var v=JSON.parse(json);
 	    	  

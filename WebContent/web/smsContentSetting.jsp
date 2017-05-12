@@ -20,6 +20,7 @@ function query(){
 	      data: {},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  $("#Qmsg").html("Success");
 	    	  //jQuery.parseJSON,JSON.parse(json)
@@ -77,6 +78,7 @@ function updateContent(mod,txt){
 	      },//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',
+	      cache: false,
 	      success: function(json) {  
 	    	  var list=$.parseJSON(json);
 	    	  $('#bClear').click();
