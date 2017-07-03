@@ -20,6 +20,7 @@ $(document).ready(function(){
 	//$("li").css("display","none");
 	queryAuth();
 	$('#elseList').append('<li><p class="text-left"><a id=logoutLink href="<s:url action="logoutLink"/>">登出</a></p></li>');
+	count=logOutTime/checkPeriod;
 });
 
 
@@ -42,22 +43,24 @@ window.onmousemove = handleMouseMove;
  */
 var oldx,oldy;
 var checkPeriod=1000*5; //每5秒檢查一次
-var logOutminute=20//閒置登出時間（分鐘）
+var logOutminute=30//閒置登出時間（分鐘）
 var logOutTime=1000*60*logOutminute;
-var count=logOutTime/checkPeriod;
+var count=10;
 
 	window.setInterval(function() {
 		check()
 	}, checkPeriod);
+	
 	function check() {
 		var newx = $("#x").html();
 		var newy = $("#y").html();
 		//alert(newx + ":" + newy);
-		if (newx == oldx && newy == oldy) {
+		if (newx === oldx && newy === oldy) {
 			count -= 1;
 		} else {
 			count = logOutTime / checkPeriod;
 		}
+		$("#t").html(count); 
 		oldx = newx;
 		oldy = newy;
 		
@@ -289,11 +292,12 @@ function tqueryS2TMSISDN(tText){
 <body>
 <div class="container-fluid max_height" >
 	<div class="row max_height" align="center" style="vertical-align: top;">
-		<!-- <div class="col-xs-12" style="visibility: hidden;">
-			<label id="x" >x.index</label>
-			<label id="y" >y.index</label>
+		<div class="col-xs-12" style="position: fixed; right: 0; top: 0;">
+			X:<label id="x" >0</label>,
+			Y:<label id="y" >0</label>,
+			T:<label id="t" >0</label>
 			<label id="menuAuth"></label>
-		</div> -->
+		</div>
 		<div><font size="3px">Sim2Travel 維運管理系統</font></div>
 		<div class="col-xs-12" style="padding-right: 0px;padding-left: 0px;">
 			<div class="col-xs-12">

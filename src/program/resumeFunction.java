@@ -533,7 +533,7 @@ public class resumeFunction {
 			
 			sql = "";
 			//20141118 add 傳回suspend排程的 service order nbr
-			Map<String,String> orderNBR = sus.doChangeGPRSStatus(imsi, msisdn,GPRSStatus,"CHT-GPRS");
+			Map<String,String> orderNBR = sus.doChangeGPRSStatus(0,imsi, msisdn,GPRSStatus,"CHT-GPRS");
 			serviceOrderNBR.add(orderNBR);
 			sql=
 					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "

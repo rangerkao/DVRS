@@ -52,47 +52,14 @@ public class suspendGPRS {
 	private String sSql;	
 	//private String priceplanID;	
 	private String sHOMEIMSI,PARTNERMSISDN,priceplanID;
-	private String cS2TIMSI,cS2TMSISDN,sCount,cReqStatus,dReqDate,sMNOSubCode,cTicketNumber;
+	private String cS2TIMSI,cS2TMSISDN,sCount,cReqStatus,dReqDate,cTicketNumber,sMNOSubCode;
+
 	private String c910SEQ,cFileID;
 	private String cWorkOrderNBR,cServiceOrderNBR;
 	String sMNOName;
-	
-	
-	
-	public void doSyncFile_SyncFileDtl(String imsi,String msisdn) throws Exception{
-		cS2TIMSI=imsi;
-		cS2TMSISDN=msisdn;
-		
-		//20141104 add
-		setPartnerCode();
-		
-		
-		dReqDate=dFormat3.format(new Date());
-		//20141103 set as TWNLD
-		sMNOSubCode="950";
-				
-		
-		//設定sCount 
-		Temprs = null;
-		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
-		//Temprs = conn.createStatement().executeQuery(sSql);
-		Statement st = conn.createStatement();
-		Temprs = st.executeQuery(sSql);
-		while (Temprs.next()) {
-			sCount = Temprs.getString("ab");
-		}
-		for (int i = sCount.length(); i < 3; i++) {
-			sCount = "0" + sCount;
-		}
-		st.close();
-		
-		cTicketNumber="D"+dReqDate+sCount;
 
-		Process_SyncFile("V");
-		Process_SyncFileDtl("V");
-	}
 	
-	public Map<String,String> doChangeGPRSStatus(String imsi,String msisdn,String GPRSStatus,String GPRSName) throws SQLException, Exception{
+	public Map<String,String> doChangeGPRSStatus(int type,String imsi,String msisdn,String GPRSStatus,String GPRSName) throws SQLException, Exception{
 		logger.debug("doChangeGPRSStatus..."+imsi+":"+msisdn);
 		if(imsi == null) throw new Exception("IMSI can't be null.");
 		if(msisdn == null) throw new Exception("MSISDN can't be null.");
@@ -118,6 +85,12 @@ public class suspendGPRS {
 				if(GPRSName==null)
 					throw new Exception("Can't find GPRSName");
 			}
+			//Annex
+			if(type == 2){
+				sMNOSubCode = "982";
+			}else{
+				sMNOSubCode = "950";
+			}
 			
 			//20141128 add chnage 17 to 16
 			cReqStatus="16";
@@ -129,8 +102,12 @@ public class suspendGPRS {
 			Process_ServiceOrderItem(sStepNo,sSubCode);
 			logger.info("Process_ServiceOrderItemDtl...");
 			Process_ServiceOrderItemDtl(sStepNo, "2", "1", cS2TMSISDN );
-			Process_ServiceOrderItemDtl(sStepNo, "1945", "0", GPRSStatus );
+			
 			Process_ServiceOrderItemDtl(sStepNo, "1946", "1", GPRSName );
+			
+			if(type!= 2){
+				Process_ServiceOrderItemDtl(sStepNo, "1945", "0", GPRSStatus );
+			}
 			
 			sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
 					+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
@@ -150,7 +127,7 @@ public class suspendGPRS {
 		}
 	}
 	
-	public Map<String,String> doTerminate(String imsi,String msisdn,String recycle) throws Exception{
+	public Map<String,String> doTerminate(String imsi,String msisdn,String recycle,String MNOSubCode) throws Exception{
 		logger.debug("doChangeGPRSStatus..."+imsi+":"+msisdn);
 		
 		if(imsi == null) throw new Exception("IMSI can't be null.");
@@ -159,6 +136,10 @@ public class suspendGPRS {
 		
 		if(recycle==null)
 			recycle = "0";
+		
+		
+		//20141103 set as TWNLD
+		sMNOSubCode = MNOSubCode;
 		
 		try {
 			st = conn.createStatement();
@@ -194,6 +175,35 @@ public class suspendGPRS {
 			if(st2!=null)
 				st2.close();
 		}
+	}
+	
+	public void doSyncFile_SyncFileDtl(String imsi,String msisdn) throws Exception{
+		cS2TIMSI=imsi;
+		cS2TMSISDN=msisdn;
+		
+		//20141104 add
+		setPartnerCode();
+
+		dReqDate=dFormat3.format(new Date());
+
+		//設定sCount 
+		Temprs = null;
+		sSql = "select DVRS_SUSPEND_COUNT.NEXTVAL as ab from dual";
+		//Temprs = conn.createStatement().executeQuery(sSql);
+		Statement st = conn.createStatement();
+		Temprs = st.executeQuery(sSql);
+		while (Temprs.next()) {
+			sCount = Temprs.getString("ab");
+		}
+		for (int i = sCount.length(); i < 3; i++) {
+			sCount = "0" + sCount;
+		}
+		st.close();
+		
+		cTicketNumber="D"+dReqDate+sCount;
+
+		Process_SyncFile("V");
+		Process_SyncFileDtl("V");
 	}
 	
 	public void Process_SyncFile(String sSFStatus) throws SQLException,
