@@ -111,6 +111,7 @@ public class suspendGPRS {
 			
 			sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
 					+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
+			logger.info("update_ServiceOrder:"+sSql);
 			st.executeUpdate(sSql);			
 			
 			Map<String,String> map =new HashMap<String,String>();

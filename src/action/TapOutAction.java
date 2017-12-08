@@ -3,6 +3,10 @@ package action;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -12,18 +16,53 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import bean.TabOutData;
+import control.TapOutControl;
 
+public class TapOutAction extends BaseAction{
 
-public class Excel extends BaseAction{
-	public Excel() throws Exception {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public TapOutAction() throws Exception {
 		super();
+		// TODO Auto-generated constructor stub
 	}
+	
+	String phonenumber;
+	String type;
+	String from;
+	String to;
+	
+	
+	//Excel 使用
+	
 	private InputStream excelStream;  //輸出變量
 	private String excelFileName; //下載文件名稱
 
-	String dataList;
-	String colHead;
-	String reportName;
+	String param;
+	String tapOut_colHead;
+	String tapOut_reportName;
+	
+	TapOutControl tapOutControl= new TapOutControl();
+	
+	public String queryTapOutData() {
+		try {
+			List<TabOutData> list = tapOutControl.queryTapOutData(from, to, phonenumber, type);
+			result = makeResult(list, null);
+			actionLogControl.loggerAction(super.getUser().getAccount(), "TapOut", "Query","from:"+from+" to:"+to+" phonenumber:"+phonenumber+ " type:"+type, SUCCESS);
+		} catch (Exception e) {
+			e.printStackTrace();
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			result = makeResult(null, s.toString());
+		}
+		
+		return SUCCESS;
+	}
+	
 	
 	public String createExcel(){
 			
@@ -42,8 +81,11 @@ public class Excel extends BaseAction{
             //第五部，建立單元格
             HSSFCell cell;  
   
-            System.out.println("colHead"+colHead);
-            JSONArray ja = new JSONArray(java.net.URLDecoder.decode(colHead,"UTF-8"));
+            if(tapOut_colHead == null)
+            	return null;
+            
+            System.out.println("colHead"+tapOut_colHead);
+            JSONArray ja = new JSONArray(java.net.URLDecoder.decode(tapOut_colHead,"UTF-8"));
             
             for(int i = 0 ; i < ja.length() ; i++){
     			JSONObject jo = ja.getJSONObject(i);
@@ -59,13 +101,18 @@ public class Excel extends BaseAction{
 
   
             //第六部，寫入內容
-            JSONArray ja2 = new JSONArray(java.net.URLDecoder.decode(dataList,"UTF-8"));
+            JSONObject joparam = new JSONObject(java.net.URLDecoder.decode(param,"UTF-8"));
+            List<TabOutData> list = tapOutControl.queryTapOutData(joparam.getString("from"),joparam.getString("to"),joparam.getString("phonenumber"),joparam.getString("type"));
+            
+            
+            JSONArray ja2 = (JSONArray) JSONObject.wrap(list);
             
             for (int i = 0; i < ja2.length(); i++) {  
             	JSONObject jo =ja2.getJSONObject(i);
                 row = sheet.createRow(i+1);  
                 
                 for(int j = 0 ; j < ja.length() ; j++){
+
         			JSONObject jo2 = ja.getJSONObject(j);
         			String col=jo2.getString("name");
         			if(!"button".equals(col)){
@@ -84,10 +131,10 @@ public class Excel extends BaseAction{
             
             //reportName=java.net.URLDecoder.decode(reportName,"UTF-8");
             
-            if(reportName==null || "".equals(reportName))
-            	reportName="report";            	
+            if(tapOut_reportName==null || "".equals(tapOut_reportName))
+            	tapOut_reportName="report";            	
             
-            excelFileName = reportName+".xls"; //文件名稱
+            excelFileName = tapOut_reportName+".xls"; //文件名稱
         }  
         catch(Exception e) {  
             e.printStackTrace();  
@@ -112,29 +159,72 @@ public class Excel extends BaseAction{
 		this.excelFileName = excelFileName;
 	}
 
-	public String getDataList() {
-		return dataList;
-	}
 
-	public void setDataList(String dataList) {
-		this.dataList = dataList;
-	}
 
-	public String getColHead() {
-		return colHead;
-	}
-
-	public void setColHead(String colHead) {
-		this.colHead = colHead;
-	}
-
-	public String getReportName() {
-		return reportName;
-	}
-
-	public void setReportName(String reportName) {
-		this.reportName = reportName;
+	public String getParam() {
+		return param;
 	}
 
 
+	public void setParam(String param) {
+		this.param = param;
+	}
+
+
+
+
+	public String getTapOut_colHead() {
+		return tapOut_colHead;
+	}
+
+
+	public void setTapOut_colHead(String tapOut_colHead) {
+		this.tapOut_colHead = tapOut_colHead;
+	}
+
+
+	public String getTapOut_reportName() {
+		return tapOut_reportName;
+	}
+
+
+	public void setTapOut_reportName(String tapOut_reportName) {
+		this.tapOut_reportName = tapOut_reportName;
+	}
+
+
+	public String getPhonenumber() {
+		return phonenumber;
+	}
+
+	public void setPhonenumber(String phonenumber) {
+		this.phonenumber = phonenumber;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
+	}
+
+	
+	
 }

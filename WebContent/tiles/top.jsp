@@ -76,6 +76,9 @@ function setSortAction(){
 }
 
 function putHeadToTable(){
+	
+	if(typeof(tHead)=='undefined')
+		return;
 	//清空表格
 	$("#page_contain").empty();
 	//放入表格到指定位置

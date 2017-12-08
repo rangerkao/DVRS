@@ -61,16 +61,47 @@ public class resumeFunction {
 		connectDB();
 		connectDB2();
 		
-		if(
+		/*if(
 			setDayDate()&&
 			setMsisdnMap()&&
 			setIMSItoServiceIDMap()&&
 			true){
 			
 			checkResume();
+		}*/
+		String imsi = "454120260244399",phone="85269477825";
+		
+		PreparedStatement pst = null;
+		try {
+			suspendGPRS sus = new suspendGPRS(conn,conn2,logger);
+			Map<String,String> orderNBR = sus.doChangeGPRSStatus(0,imsi,phone,"1","CHT-GPRS");
+			serviceOrderNBR.add(orderNBR);
+			
+			sql=
+					"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
+					+ "(SERVICE_ORDER_NBR,IMSI,CREATE_DATE,MSISDN,GPRS_STATUS) "
+					+ "VALUES(?,?,SYSDATE,?,?)";
+			
+			pst=conn.prepareStatement(sql);
+			pst.setString(1,orderNBR.get("cServiceOrderNBR") );
+			pst.setString(2,imsi );
+			pst.setString(3,phone );
+			pst.setString(4,"1" );
+			
+			logger.info("Execute SQL : "+sql);
+			pst.executeUpdate();
+		} catch (SQLException e) {
+			ErrorHandle("At doResume got SQLException",e);
+		} catch (Exception e) {
+			ErrorHandle("At doResume got Exception",e);
+		}finally{
+			try {
+				if(pst!=null)
+					pst.close();
+			} catch (SQLException e) {}
 		}
 		
-		
+		closeConnect();
 		
 	}
 	

@@ -44,6 +44,7 @@
 			<result name="numberChangeHistory" type="tiles">numberChangeHistory</result>
 			<result name="sendSMS" type="tiles">sendSMS</result>
 			<result name="volumePocketSetting" type="tiles">volumePocketSetting</result>
+			<result name="tapOutDataQuery" type="tiles">tapOutDataQuery</result>
 		</action>
 
 		<!-- Struts Action Definition -->
@@ -75,6 +76,21 @@
 		
 		<!-- Escel 下載 -->
         <action name="createExcel"  method="createExcel" class="action.Excel">  
+            <result name="success" type="stream">  
+                <!-- 下载文件的类型，如果你不知道是什么格式，可以去 tomcat\conf\web.xml下找 -->  
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <!-- 返回流 excelStream为action中的流变量名称 -->  
+                <param name="inputName">excelStream</param>  
+                <!-- attachment 这个位置的参数挺特殊的，可以设置成下载时，是否出现个下载提示框，或者直接下载之类的。  
+                fileName指定生成的文件名字(适合动态生成文件名，比如做报表时，一般都要说是几月的统计数据之类)为action中变量-->  
+                <param name="contentDisposition">  
+                    attachment;filename=${excelFileName}  
+                </param>  
+                <param name="bufferSize">1024</param>  
+            </result>  
+        </action>
+        
+        <action name="createTapOutExcel"  method="createExcel" class="action.TapOutAction">  
             <result name="success" type="stream">  
                 <!-- 下载文件的类型，如果你不知道是什么格式，可以去 tomcat\conf\web.xml下找 -->  
                 <param name="contentType">application/vnd.ms-excel</param>  
@@ -158,5 +174,6 @@
         <action name="updateVolumePocket" method="updateVolumePocket" class="action.VolumePocketAction"/> 
         <action name="cancelVolumePocket" method="cancelVolumePocket" class="action.VolumePocketAction"/>      
        
+		<action name="queryTapOutData" method="queryTapOutData" class="action.TapOutAction"/>    
     </package>
 </struts>

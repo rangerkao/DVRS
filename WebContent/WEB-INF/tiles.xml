@@ -91,6 +91,10 @@
 	<definition name="volumePocketSetting" extends="web_base">
 		<put-attribute name="main" value="/web/volumePocketSetting.jsp" />
 	</definition>
+	
+	<definition name="tapOutDataQuery" extends="web_base">
+		<put-attribute name="main" value="/web/tapOutDataQuery.jsp" />
+	</definition>
 
 	<definition name="cache" extends="web_base">
 		<put-attribute name="main" value="/web/Cache.jsp" />

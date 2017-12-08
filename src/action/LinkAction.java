@@ -43,6 +43,7 @@ public class LinkAction extends BaseAction{
 	private String smsThresholdSetting="smsThresholdSetting";
 	private String sendSMS="sendSMS";
 	private String volumePocketSetting="volumePocketSetting";
+	private String tapOutDataQuery="tapOutDataQuery";
 	
 	Map<String, Object> session;
 	
@@ -67,6 +68,7 @@ public class LinkAction extends BaseAction{
 	public String numberChangeHistory(){return numberChangeHistory;}
 	public String sendSMS(){return sendSMS;}
 	public String volumePocketSetting(){return volumePocketSetting;}
+	public String tapOutDataQuery(){return tapOutDataQuery;}
 	public String queryQos(){return queryQos;}
 	public String logout()  
 	{  

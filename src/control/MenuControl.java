@@ -40,7 +40,8 @@ public class MenuControl extends BaseControl {
 		l3.add(new Link("searchList","currentMonthLink","每月累計查詢"));
 		l3.add(new Link("searchList","currentDayLink","單日累計查詢"));
 		l3.add(new Link("searchList","cardChangeHistoryLink","換卡記錄查詢"));
-		l3.add(new Link("searchList","numberChangeHistoryLink","換號記錄查詢查詢"));
+		l3.add(new Link("searchList","numberChangeHistoryLink","換號記錄查詢"));
+		l3.add(new Link("searchList","tapOutDataQueryLink","TapOut記錄查詢"));
 		
 		//20170126del
 		//l3.add(new Link("elseList","volumePocketSettingLink","美國流量包設定"));

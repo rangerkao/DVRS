@@ -757,6 +757,7 @@ public class SMSDao extends BaseDao{
 		sql=
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
+				+ "and to_date(A.START_DATE,'yyyyMMddhh24miss')<=sysdate and (A.END_DATE is null or to_date(A.END_DATE,'yyyyMMddhh24miss')>sysdate) "
 				+ "ORDER BY A.ID ";
 		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
@@ -783,6 +784,7 @@ public class SMSDao extends BaseDao{
 				"SELECT  A.ID,A.CONTENT,A.CHARSET,A.DESCRIPTION "
 				+ "FROM HUR_SMS_CONTENT A "
 				+ "WHERE A.ID IN ("+id+") "
+				+ "and to_date(A.START_DATE,'yyyyMMddhh24miss')<=sysdate and (A.END_DATE is null or to_date(A.END_DATE,'yyyyMMddhh24miss')>sysdate) "
 				+ "ORDER BY A.ID ";
 		Connection conn =  getConn1();
 		Statement st =conn.createStatement();
@@ -828,7 +830,8 @@ public class SMSDao extends BaseDao{
 		sql=
 				"UPDATE  HUR_SMS_CONTENT A "
 				+ "SET A.CONTENT=?,A.CHARSET=?,A.DESCRIPTION=? "
-				+ "WHERE A.ID=?";
+				+ "WHERE A.ID=? "
+				+ "and to_date(A.START_DATE,'yyyyMMddhh24miss')<=sysdate and (A.END_DATE is null or to_date(A.END_DATE,'yyyyMMddhh24miss')>sysdate) ";
 		Connection conn =  getConn1();
 		PreparedStatement pst = conn.prepareStatement(sql);
 		
@@ -867,7 +870,8 @@ public class SMSDao extends BaseDao{
 		sql=
 				"SELECT case A.id when 201 then 'A' when 202 then 'B' when 203 then 'CA' when 204 then 'CI' END ID,A.CONTENT "
 				+ "FROM HUR_SMS_CONTENT A "
-				+ "where A.ID in ('201','202','203','204')";
+				+ "where A.ID in ('201','202','203','204')"
+				+ "and to_date(A.START_DATE,'yyyyMMddhh24miss')<=sysdate and (A.END_DATE is null or to_date(A.END_DATE,'yyyyMMddhh24miss')>sysdate) ";
 		
 		Statement st = null;
 		ResultSet rs = null;
