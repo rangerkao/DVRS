@@ -410,10 +410,19 @@ public class DVRSmain extends TimerTask{
 								sMNOSubCode="982";
 							}
 							
+<<<<<<< HEAD
 							//還未被終止，已過期，進行終止
 							if("0".equals(m.get("TERMINATE")) && day_time_sdf.parse(programeDateTime).after(endDate)){
 								
 								
+=======
+							//20161123 發現因parse後為末天0點，當0點後則會終止，不符合
+							//應該在最末天整天還可使用
+							endDate = new Date(endDate.getTime()+1000*60*60*24);
+							
+							//屬於Joy，且未終止，已過期，進行終止
+							if("1".equals(m.get("TYPE")) && "0".equals(m.get("TERMINATE")) && new Date().after(endDate)){
+>>>>>>> refs/remotes/origin/master
 								
 								//如果沒有門號資料，因為無法發送簡訊，寄送警告mail後跳過
 								String msisdn = getMSISDN(serviceid);
@@ -2663,6 +2672,7 @@ public class DVRSmain extends TimerTask{
 	 */
 	List<Map<String,String>> insertVolumeList = new ArrayList<Map<String,String>> ();
 	private boolean checkDataPrepay(String serviceID,String nccNet,Date callTime,String cPriceplan,Double volumn) throws Exception{
+<<<<<<< HEAD
 		//logger.info("checkDataPrepay...");
 		boolean isPrePayDate = false;
 		boolean isNeedInsert = false;
@@ -2679,6 +2689,12 @@ public class DVRSmain extends TimerTask{
 		
 		//從slowDownMap 非每日降速清單尋找
 		//泛用規則中華在台灣使用數據用戶，PricePlan 167，TYPE 1 JOY
+=======
+		int cd=0;
+		boolean isJoy = false;
+		boolean isJoyInsert = false;
+		String dataLimit = "0";
+>>>>>>> refs/remotes/origin/master
 		for(Map<String,String> map :slowDownMap.get("0")){
 			String type = map.get("TYPE");
 
@@ -2724,6 +2740,7 @@ public class DVRSmain extends TimerTask{
 		for(Map<String,String> map :slowDownMap.get("1")){
 			String type = map.get("TYPE");
 			
+<<<<<<< HEAD
 			//Annex 資料
 			if("2".equals(type)){
 				//MNO清單
@@ -2830,6 +2847,22 @@ public class DVRSmain extends TimerTask{
 					
 					//初始VolumeList，流量統計
 					volumeList.put(pid, volumn);
+=======
+			String priceplan = (String) map.get("PRICEPLAN");
+			Set<String> priceplans = new HashSet<String>();
+			for(String s:priceplan.split(","))
+				priceplans.add(s);
+
+			if(priceplans.contains(cPriceplan)&&(mccmncs.contains(nccNet)||mccmncs.contains(nccNet.substring(0,3)))){
+				dataLimit = map.get("LIMIT");
+				//屬於降速非每日，暫時只有Joy符合
+				isJoy = true;
+				if(volumePocketMap.containsKey(serviceID)&&volumePocketMap.get(serviceID).containsKey(nccNet.substring(0,3))){
+					//isJoyInsert = false;
+				}else{
+					//如果是非每日降速包，流量統計無資料的話，新增
+					isJoyInsert = true;
+>>>>>>> refs/remotes/origin/master
 				}
 			}											
 		}		
@@ -2864,8 +2897,73 @@ public class DVRSmain extends TimerTask{
 			} catch (SQLException e) {
 			}
 		}
+<<<<<<< HEAD
 
 		return result;
+=======
+		
+		if(isJoy){
+			if(isJoyInsert){
+				String pid = getVolumePocketPID();
+				
+				if(pid == null ){
+					throw new Exception("Can't get pid.");
+				}
+				
+				String mcc = nccNet.substring(0,3);
+				String sDate = year_month_day_sdf.format(callTime);
+				String eDate = year_month_day_sdf.format(new Date(callTime.getTime()+7*24*60*60*1000));//結束日期為起始+7天，共8天
+				Map<String,String> iMap = new HashMap<String,String>();
+				iMap.put("SERVICEID", serviceID);
+				iMap.put("MCC", mcc);
+				iMap.put("SDATE", sDate);
+				iMap.put("EDATE", eDate);
+				iMap.put("TYPE", "1");
+				iMap.put("LIMIT", dataLimit );
+				iMap.put("PID", pid);
+				insertVolumeList.add(iMap);
+				
+				//加入Map供之後檢查
+				Map<String, String> m = new HashMap<String,String>();
+				m.put("START_DATE", sDate);
+				m.put("END_DATE", eDate);
+				m.put("CURRENCY", "NTD");
+				m.put("ALERTED", "0");
+				m.put("TYPE", "1");
+				m.put("LIMIT", dataLimit);
+				m.put("PID", pid);
+				Map<String, List<Map<String, String>>> m2 = new HashMap<String,List<Map<String,String>>>();
+				List<Map<String, String>> l3 = new ArrayList<Map<String,String>>();
+				if(volumePocketMap.containsKey(serviceID)){
+					m2=volumePocketMap.get(serviceID);
+					if(m2.containsKey(mcc)){
+						l3 = m2.get(mcc);
+					}
+				}
+				l3.add(m);
+				m2.put(mcc, l3);
+				volumePocketMap.put(serviceID, m2);
+				
+				
+				//初始VolumeList
+				volumeList.put(pid, volumn);
+			}else{
+				//累計流量並檢查是否達到1G
+				for(Map<String,String> m:volumePocketMap.get(serviceID).get(nccNet.substring(0,3))){
+					String pid = m.get("PID");
+					Double v = volumeList.get(pid);
+					v+=volumn;
+					volumeList.put(pid, v);
+				}
+			}
+			
+		}else{
+			
+		}
+		
+		
+		return isJoy;
+>>>>>>> refs/remotes/origin/master
 	}
 	
 	
@@ -3112,7 +3210,11 @@ public class DVRSmain extends TimerTask{
 					if(checkQosAddon(serviceid, mccmnc, callTime,volume)){
 						//是華人上網包，不批價設定為0
 					}else if(checkDataPrepay(serviceid, nccNet, callTime, pricplanID,volume)){
+<<<<<<< HEAD
 						//確認是否為預付卡資料(例如Joy)
+=======
+						//是台灣數據預付卡，不批價設定為0
+>>>>>>> refs/remotes/origin/master
 					}else{
 						//20151230 add
 						//20151231 cancel
@@ -4764,6 +4866,7 @@ public class DVRSmain extends TimerTask{
 							mm.put("ALERTED", ""+alerted);
 							updateVolumePocketMap.add(mm);
 						}
+<<<<<<< HEAD
 					}else */
 					
 					//Annex 屬於每日降速，不在此處理
@@ -4937,6 +5040,11 @@ public class DVRSmain extends TimerTask{
 					if(type == 0 || type == 1){ 
 						if(!"1".equals(terminate) && v>=pocketLimit&& alerted < 100){
 							//
+=======
+					}else if(type==1){//數據預付包
+						if(v>=pocketLimit&& alerted < 100){
+							
+>>>>>>> refs/remotes/origin/master
 							alerted = 100;
 							//進行降速
 							//從SlowDownList 取得 降速代號
@@ -4994,8 +5102,12 @@ public class DVRSmain extends TimerTask{
 
 										serviceOrderNBR.add(orderNBR);
 										
+<<<<<<< HEAD
 										//ErrorHandle("The customer(serviceid="+serviceid+") had been exceed limit.");
 										logger.info("The customer(serviceid="+serviceid+") had been exceed limit.");
+=======
+										ErrorHandle("The customer(serviceid="+serviceid+") had been exceed limit.");
+>>>>>>> refs/remotes/origin/master
 										
 										sql=
 												"INSERT INTO HUR_SUSPEND_GPRS_LOG  "
@@ -5144,8 +5256,13 @@ public class DVRSmain extends TimerTask{
 		logger.info("execute time :"+(System.currentTimeMillis()-subStartTime));
 		return result;
 	}
+<<<<<<< HEAD
 	
+=======
+	static int pid = 0;
+>>>>>>> refs/remotes/origin/master
 	public String getVolumePocketPID(){
+<<<<<<< HEAD
 		int pid = 0;
 		/*if(pid == 0){
 			sql = "select nvl(MAX(PID),0)+1 PID from HUR_VOLUME_POCKET ";
@@ -5192,13 +5309,36 @@ public class DVRSmain extends TimerTask{
 			ErrorHandle("At updateVolumePocket occur Exception!");
 		}finally{
 			
+=======
+
+		if(pid == 0){
+			sql = "select nvl(MAX(PID),0)+1 PID from HUR_VOLUME_POCKET ";
+			Statement st = null;
+			ResultSet rs = null;
+>>>>>>> refs/remotes/origin/master
 			try {
-				if(st!=null)
-					st.close();
-				if(rs!=null)
-					rs.close();
+				st = conn.createStatement();
+				logger.debug("select pid : "+sql); 
+				rs=st.executeQuery(sql);
+				while(rs.next()){
+					pid = rs.getInt("PID");
+				}
 			} catch (SQLException e) {
+				ErrorHandle("At updateVolumePocket occur SQLException!");
+			} catch (Exception e) {
+				ErrorHandle("At updateVolumePocket occur Exception!");
+			}finally{
+				
+				try {
+					if(st!=null)
+						st.close();
+					if(rs!=null)
+						rs.close();
+				} catch (SQLException e) {
+				}
 			}
+		}else{
+			pid++;
 		}
 		
 		return String.valueOf(pid);
@@ -6595,6 +6735,20 @@ public class DVRSmain extends TimerTask{
 						){
 
 					
+<<<<<<< HEAD
+=======
+					if(resumeSpeed)doResumeSpeed();
+
+					if(checkPocketStart)sendStartPocketDateSMS();
+					
+					if(checkPocketEnd)sendEndPocketDateSMS();
+					
+					if(endPocket) doEndPocket();
+					//20161115 cancel
+					//if(volumeReport) sendVolumeReport();
+
+					charge();	//開始批價 
+>>>>>>> refs/remotes/origin/master
 
 					//發送警示
 					try {
