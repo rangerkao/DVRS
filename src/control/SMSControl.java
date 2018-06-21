@@ -173,11 +173,7 @@ public class SMSControl extends BaseControl{
 		return "success";
 	}
 	
-<<<<<<< HEAD
 	private String queryCustmerServicePhone(String imsi) throws SQLException, ClassNotFoundException{
-=======
-	private String queryCustmerServicePhone(String imsi) throws SQLException{
->>>>>>> refs/remotes/origin/master
 		String cphone="";
 		String VLN=smsDao.queryVLR(imsi);
 		

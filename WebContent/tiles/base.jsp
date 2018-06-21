@@ -8,12 +8,26 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-<!-- IE可能不見得有效 -->
+<!-- IE嚙箠嚙賞不嚙踝蕭嚙緻嚙踝蕭嚙踝蕭 -->
 <META HTTP-EQUIV="EXPIRES" CONTENT="0">
-<!-- 設定成馬上就過期 -->
+<!-- 嚙稽嚙緩嚙踝蕭嚙踝蕭嚙磕嚙瞇嚙盤嚙踝蕭 -->
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-<!-- 與第一行是同樣的作用 -->
+<!-- 嚙瞑嚙衝一嚙踝蕭O嚙瞑嚙誼迎蕭嚙瑾嚙踝蕭 -->
 <title>Insert title here</title>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+
+
+
+<%-- <script src="http://code.jquery.com/jquery-latest.js"></script> --%>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
 </head>
 <body>
 <div class="container-fluid max_height" >
@@ -31,7 +45,8 @@
 	</div>
 </div>
 </body>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" ></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<%-- <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" ></script> --%>
 <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 </html>

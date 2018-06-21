@@ -60,7 +60,7 @@ public class CacheAction extends BaseAction {
 	static SimpleConnectionPoolDataSource CPD2 ;
 	
 	static boolean threadExit= false;
-	static long connectionCloseTime = 1000*60*20;
+	static long connectionCloseTime = 1000*60*10;
 	
 	//Batch thread �ɶ�
 	int ThreadPeriod = 24;
@@ -233,13 +233,25 @@ public class CacheAction extends BaseAction {
 						while (it1.hasNext()) {
 							ConnectionWrapper conn = (ConnectionWrapper) it1.next();
 							
-							if (nowTime-conn.getExecuteTime()>connectionCloseTime-1000*60*5 || !connTest(conn)){
+							try {
+								Statement st = conn.createStatement();
+								st.executeQuery("select 'success' from dual");
+								st.close();
+							} catch (Exception e) {
+								it1.remove();
+								try {
+									conn.doClose();
+									logger.info("Watch 1 after release!"+CPD1.getConns().size()+"||"+conns1.size());
+								} catch (SQLException e2) {}
+							}
+							
+							/*if (nowTime-conn.getExecuteTime()>connectionCloseTime-1000*60*5 || !connTest(conn)){
 								it1.remove();
 								try {
 									conn.doClose();
 									logger.info("Watch 1 after release!"+CPD1.getConns().size()+"||"+conns1.size());
 								} catch (SQLException e) {}
-							}
+							}*/
 						}
 					}
 					logger.info("Watch 1 after watches!"+CPD1.getConns().size());
@@ -254,13 +266,27 @@ public class CacheAction extends BaseAction {
 						Iterator<Connection> it2 = conns2.iterator();
 						while (it2.hasNext()) {
 							ConnectionWrapper conn = (ConnectionWrapper) it2.next();
-							if (nowTime-conn.getExecuteTime()>connectionCloseTime-1000*60*5|| !connTest(conn)){
+							
+							try {
+								Statement st = conn.createStatement();
+								st.executeQuery("select 'success' from dual");
+								st.close();
+							} catch (Exception e) {
+								it2.remove();
+								try {
+									conn.doClose();
+									logger.info("Watch 1 after release!"+CPD1.getConns().size()+"||"+conns1.size());
+								} catch (SQLException e2) {}
+							}
+							
+							
+							/*if (nowTime-conn.getExecuteTime()>connectionCloseTime-1000*60*5|| !connTest(conn)){
 								it2.remove();
 								try {
 									conn.doClose();
 									logger.info("Watch 2 after release!"+CPD2.getConns().size()+"||"+conns2.size());
 								} catch (SQLException e) {}
-							}
+							}*/
 						}
 					}
 					logger.info("Watch 2 after watches!"+CPD2.getConns().size());

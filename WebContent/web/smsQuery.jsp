@@ -41,7 +41,7 @@ function query(){
 	      url: '<s:url action="querySMSLog"/>',
 	      data: {	"dateFrom":$("#dateFrom").val(),
 	    	  		"dateTo":$("#dateTo").val(),
-	    	  		//"msisdn":$("#MSISDN").val()
+	    	  		"msisdn":$("#MSISDN").val()
 	    	  		},//parameters go here in object literal form
 	      type: 'POST',
 	      datatype: 'json',

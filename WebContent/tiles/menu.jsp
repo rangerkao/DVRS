@@ -6,7 +6,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=BIG5">
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<%-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script> --%>
 <title>Insert title here</title>
 <style type="text/css">
 #menu{
@@ -14,7 +14,8 @@ padding: none;
 
 }
 </style>
-<script src="http://code.jquery.com/jquery-latest.js"></script>
+<%-- <script src="http://code.jquery.com/jquery-latest.js"></script> --%>
+<%-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> --%>
 <script type="text/javascript">
 $(document).ready(function(){
 	//$("li").css("display","none");

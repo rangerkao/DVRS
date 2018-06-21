@@ -45,12 +45,16 @@ var reportName="TapOut匯出_"+currentDateTime;
 var tHead=[
 	{name:"始話日期",col:"startDate",_width:"10%"},
     {name:"漫遊網",col:"location",_width:"10%"},
-    {name:"發話號碼/收話號碼",col:"phonenumber",_width:"20%"},
-    {name:"通話種類",col:"type",_width:"10%"},
+    {name:"發話號碼/收話號碼",col:"phonenumber",_width:"15%"},
+    {name:"通話種類",col:"type",_width:"6%"},
     {name:"始話時刻",col:"startTime",_width:"10%"},
     {name:"終話時刻",col:"endTime",_width:"10%"},
-    {name:"使用量(秒/則/Bytes)",col:"unit",_width:"15%"},
-    {name:"漫遊網路費",col:"amount",_width:"15%"}];
+    {name:"使用量(秒/則/Bytes)",col:"unit",_width:"11%"},
+    {name:"漫遊費用",col:"amount",_width:"7%"},
+    {name:"原始費用",col:"totalCharge",_width:"7%"},
+    {name:"優惠費用",col:"discountCharge",_width:"7%"},
+    {name:"結果費用",col:"finalCharge",_width:"7%"}
+    ];
     
     //始話日期	漫遊網	發話號碼\收話號碼	通話種類	始話時刻	終話時刻	通話秒數/則數	漫遊網話費	轉接至漫遊網國際話費	費用類別
 
@@ -204,7 +208,7 @@ function createTapOutExcel(){
 			<input type="text" disabled="disabled" id="dateTo" class="datapicker" style="height: 25px;text-align: center;position:relative;top: -5px" >
 			<input type="button" class="btn btn-primary btn-sm" onclick="createTapOutExcel()" value="下載Excel"> 
 		</div>
-		<div class="col-xs-4" align="right">用戶號碼</div>
+		<div class="col-xs-4" align="right">用戶香港號碼</div>
 		<div class="col-xs-8" align="left">
 			<input type="text" id="phonenumber">
 			<span  align="left" >類型：	

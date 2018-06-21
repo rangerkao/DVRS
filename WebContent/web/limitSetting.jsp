@@ -74,14 +74,14 @@ function chooseRow(bu){
 	//$("#LLimit").html("");	
 }
 
-function updateLimit(mod,txt){
+function updateLimit(mod,txt,sendSMS){
 
-	var sendSMS=false;
-	if(mod=="add"){
+	/* var sendSMS=false; */
+	/* if(mod=="add"){
 		if(confirm("需要發送通知簡訊給予客戶嗎？")){
 			sendSMS=true;
 		}
-	}
+	} */
 
 	$.ajax({
 	      url: '<s:url action="updateAlertLimit"/>',
@@ -131,7 +131,9 @@ function enableButton(){
 	$(':button').removeAttr('disabled'); //.attr('disabled', '');
 }
 
-function queryIMSI(mod,txt){
+function queryIMSI(mod,txt,sendSMS){
+	console.log("sendSMS is "+sendSMS);
+	$("#myModal").modal('hide');
 
 	if($("#Msisdn").val()==null || $("#Msisdn").val()==""){
 		$("#LMsisdn").html('此欄位不可為空');
@@ -147,7 +149,7 @@ function queryIMSI(mod,txt){
 
 	if(mod=='del'){
 		//alert("del clicked!");
-		checkByMsisdn(mod,txt);
+		checkByMsisdn(mod,txt,sendSMS);
 	}else{
 		$.ajax({
 		      url: '<s:url action="queryIMSI"/>',
@@ -171,7 +173,7 @@ function queryIMSI(mod,txt){
 			    		  enableButton();
 			    	  }else{
 			    		  $("#IMSI").val(v.imsi);
-			    		  checkByMsisdn(mod,txt);
+			    		  checkByMsisdn(mod,txt,sendSMS);
 			    	  }
 		    	  }
 	    	  },
@@ -193,7 +195,7 @@ function queryIMSI(mod,txt){
 	
 }
 
-function checkByMsisdn(mod,txt){
+function checkByMsisdn(mod,txt,sendSMS){
 	$.ajax({
 	      url: '<s:url action="checkAlertExisted"/>',
 	      data: {
@@ -217,14 +219,14 @@ function checkByMsisdn(mod,txt){
 	    				  alert("此門號已設定過，無法新增！");
 	    				  enableButton();
 		  	  			}else{
-		  	  				updateLimit(mod,txt); 
+		  	  				updateLimit(mod,txt,sendSMS); 
 		  	  			}
 		  	  		}else if(mod=='mod' || mod=='del'){
 		  	  			if(cou =='0'){
 		  	  				alert("此門號未曾設定過，無法刪除,修改！");
 		  	  			 	enableButton();
 		  	  			}else{
-		  	  				updateLimit(mod,txt); 
+		  	  				updateLimit(mod,txt,sendSMS); 
 		  	  			}
 		  	  		}else{
 		  	  			alert("驗證失敗！");
@@ -364,9 +366,10 @@ function queryVIP(){
 		    <div class="col-xs-12">
 		    	<div class="btn-group" class="col-xs-12">
 			    	<input type="button" class="btn btn-primary btn-sm" onclick="this.form.reset()" value="清除" id="bClear">
-					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增">
-					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改')" value="修改" style="display: none;">
-					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除')" value="刪除">
+					<!-- <input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('add','新增')" value="新增"> -->
+					<input type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal" value="新增">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('mod','修改',false)" value="修改" style="display: none;">
+					<input type="button" class="btn btn-primary btn-sm" onclick="queryIMSI('del','刪除',false)" value="刪除">
 					<input type="button" class="btn btn-primary btn-sm" onclick="queryVIP()" value="查詢"> 
 					<input type="button" class="btn btn-primary btn-sm" onclick="createExcel()" value="下載Excel"> 
 			    </div>
@@ -383,6 +386,28 @@ function queryVIP(){
 			<div id="Error"></div>
 		</div>
 	</div>
+</div>
+<!-- <h2>Small Modal</h2> -->
+<!-- Trigger the modal with a button -->
+<!-- <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Small Modal</button> -->
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title alert alert-warning">是否要發送簡訊給用戶？</h4>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-danger btn-lg" onclick="queryIMSI('add','新增',true)">是</button>
+        <button type="button" class="btn btn-lg" onclick="queryIMSI('add','新增',false)">否</button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 </body>
 </html>

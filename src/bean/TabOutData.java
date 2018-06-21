@@ -12,6 +12,11 @@ public class TabOutData {
     String amount;
     
     
+    //20180319 add
+    String totalCharge;
+    String discountCharge;
+    String finalCharge;
+    
 	public String getStartDate() {
 		return startDate;
 	}
@@ -59,6 +64,24 @@ public class TabOutData {
 	}
 	public void setAmount(String amount) {
 		this.amount = amount;
+	}
+	public String getTotalCharge() {
+		return totalCharge;
+	}
+	public void setTotalCharge(String totalCharge) {
+		this.totalCharge = totalCharge;
+	}
+	public String getDiscountCharge() {
+		return discountCharge;
+	}
+	public void setDiscountCharge(String discountCharge) {
+		this.discountCharge = discountCharge;
+	}
+	public String getFinalCharge() {
+		return finalCharge;
+	}
+	public void setFinalCharge(String finalCharge) {
+		this.finalCharge = finalCharge;
 	}
     
     
