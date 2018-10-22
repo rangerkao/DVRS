@@ -178,6 +178,51 @@ public class suspendGPRS {
 		}
 	}
 	
+	public Map<String,String> doSuspend(String imsi,String msisdn,String MNOSubCode) throws Exception{
+		logger.debug("doChangeGPRSStatus..."+imsi+":"+msisdn);
+		
+		if(imsi == null) throw new Exception("IMSI can't be null.");
+		if(msisdn == null) throw new Exception("MSISDN can't be null.");
+		
+		//20141103 set as TWNLD
+		sMNOSubCode = MNOSubCode;
+		
+		try {
+			st = conn.createStatement();
+			st2 = conn2.createStatement();
+			
+			cReqStatus="01";
+			doSyncFile_SyncFileDtl(imsi, msisdn);
+			
+			
+			Process_ServiceOrder();
+			logger.info("Process_ServiceOrderItem...");
+			String sStepNo="1",sSubCode="004";
+			Process_ServiceOrderItem(sStepNo,sSubCode);
+			logger.info("Process_ServiceOrderItemDtl...");
+			Process_ServiceOrderItemDtl(sStepNo, "2", "1", cS2TMSISDN );
+			Process_ServiceOrderItemDtl(sStepNo, "122", "1", "0" );
+			Process_ServiceOrderItemDtl(sStepNo, "37", "0", "999999998" );
+			
+			sSql = "update S2T_TB_SERVICE_ORDER set STATUS='N' where "
+					+ "SERVICE_ORDER_NBR='" + cServiceOrderNBR + "'";
+			st.executeUpdate(sSql);			
+			
+			Map<String,String> map =new HashMap<String,String>();
+			map.put("cServiceOrderNBR", cServiceOrderNBR);
+			map.put("cWorkOrderNBR", cWorkOrderNBR);
+			map.put("imsi", imsi);
+			map.put("msisdn", msisdn);
+			return map;
+			
+		} finally{
+			if(st!=null)
+				st.close();
+			if(st2!=null)
+				st2.close();
+		}
+	}
+	
 	public void doSyncFile_SyncFileDtl(String imsi,String msisdn) throws Exception{
 		cS2TIMSI=imsi;
 		cS2TMSISDN=msisdn;
